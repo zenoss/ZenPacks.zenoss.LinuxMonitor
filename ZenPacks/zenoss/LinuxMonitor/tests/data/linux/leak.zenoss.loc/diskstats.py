@@ -10,5 +10,5 @@
 # For complete information please visit: http://www.zenoss.com/oss/
 #
 ###########################################################################
-{'foo': dict(ssIORawReceived=685209,
-             ssIORawSent=1446156)}
+{'foo': dict(ssIORawReceived=130913845,
+             ssIORawSent=528875004)}

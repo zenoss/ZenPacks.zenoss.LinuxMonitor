@@ -42,101 +42,74 @@ ZenPacks.zenoss.LinuxMonitor.parsers.linux.cpu
 <tomanycont id='datapoints'>
 <object id='ssCpuIdle' module='Products.ZenModel.RRDDataPoint' class='RRDDataPoint'>
 <property select_variable="rrdtypes" type="selection" id="rrdtype" mode="w" >
-DERIVE
+GAUGE
 </property>
 <property type="boolean" id="isrow" mode="w" >
 True
-</property>
-<property type="string" id="rrdmin" mode="w" >
-0
 </property>
 </object>
 <object id='ssCpuInterrupt' module='Products.ZenModel.RRDDataPoint' class='RRDDataPoint'>
 <property select_variable="rrdtypes" type="selection" id="rrdtype" mode="w" >
-DERIVE
+GAUGE
 </property>
 <property type="boolean" id="isrow" mode="w" >
 True
-</property>
-<property type="string" id="rrdmin" mode="w" >
-0
 </property>
 </object>
 <object id='ssCpuKernel' module='Products.ZenModel.RRDDataPoint' class='RRDDataPoint'>
 <property select_variable="rrdtypes" type="selection" id="rrdtype" mode="w" >
-DERIVE
+GAUGE
 </property>
 <property type="boolean" id="isrow" mode="w" >
 True
-</property>
-<property type="string" id="rrdmin" mode="w" >
-0
 </property>
 </object>
 <object id='ssCpuNice' module='Products.ZenModel.RRDDataPoint' class='RRDDataPoint'>
 <property select_variable="rrdtypes" type="selection" id="rrdtype" mode="w" >
-DERIVE
+GAUGE
 </property>
 <property type="boolean" id="isrow" mode="w" >
 True
-</property>
-<property type="string" id="rrdmin" mode="w" >
-0
 </property>
 </object>
 <object id='ssCpuSystem' module='Products.ZenModel.RRDDataPoint' class='RRDDataPoint'>
 <property select_variable="rrdtypes" type="selection" id="rrdtype" mode="w" >
-DERIVE
+GAUGE
 </property>
 <property type="boolean" id="isrow" mode="w" >
 True
-</property>
-<property type="string" id="rrdmin" mode="w" >
-0
 </property>
 </object>
 <object id='ssCpuUser' module='Products.ZenModel.RRDDataPoint' class='RRDDataPoint'>
 <property select_variable="rrdtypes" type="selection" id="rrdtype" mode="w" >
-DERIVE
+GAUGE
 </property>
 <property type="boolean" id="isrow" mode="w" >
 True
-</property>
-<property type="string" id="rrdmin" mode="w" >
-0
 </property>
 </object>
 <object id='ssCpuWait' module='Products.ZenModel.RRDDataPoint' class='RRDDataPoint'>
 <property select_variable="rrdtypes" type="selection" id="rrdtype" mode="w" >
-DERIVE
+GAUGE
 </property>
 <property type="boolean" id="isrow" mode="w" >
 True
-</property>
-<property type="string" id="rrdmin" mode="w" >
-0
 </property>
 </object>
 <object id='ssRawContexts' module='Products.ZenModel.RRDDataPoint' class='RRDDataPoint'>
 <property select_variable="rrdtypes" type="selection" id="rrdtype" mode="w" >
-DERIVE
+GAUGE
 </property>
 <property type="boolean" id="isrow" mode="w" >
 True
-</property>
-<property type="string" id="rrdmin" mode="w" >
-0
 </property>
 </object>
 <object id='ssRawInterrupts' module='Products.ZenModel.RRDDataPoint' class='RRDDataPoint'>
 <property select_variable="rrdtypes" type="selection" id="rrdtype" mode="w" >
-DERIVE
+GAUGE
 </property>
 <property type="boolean" id="isrow" mode="w" >
 True
-</property>
-<property type="string" id="rrdmin" mode="w" >
-0
 </property>
 </object>
 </tomanycont>
@@ -155,7 +128,7 @@ True
 3
 </property>
 <property type="string" id="commandTemplate" mode="w" >
-/usr/bin/env COLUMNS=1000 /usr/bin/vmstat -d
+/bin/cat /proc/diskstats
 </property>
 <property type="int" id="cycletime" mode="w" >
 300
@@ -164,12 +137,12 @@ True
 True
 </property>
 <property type="string" id="parser" mode="w" >
-ZenPacks.zenoss.LinuxMonitor.parsers.linux.vmstatd
+ZenPacks.zenoss.LinuxMonitor.parsers.linux.diskstats
 </property>
 <tomanycont id='datapoints'>
 <object id='ssIORawReceived' module='Products.ZenModel.RRDDataPoint' class='RRDDataPoint'>
 <property select_variable="rrdtypes" type="selection" id="rrdtype" mode="w" >
-GAUGE
+COUNTER
 </property>
 <property type="boolean" id="isrow" mode="w" >
 True
@@ -177,7 +150,7 @@ True
 </object>
 <object id='ssIORawSent' module='Products.ZenModel.RRDDataPoint' class='RRDDataPoint'>
 <property select_variable="rrdtypes" type="selection" id="rrdtype" mode="w" >
-GAUGE
+COUNTER
 </property>
 <property type="boolean" id="isrow" mode="w" >
 True

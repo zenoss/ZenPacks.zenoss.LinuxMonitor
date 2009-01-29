@@ -14,21 +14,31 @@
 from Products.ZenRRD.CommandParser import CommandParser
 
 class cpu(CommandParser):
+
     def processResults(self, cmd, result):
-        output = cmd.result.output
-        dps = dict( [(dp.id, dp) for dp in cmd.points] )
-        values = output.split('\n')[0].split()[1:]
-        columns = ['ssCpuUser',
-                   'ssCpuNice',
-                   'ssCpuSystem',
-                   'ssCpuIdle',
-                   'ssCpuWait',
-                   'ssCpuInterrupt',
-                   'ssCpuSoftInterrupt',
-                   'ssCpuSteal']
-        if len(values) < len(columns):
-            return
-        for i, dp in enumerate(columns):
-            if dp in dps:
-                result.values.append( (dps[dp], long(values[i])) )
-            
+        """
+        Process the results of "cat /proc/stat".  Take the first line (the cpu
+        line) and pick out the values for the various datapoints.
+        """
+        
+        datapointMap = dict([(dp.id, dp) for dp in cmd.points])
+        
+        # ssCpuSteal does not show up on all systems
+        ids = ['ssCpuUser',
+               'ssCpuNice',
+               'ssCpuSystem',
+               'ssCpuIdle',
+               'ssCpuWait',
+               'ssCpuInterrupt',
+               'ssCpuSoftInterrupt',
+               'ssCpuSteal']
+                   
+        values = cmd.result.output.splitlines()[0].split()[1:]
+        valueMap = dict(zip(ids, values))
+        
+        for id in valueMap:
+        
+            if datapointMap.has_key(id):
+                result.values.append((datapointMap[id], long(valueMap[id])))
+        
+        return result

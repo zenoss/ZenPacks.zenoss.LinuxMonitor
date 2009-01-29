@@ -21,7 +21,7 @@ from ZenPacks.zenoss.LinuxMonitor.parsers.linux.df import df
 from ZenPacks.zenoss.LinuxMonitor.parsers.linux.dfi import dfi
 from ZenPacks.zenoss.LinuxMonitor.parsers.linux.ifconfig import ifconfig
 from ZenPacks.zenoss.LinuxMonitor.parsers.linux.free import free
-from ZenPacks.zenoss.LinuxMonitor.parsers.linux.vmstatd import vmstatd
+from ZenPacks.zenoss.LinuxMonitor.parsers.linux.diskstats import diskstats
 
 
 class LinuxParsersTestCase(BaseParsersTestCase):
@@ -38,7 +38,7 @@ class LinuxParsersTestCase(BaseParsersTestCase):
                      '/sbin/ifconfig -a': ifconfig,
                      '/usr/bin/free': free,
                      '/usr/bin/uptime': uptime,
-                     '/usr/bin/vmstat -d': vmstatd,
+                     '/bin/cat /proc/diskstats': diskstats,
                      }
         
         self._testParsers(datadir, parserMap)
@@ -49,3 +49,4 @@ def test_suite():
     suite = TestSuite()
     suite.addTest(makeSuite(LinuxParsersTestCase))
     return suite
+
