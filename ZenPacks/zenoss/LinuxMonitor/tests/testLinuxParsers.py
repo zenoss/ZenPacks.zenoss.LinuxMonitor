@@ -31,7 +31,7 @@ class LinuxParsersTestCase(BaseParsersTestCase):
         Test all of the parsers that have test data files in the data
         directory.
         """
-        datadir = "%s/data/linux/leak.zenoss.loc" % os.path.dirname(__file__)
+        datadir = "%s/parserdata/linux" % os.path.dirname(__file__)
         
         parserMap = {'/bin/df -Pk': df,
                      '/bin/df -iPk': dfi,
