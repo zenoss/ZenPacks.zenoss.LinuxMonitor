@@ -46,6 +46,13 @@
       <property type="boolean" id="isrow" mode="w" >
       True
       </property>
+      <tomanycont id='aliases'>
+      <object id='cpu__pct' module='Products.ZenModel.RRDDataPointAlias' class='RRDDataPointAlias'>
+      <property id='formula' mode='w'>
+      __EVAL:str(len(here.hw.cpus())) + ',/,1,EXC,-'
+      </property>
+      </object>
+	  </tomanycont>
       </object>
       <object id='ssCpuInterrupt' module='Products.ZenModel.RRDDataPoint' class='RRDDataPoint'>
       <property select_variable="rrdtypes" type="selection" id="rrdtype" mode="w" >
@@ -162,6 +169,10 @@
       <property type="boolean" id="isrow" mode="w" >
       True
       </property>
+	  <tomanycont id='aliases'>
+	  <object id='loadAverage5min' module='Products.ZenModel.RRDDataPointAlias' class='RRDDataPointAlias'>
+	  </object>
+	  </tomanycont>
       </object>
       <object id='sysUpTime' module='Products.ZenModel.RRDDataPoint' class='RRDDataPoint'>
       <property select_variable="rrdtypes" type="selection" id="rrdtype" mode="w" >
