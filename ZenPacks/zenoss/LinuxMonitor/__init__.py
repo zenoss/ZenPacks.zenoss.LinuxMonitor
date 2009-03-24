@@ -23,24 +23,33 @@ from Products.CMFCore.DirectoryView import registerDirectory
 if os.path.isdir(skinsDir):
     registerDirectory(skinsDir, globals())
 
+def findLinux(dmd):
+    return dmd.findChild('Devices/Server/SSH/Linux')
+
 class ZenPack(ZenPackBase):
     
     def install(self, app):
         """
         Set the collector plugins for Server/SSH/Linux.
         """
+        try:
+            linux = findLinux(app.dmd)
+        except Exception, e:
+            import traceback
+            log.debug(traceback.format_exc())
+            raise Exception('Device class Server/SSH/Linux does not exist. '
+                            'Cannot install LinuxMonitor ZenPack.')
         ZenPackBase.install(self, app)
-        app.dmd.Devices.Server.SSH.Linux.zCollectorPlugins = [
-                'zenoss.cmd.uname',
-                'zenoss.cmd.uname_a',
-                'zenoss.cmd.df',
-                'zenoss.cmd.linux.cpuinfo']
-                
+        linux.zCollectorPlugins = ['zenoss.cmd.uname',
+                                   'zenoss.cmd.uname_a',
+                                   'zenoss.cmd.df',
+                                   'zenoss.cmd.linux.cpuinfo']
+                                   
     def remove(self, app, leaveObjects=False):
         """
         Remove the collector plugins.
         """
         ZenPackBase.remove(self, app, leaveObjects)
         if not leaveObjects:
-            app.dmd.Devices.Server.SSH.Linux.zCollectorPlugins = []
+            findLinux(app.dmd).zCollectorPlugins = []
             
