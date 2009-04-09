@@ -40,10 +40,11 @@ class ZenPack(ZenPackBase):
             raise Exception('Device class Server/SSH/Linux does not exist. '
                             'Cannot install LinuxMonitor ZenPack.')
         ZenPackBase.install(self, app)
-        linux.zCollectorPlugins = ['zenoss.cmd.uname',
-                                   'zenoss.cmd.uname_a',
-                                   'zenoss.cmd.df',
-                                   'zenoss.cmd.linux.cpuinfo']
+        linux.setZenProperty( 'zCollectorPlugins', 
+                              ['zenoss.cmd.uname',
+                               'zenoss.cmd.uname_a',
+                               'zenoss.cmd.df',
+                               'zenoss.cmd.linux.cpuinfo'] )
                                    
     def remove(self, app, leaveObjects=False):
         """
