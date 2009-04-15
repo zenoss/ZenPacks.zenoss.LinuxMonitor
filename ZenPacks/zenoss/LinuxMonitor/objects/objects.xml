@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <objects>
-  
+ 
   <object id='/zport/dmd/Devices/Server/SSH/Linux/rrdTemplates/Device' 
           module='Products.ZenModel.RRDTemplate' 
           class='RRDTemplate'>
