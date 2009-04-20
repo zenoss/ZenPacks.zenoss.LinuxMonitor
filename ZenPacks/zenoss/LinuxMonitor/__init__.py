@@ -45,6 +45,8 @@ class ZenPack(ZenPackBase):
                                'zenoss.cmd.uname_a',
                                'zenoss.cmd.df',
                                'zenoss.cmd.linux.cpuinfo'] )
+        
+        linux.register_devtype('Linux Server', 'SSH')
                                    
     def remove(self, app, leaveObjects=False):
         """
