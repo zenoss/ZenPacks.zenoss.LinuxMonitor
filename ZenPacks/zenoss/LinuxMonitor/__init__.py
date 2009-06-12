@@ -44,7 +44,9 @@ class ZenPack(ZenPackBase):
                               ['zenoss.cmd.uname',
                                'zenoss.cmd.uname_a',
                                'zenoss.cmd.df',
-                               'zenoss.cmd.linux.cpuinfo'] )
+                               'zenoss.cmd.linux.cpuinfo', 
+                               'zenoss.cmd.linux.memory', 
+                               'zenoss.cmd.linux.ifconfig' ] ) 
         
         linux.register_devtype('Linux Server', 'SSH')
                                    
