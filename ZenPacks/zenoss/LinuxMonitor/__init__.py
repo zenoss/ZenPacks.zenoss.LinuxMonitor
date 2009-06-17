@@ -23,23 +23,13 @@ from Products.CMFCore.DirectoryView import registerDirectory
 if os.path.isdir(skinsDir):
     registerDirectory(skinsDir, globals())
 
-def findLinux(dmd):
-    return dmd.findChild('Devices/Server/SSH/Linux')
-
 class ZenPack(ZenPackBase):
     
     def install(self, app):
         """
         Set the collector plugins for Server/SSH/Linux.
         """
-        try:
-            linux = findLinux(app.dmd)
-        except Exception, e:
-            import traceback
-            log.debug(traceback.format_exc())
-            raise Exception('Device class Server/SSH/Linux does not exist. '
-                            'Cannot install LinuxMonitor ZenPack.')
-        ZenPackBase.install(self, app)
+        linux = app.dmd.Devices.createOrganizer('/Server/SSH/Linux')
         linux.setZenProperty( 'zCollectorPlugins', 
                               ['zenoss.cmd.uname',
                                'zenoss.cmd.uname_a',
@@ -49,6 +39,7 @@ class ZenPack(ZenPackBase):
                                'zenoss.cmd.linux.ifconfig' ] ) 
         
         linux.register_devtype('Linux Server', 'SSH')
+        ZenPackBase.install(self, app)
                                    
     def remove(self, app, leaveObjects=False):
         """
@@ -56,5 +47,11 @@ class ZenPack(ZenPackBase):
         """
         ZenPackBase.remove(self, app, leaveObjects)
         if not leaveObjects:
-            findLinux(app.dmd).zCollectorPlugins = []
-            
+            try:
+                # Using findChild here to avoid finding /Server/Linux
+                # accidentally via acquisition.
+                linux = app.dmd.findChild('Devices/Server/SSH/Linux')
+                linux.zCollectorPlugins = []
+            except AttributeError:
+                # No /Server/SSH/Linux device class to remove.
+                pass
