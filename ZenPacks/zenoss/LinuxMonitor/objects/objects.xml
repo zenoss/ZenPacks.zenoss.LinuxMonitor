@@ -49,7 +49,7 @@
       <tomanycont id='aliases'>
       <object id='cpu__pct' module='Products.ZenModel.RRDDataPointAlias' class='RRDDataPointAlias'>
       <property id='formula' mode='w'>
-      __EVAL:str(len(here.hw.cpus())) + ',/,1,EXC,-'
+      __EVAL:str(len(here.hw.cpus())) + ',/,100,EXC,-'
       </property>
       </object>
 	  </tomanycont>
