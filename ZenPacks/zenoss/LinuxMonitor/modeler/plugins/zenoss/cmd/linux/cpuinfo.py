@@ -11,9 +11,9 @@
 #
 ###########################################################################
 
-"""
+__doc__ = """cpuinfo
 Modeling plugin that parses the contents of /proc/cpuinfo to gather 
-information about the devices CPU hardware.
+information about the device's processor(s).
 """
 
 import re
