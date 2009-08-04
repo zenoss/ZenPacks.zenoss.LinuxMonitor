@@ -35,7 +35,7 @@ class FixCpuAlias( ZenPackMigration ):
        '__EVAL:str(len(here.hw.cpus())) + ',/,100,EXC,-'
     """
 
-    version = Version(1, 0, 3)
+    version = Version(1, 0, 0)
 
     def migrate(self, pack):
         try:
