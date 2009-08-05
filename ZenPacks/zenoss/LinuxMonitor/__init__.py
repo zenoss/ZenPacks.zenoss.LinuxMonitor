@@ -36,7 +36,10 @@ class ZenPack(ZenPackBase):
                                'zenoss.cmd.df',
                                'zenoss.cmd.linux.cpuinfo', 
                                'zenoss.cmd.linux.memory', 
-                               'zenoss.cmd.linux.ifconfig' ] ) 
+                               'zenoss.cmd.linux.ifconfig', 
+                               'zenoss.cmd.linux.netstat_an', 
+                               'zenoss.cmd.linux.netstat_rn', 
+                               'zenoss.cmd.linux.process' ] ) 
         
         linux.register_devtype('Linux Server', 'SSH')
         ZenPackBase.install(self, app)
