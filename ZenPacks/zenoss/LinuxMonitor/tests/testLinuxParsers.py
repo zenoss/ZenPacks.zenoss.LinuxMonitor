@@ -12,6 +12,7 @@ from Products.ZenRRD.parsers.uptime import uptime
 
 from ZenPacks.zenoss.LinuxMonitor.parsers.linux.df import df
 from ZenPacks.zenoss.LinuxMonitor.parsers.linux.dfi import dfi
+from ZenPacks.zenoss.LinuxMonitor.parsers.linux.mem import mem
 
 class LinuxParsersTestCase(BaseParsersTestCase):
 
@@ -25,6 +26,7 @@ class LinuxParsersTestCase(BaseParsersTestCase):
         parserMap = {'/bin/df -Pk': df,
                      '/bin/df -iPk': dfi,
                      '/usr/bin/uptime': uptime,
+                     '/bin/cat /proc/meminfo': mem,
                      }
         
         self._testParsers(datadir, parserMap)
