@@ -11,14 +11,14 @@
         macaddress="00:50:56:8A:29:37",
         mtu=1500,
         operStatus=1,
-        setIpAddresses=["10.175.211.115/24"],
+        setIpAddresses=["10.175.211.115/24", 'fe80::250:56ff:fe8a:2937/64'],
         type="ethernetCsmacd"),
 
     "lo": dict(
         adminStatus=1,
         mtu=16436,
         operStatus=1,
-        setIpAddresses=["127.0.0.1/8"],
+        setIpAddresses=["127.0.0.1/8", '::1/128'],
         type="Local Loopback"),
     
     "sit0": dict(
