@@ -21,7 +21,7 @@ class df(ComponentCommandParser):
 
     scanners = [
         r' (?P<totalBlocks>\d+) +(?P<usedBlocks>\d+) '
-        r'+(?P<availableBlocks>\d+) +(?P<percentUsed>\d+)%'
+        r'+(?P<availBlocks>\d+) +(?P<percentUsed>\d+)%'
         ]
     
     componentScanValue = 'mount'
