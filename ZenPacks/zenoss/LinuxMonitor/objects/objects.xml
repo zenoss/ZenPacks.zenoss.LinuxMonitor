@@ -506,6 +506,9 @@ False
 <property type="boolean" id="hasSummary" mode="w" >
 True
 </property>
+<property type="long" id="sequence" mode="w" >
+0
+</property>
 <tomanycont id='graphPoints'>
 <object id='ssCpuIdle' module='Products.ZenModel.DataPointGraphPoint' class='DataPointGraphPoint'>
 <property type="long" id="sequence" mode="w" >
@@ -540,6 +543,9 @@ AVERAGE
 </property>
 </object>
 <object id='ssCpuSystem' module='Products.ZenModel.DataPointGraphPoint' class='DataPointGraphPoint'>
+<property type="long" id="sequence" mode="w" >
+0
+</property>
 <property select_variable="lineTypes" type="selection" id="lineType" mode="w" >
 AREA
 </property>
@@ -713,6 +719,9 @@ AVERAGE
 </property>
 </object>
 <object id='MemFree' module='Products.ZenModel.DataPointGraphPoint' class='DataPointGraphPoint'>
+<property type="long" id="sequence" mode="w" >
+0
+</property>
 <property select_variable="lineTypes" type="selection" id="lineType" mode="w" >
 AREA
 </property>
@@ -770,6 +779,9 @@ True
 </property>
 <tomanycont id='graphPoints'>
 <object id='SwapFree' module='Products.ZenModel.DataPointGraphPoint' class='DataPointGraphPoint'>
+<property type="long" id="sequence" mode="w" >
+0
+</property>
 <property select_variable="lineTypes" type="selection" id="lineType" mode="w" >
 AREA
 </property>
@@ -977,15 +989,15 @@ True
 </object>
 </tomanycont>
 <tomanycont id='thresholds'>
-<object id='Free Space 90 Percent' module='Products.ZenModel.MinMaxThreshold' class='MinMaxThreshold'>
+<object id='Greater than 90 percent used' module='Products.ZenModel.MinMaxThreshold' class='MinMaxThreshold'>
 <property label="DataPoints" type="lines" id="dsnames" mode="w" >
-['disk_usedBlocks']
+['disk_availBlocks']
 </property>
 <property label="Enabled" type="boolean" id="enabled" mode="w" >
 True
 </property>
-<property type="string" id="maxval" mode="w" >
-here.totalBlocks * .9
+<property type="string" id="minval" mode="w" >
+here.totalBlocks * 0.10
 </property>
 <property type="string" id="eventClass" mode="w" >
 /Perf/Filesystem
@@ -1024,16 +1036,22 @@ False
 <property type="boolean" id="hasSummary" mode="w" >
 True
 </property>
+<property type="long" id="sequence" mode="w" >
+0
+</property>
 <tomanycont id='graphPoints'>
-<object id='Free Space 90 Percent' module='Products.ZenModel.ThresholdGraphPoint' class='ThresholdGraphPoint'>
+<object id='Greater than 90 percent used' module='Products.ZenModel.ThresholdGraphPoint' class='ThresholdGraphPoint'>
+<property type="long" id="sequence" mode="w" >
+0
+</property>
 <property type="string" id="threshId" mode="w" >
-Free Space 90 Percent
+Greater than 90 percent used
 </property>
 <property type="string" id="legend" mode="w" >
 ${graphPoint/id}
 </property>
 </object>
-<object id='usedBlocks' module='Products.ZenModel.DataPointGraphPoint' class='DataPointGraphPoint'>
+<object id='availBlocks' module='Products.ZenModel.DataPointGraphPoint' class='DataPointGraphPoint'>
 <property type="long" id="sequence" mode="w" >
 1
 </property>
@@ -1056,10 +1074,10 @@ Used
 -1
 </property>
 <property type="string" id="rpn" mode="w" >
-${here/totalBlocks},/,100,*
+${here/totalBlocks},/,1,-,-100,*
 </property>
 <property type="string" id="dpName" mode="w" >
-disk_usedBlocks
+disk_availBlocks
 </property>
 <property type="string" id="cFunc" mode="w" >
 AVERAGE
@@ -1101,6 +1119,9 @@ True
 </property>
 <tomanycont id='graphPoints'>
 <object id='percentInodesUsed' module='Products.ZenModel.DataPointGraphPoint' class='DataPointGraphPoint'>
+<property type="long" id="sequence" mode="w" >
+0
+</property>
 <property select_variable="lineTypes" type="selection" id="lineType" mode="w" >
 LINE
 </property>
@@ -1127,6 +1148,9 @@ AVERAGE
 </property>
 </object>
 <object id='totalInodes' module='Products.ZenModel.DataPointGraphPoint' class='DataPointGraphPoint'>
+<property type="long" id="sequence" mode="w" >
+0
+</property>
 <property select_variable="lineTypes" type="selection" id="lineType" mode="w" >
 LINE
 </property>
