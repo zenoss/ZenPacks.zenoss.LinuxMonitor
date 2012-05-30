@@ -26,7 +26,7 @@ class mem(CommandParser):
         Process the results of "cat /proc/meminfo".
         """
         datapointMap = dict([(dp.id, dp) for dp in cmd.points])
-        data = [line.split(':') for line in cmd.result.output.splitlines()]
+        data = [line.split(':', 1) for line in cmd.result.output.splitlines()]
         
         for id, vals in data:
             if id in datapointMap:
