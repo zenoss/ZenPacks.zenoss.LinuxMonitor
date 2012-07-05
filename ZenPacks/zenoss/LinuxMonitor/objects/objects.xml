@@ -811,6 +811,14 @@ AVERAGE
 </object>
 </tomanycont>
 </object>
+<object id='/zport/dmd/Devices/Server/SSH/Linux/rrdTemplates/ethernetCsmacd' module='Products.ZenModel.RRDTemplate' class='RRDTemplate'>
+<property type="text" id="description" mode="w" >
+The SSH Ethernet interface template is available in the Enterprise version.
+</property>
+<property type="string" id="targetPythonClass" mode="w" >
+Products.ZenModel.IpInterface
+</property>
+</object>
 <!-- ('', 'zport', 'dmd', 'Devices', 'Server', 'SSH', 'Linux', 'rrdTemplates', 'FileSystem') -->
 <object id='/zport/dmd/Devices/Server/SSH/Linux/rrdTemplates/FileSystem' module='Products.ZenModel.RRDTemplate' class='RRDTemplate'>
 <property id='zendoc' type='string'>
