@@ -1,8 +1,12 @@
-##########################################################################
-#
-#   Copyright 2009 Zenoss, Inc. All Rights Reserved.
-#
-##########################################################################
+##############################################################################
+# 
+# Copyright (C) Zenoss, Inc. 2009, all rights reserved.
+# 
+# This content is made available according to terms specified in
+# License.zenoss under the directory where your Zenoss product is installed.
+# 
+##############################################################################
+
 
 {'/': dict(totalInodes=1802240,
            usedInodes=103708,
