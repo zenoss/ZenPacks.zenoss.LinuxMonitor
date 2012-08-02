@@ -848,7 +848,7 @@ True
 /bin/df -kP
 </property>
 <property type="int" id="cycletime" mode="w" >
-60
+300
 </property>
 <property type="string" id="oid" mode="w" >
 1.3.6.1.2.1.25.2.3.1.6
