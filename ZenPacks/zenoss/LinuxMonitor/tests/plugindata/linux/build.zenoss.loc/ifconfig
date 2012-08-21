@@ -522,7 +522,7 @@ NET: Registered protocol family 10
 Disabled Privacy Extensions on device c0342040(lo)
 IPv6 over IPv4 tunneling driver
 divert: not allocating divert_blk for non-ethernet device sit0
-Installing knfsd (copyright (C) 1996 okir@monad.swb.de).
+Installing knfsd
 eth0: no IPv6 routers present
 vmmon: module license 'unspecified' taints kernel.
 /dev/vmmon[4034]: Module vmmon: registered with major=10 minor=165
