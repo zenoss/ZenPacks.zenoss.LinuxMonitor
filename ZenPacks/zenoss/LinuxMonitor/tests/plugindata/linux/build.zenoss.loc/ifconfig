@@ -315,7 +315,7 @@ ACPI: PCI Interrupt Link [LNKE] (IRQs 3 4 5 6 7 9 10 *11 12)
 ACPI: PCI Interrupt Link [LNKF] (IRQs 3 4 5 6 7 9 *10 11 12)
 ACPI: PCI Interrupt Link [LNKG] (IRQs 3 4 5 *6 7 9 10 11 12)
 ACPI: PCI Interrupt Link [LNKH] (IRQs 3 4 5 6 7 9 10 11 12) *0, disabled.
-Linux Plug and Play Support v0.97 (c) Adam Belay
+Linux Plug and Play Support v0.97
 usbcore: registered new driver usbfs
 usbcore: registered new driver hub
 PCI: Using ACPI for IRQ routing
@@ -349,7 +349,7 @@ pci_hotplug: PCI Hot Plug PCI Core version: 0.5
 ACPI: Processor [CPU0] (supports C1)
 ACPI: Processor [CPU1] (supports C1)
 Real Time Clock Driver v1.12
-Linux agpgart interface v0.100 (c) Dave Jones
+Linux agpgart interface v0.100
 Failed to disable AUX port, but continuing anyway... Is this a SiS?
 If AUX port is really absent please use the 'i8042.noaux' option.
 serio: i8042 AUX port at 0x60,0x64 irq 12
@@ -472,7 +472,7 @@ PCI: cache line size of 128 is not supported by device 0000:00:1d.7
 ehci_hcd 0000:00:1d.7: USB 2.0 enabled, EHCI 1.00, driver 2004-May-10
 hub 1-0:1.0: USB hub found
 hub 1-0:1.0: 6 ports detected
-ip_tables: (C) 2000-2002 Netfilter core team
+ip_tables:
 USB Universal Host Controller Interface driver v2.2
 ACPI: PCI interrupt 0000:00:1d.0[A] -> GSI 20 (level, low) -> IRQ 201
 uhci_hcd 0000:00:1d.0: UHCI Host Controller
@@ -515,8 +515,8 @@ IA-32 Microcode Update Driver: v1.14 <tigran@veritas.com>
 microcode: No new microdata for cpu 1
 microcode: No new microdata for cpu 0
 IA-32 Microcode Update Driver v1.14 unregistered
-ip_tables: (C) 2000-2002 Netfilter core team
-ip_tables: (C) 2000-2002 Netfilter core team
+ip_tables:
+ip_tables:
 i2c /dev entries driver
 NET: Registered protocol family 10
 Disabled Privacy Extensions on device c0342040(lo)
