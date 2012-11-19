@@ -17,25 +17,26 @@ class cpu(CommandParser):
         Process the results of "cat /proc/stat".  Take the first line (the cpu
         line) and pick out the values for the various datapoints.
         """
+
+        if cmd.result.output:
+            datapointMap = dict([(dp.id, dp) for dp in cmd.points])
         
-        datapointMap = dict([(dp.id, dp) for dp in cmd.points])
-        
-        # ssCpuSteal does not show up on all systems
-        ids = ['ssCpuUser',
-               'ssCpuNice',
-               'ssCpuSystem',
-               'ssCpuIdle',
-               'ssCpuWait',
-               'ssCpuInterrupt',
-               'ssCpuSoftInterrupt',
-               'ssCpuSteal']
+            # ssCpuSteal does not show up on all systems
+            ids = ['ssCpuUser',
+                   'ssCpuNice',
+                   'ssCpuSystem',
+                   'ssCpuIdle',
+                   'ssCpuWait',
+                   'ssCpuInterrupt',
+                   'ssCpuSoftInterrupt',
+                   'ssCpuSteal']
                    
-        values = cmd.result.output.splitlines()[0].split()[1:]
-        valueMap = dict(zip(ids, values))
+            values = cmd.result.output.splitlines()[0].split()[1:]
+            valueMap = dict(zip(ids, values))
         
-        for id in valueMap:
+            for id in valueMap:
         
-            if datapointMap.has_key(id):
-                result.values.append((datapointMap[id], long(valueMap[id])))
+                if datapointMap.has_key(id):
+                    result.values.append((datapointMap[id], long(valueMap[id])))
         
         return result
