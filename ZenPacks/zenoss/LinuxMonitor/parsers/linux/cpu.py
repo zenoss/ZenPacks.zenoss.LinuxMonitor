@@ -29,10 +29,24 @@ class cpu(CommandParser):
                    'ssCpuWait',
                    'ssCpuInterrupt',
                    'ssCpuSoftInterrupt',
-                   'ssCpuSteal']
-                   
+                   'ssCpuSteal',
+                   'ssCpuIdlePerCpu']
+            
+            cpuCount=0
+            for line in cmd.result.output.splitlines()[1:]:
+              words = line.split()[0:]
+              if 'cpu' in words[0]:
+                cpuCount+=1
+
+            if cpuCount:
+              idleCpuPerCpu = float(cmd.result.output.splitlines()[0].split()[4])/float(cpuCount)
+            else:
+              idleCpuPerCpu = None
+
             values = cmd.result.output.splitlines()[0].split()[1:]
+
             valueMap = dict(zip(ids, values))
+            valueMap['ssCpuIdlePerCpu']=idleCpuPerCpu
         
             for id in valueMap:
         
