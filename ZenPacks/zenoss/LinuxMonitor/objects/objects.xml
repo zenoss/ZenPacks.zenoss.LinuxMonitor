@@ -1,4 +1,3 @@
-
 <?xml version="1.0"?>
 <objects>
 <!-- ('', 'zport', 'dmd', 'Devices', 'Server', 'SSH', 'Linux', 'rrdTemplates', 'Device') -->
@@ -132,8 +131,6 @@ True
 </object>
 </tomanycont>
 </object>
-</tomanycont>
-</object>
 <object id='ssCpuSystemPerCpu' module='Products.ZenModel.RRDDataPoint' class='RRDDataPoint'>
 <property select_variable="rrdtypes" type="selection" id="rrdtype" mode="w" >
 DERIVE
@@ -175,6 +172,8 @@ True
 <property type="string" id="rrdmax" mode="w" >
 100
 </property>
+</object>
+</tomanycont>
 </object>
 <object id='mem' module='Products.ZenModel.BasicDataSource' class='BasicDataSource'>
 <property select_variable="sourcetypes" type="selection" id="sourcetype" mode="w" >
@@ -1042,6 +1041,8 @@ cpu_ssCpuWaitPerCpu
 <property type="string" id="cFunc" mode="w" >
 AVERAGE
 </property>
+</object>
+</tomanycont>
 </object>
 </tomanycont>
 </object>
