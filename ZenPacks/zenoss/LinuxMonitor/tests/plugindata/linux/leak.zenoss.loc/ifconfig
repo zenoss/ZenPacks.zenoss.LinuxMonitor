@@ -1,4 +1,4 @@
-/sbin/ifconfig -a && echo __COMMAND__ && /bin/dmesg
+export PATH=$PATH:/sbin:/usr/sbin; if which ifconfig >/dev/null 2>&1; then ifconfig -a; elif which ip >/dev/null 2>&1; then echo "### ip addr output"; ip addr; else echo "No ifconfig or ip utilities were found."; exit 127; fi && echo __COMMAND__ && /bin/dmesg
 eth0      Link encap:Ethernet  HWaddr 00:50:56:8A:29:37  
           inet addr:10.175.211.115  Bcast:10.175.211.255  Mask:255.255.255.0
           inet6 addr: fe80::250:56ff:fe8a:2937/64 Scope:Link
