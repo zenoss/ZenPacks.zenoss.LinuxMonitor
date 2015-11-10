@@ -1317,7 +1317,7 @@ Used
 -1
 </property>
 <property type="string" id="rpn" mode="w" >
-${here/totalBlocks},/,100,*
+${here/totalBlocks},/,1,-,-100,*
 </property>
 <property type="string" id="dpName" mode="w" >
 disk_availBlocks
