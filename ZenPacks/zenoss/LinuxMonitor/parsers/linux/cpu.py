@@ -29,10 +29,39 @@ class cpu(CommandParser):
                    'ssCpuWait',
                    'ssCpuInterrupt',
                    'ssCpuSoftInterrupt',
-                   'ssCpuSteal']
-                   
+                   'ssCpuSteal',
+                   'ssCpuUserPerCpu',
+                   'ssCpuSystemPerCpu',
+                   'ssCpuIdlePerCpu',
+                   'ssCpuWaitPerCpu']
+            
+            # Calculate the number of CPUs
+            cpuCount=0
+            for line in cmd.result.output.splitlines()[1:]:
+              words = line.split()[0:]
+              if 'cpu' in words[0]:
+                cpuCount+=1
+
+            # If we got a CPU count, set the normalized perCpu values
+            if cpuCount:
+              perCpuValues = cmd.result.output.splitlines()[0].split()
+              userCpuPerCpu = float(perCpuValues[1])/float(cpuCount)
+              systemCpuPerCpu = float(perCpuValues[3])/float(cpuCount)
+              idleCpuPerCpu = float(perCpuValues[4])/float(cpuCount)
+              waitCpuPerCpu = float(perCpuValues[5])/float(cpuCount)
+            else:
+              userCpuPerCpu = None
+              systemCpuPerCpu = None
+              idleCpuPerCpu = None
+              waitCpuPerCpu = None
+
             values = cmd.result.output.splitlines()[0].split()[1:]
+
             valueMap = dict(zip(ids, values))
+            valueMap['ssCpuUserPerCpu']=userCpuPerCpu
+            valueMap['ssCpuSystemPerCpu']=systemCpuPerCpu
+            valueMap['ssCpuIdlePerCpu']=idleCpuPerCpu
+            valueMap['ssCpuWaitPerCpu']=waitCpuPerCpu
         
             for id in valueMap:
         

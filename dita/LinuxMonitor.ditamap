@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE map
+  PUBLIC "urn:pubid:zenoss.com:doctypes:dita:dtd:map" "map.dtd">
+<map>
+   <title>LinuxMonitor</title>
+   <topicref href="topics/LinuxMonitor.dita">
+      <topicref href="topics/prerequisites.dita"/>
+      <topicref href="topics/LinuxMonitor_task-Set-Linux-Server-Monitoring-Credentials.dita"/>
+      <topicref href="topics/LinuxMonitor_task-Add-a-Linux-Server.dita"/>
+      <topicref href="topics/LinuxMonitor_ref-Daemons.dita"/>
+   </topicref>
+</map>

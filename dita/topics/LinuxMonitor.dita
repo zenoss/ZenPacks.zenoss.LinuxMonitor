@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE reference PUBLIC "urn:pubid:zenoss.com:doctypes:dita:dtd:reference" "reference.dtd">
+<reference id="referenceid">
+  <title>(LinuxMonitor) Linux Monitor</title>
+  <shortdesc>The <zenpack>ZenPacks.zenoss.LinuxMonitor</zenpack> ZenPack demonstrates how 
+    to develop new plugins that collect performance data using Secure Shell.</shortdesc>
+  <refbody>
+    <section>
+      <p>This ZenPack demonstrates the Secure Shell (SSH)
+        features, and enables modeling and monitoring
+        several types of device components for devices placed in the
+        <filepath>/Server/SSH/Linux</filepath> device class by running commands
+        and parsing the output. Parsing of command output is performed on the
+        <ph conkeyref="names/platform"/> server or on a distributed collector. The
+        account used to monitor the device does not require root access or special
+        privileges.</p>
+    </section>
+  </refbody>
+</reference>
