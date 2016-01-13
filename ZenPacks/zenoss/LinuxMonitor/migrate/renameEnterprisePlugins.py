@@ -40,5 +40,5 @@ class renameEnterprisePlugins(ZenPackMigration):
     def renameFile(self, zpath, filename):
         if not zpath or not filename:
             return
-        if os.path.exists(os.path.join(zpath, filename, '.py')):
-            os.rename(os.path.join(zpath, filename, '.py'), os.path.join(zpath, filename+'_deprecated', '.py'))
+        if os.path.exists(os.path.join(zpath, filename+'.py')):
+            os.rename(os.path.join(zpath, filename, '.py'), os.path.join(zpath, filename+'_deprecated.py'))
