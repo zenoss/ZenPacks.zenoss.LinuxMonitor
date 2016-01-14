@@ -2212,6 +2212,9 @@
                         <property select_variable="rrdtypes" type="selection" id="rrdtype" mode="w">
                             DERIVE
                         </property>
+                        <property type="string" id="rrdmin" mode="w">
+                            0
+                        </property>
                         <property type="boolean" id="isrow" mode="w">
                             True
                         </property>
