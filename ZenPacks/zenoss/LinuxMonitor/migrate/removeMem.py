@@ -1,27 +1,25 @@
 ##############################################################################
-# 
+#
 # Copyright (C) Zenoss, Inc. 2011, all rights reserved.
-# 
+#
 # This content is made available according to terms specified in
 # License.zenoss under the directory where your Zenoss product is installed.
-# 
+#
 ##############################################################################
 
+from Products.ZenModel.ZenPack import ZenPackMigration
+from Products.ZenModel.migrate.Migrate import Version
 
+import logging
+log = logging.getLogger("zen.migrate")
 __doc__ = """
  Remove memory graph that doesn't improve the base graphs.
 
 https://dev.zenoss.com/tracint/ticket/2853
 """
 
-import Globals
-from Products.ZenModel.ZenPack import ZenPackMigration
-from Products.ZenModel.migrate.Migrate import Version
 
-import logging
-log = logging.getLogger("zen.migrate")
-
-def getSshLinux( dmd ):
+def getSshLinux(dmd):
     ssh = None
     sshLinux = None
     if dmd.Devices.Server.hasObject('SSH'):
@@ -30,15 +28,16 @@ def getSshLinux( dmd ):
         sshLinux = ssh.Linux
     return sshLinux
 
-class removeMem( ZenPackMigration ):
+
+class removeMem(ZenPackMigration):
     """The Memory Utilization graphdef is replaced by the Free Memory and Free
     Swap graphs in the LinuxMonitor zenpack.
     """
-    version = Version(1, 2, 0)
+    version = Version(2, 0, 0)
 
     def migrate(self, pack):
         try:
-            log.info( 'remove memory utilization graph')
+            log.info('remove memory utilization graph')
             sshLinux = getSshLinux(pack.dmd)
             if sshLinux:
                 device_template = sshLinux.rrdTemplates.Device

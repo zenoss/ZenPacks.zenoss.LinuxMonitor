@@ -1,19 +1,19 @@
 ##############################################################################
-# 
+#
 # Copyright (C) Zenoss, Inc. 2015, all rights reserved.
-# 
+#
 # This content is made available according to terms specified in
 # License.zenoss under the directory where your Zenoss product is installed.
-# 
+#
 ##############################################################################
 
 
-import Globals
 from Products.ZenModel.ZenPack import ZenPackMigration
 from Products.ZenModel.migrate.Migrate import Version
 
 import logging
 log = logging.getLogger("zen.migrate")
+
 
 class UpdateOSProcessMemoryUnits(ZenPackMigration):
 
@@ -21,7 +21,7 @@ class UpdateOSProcessMemoryUnits(ZenPackMigration):
     # Currently OSProcess graphs for /Devices/Server/SSH/Linux are rendered with "bytes" units,
     # so purpose of this migrate script is to have propper units on graphs.
 
-    version = Version(1, 3, 9)
+    version = Version(2, 0, 0)
 
     def migrate(self, pack):
         try:

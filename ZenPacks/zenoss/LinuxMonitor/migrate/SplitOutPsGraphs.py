@@ -1,21 +1,19 @@
 ##############################################################################
-# 
+#
 # Copyright (C) Zenoss, Inc. 2013, all rights reserved.
-# 
+#
 # This content is made available according to terms specified in
 # License.zenoss under the directory where your Zenoss product is installed.
-# 
+#
 ##############################################################################
 
 
-import Globals
-import transaction
 from Products.ZenModel.ZenPack import ZenPackMigration
 from Products.ZenModel.migrate.Migrate import Version
-from Products.ZenModel.GraphDefinition import GraphDefinition
 
 import logging
 log = logging.getLogger("zen.migrate")
+
 
 class SplitOutPsGraphs(ZenPackMigration):
     """
@@ -24,7 +22,7 @@ class SplitOutPsGraphs(ZenPackMigration):
     consistent.
     """
 
-    version = Version(1, 3, 9)
+    version = Version(2, 0, 0)
 
     def migrate(self, pack):
         try:
@@ -61,7 +59,7 @@ class SplitOutPsGraphs(ZenPackMigration):
                 del graph.graphPoints.cpu.rpn
                 graph.miny = 0
                 graph.sequence = 1
-            except Exception as e:
+            except Exception:
                 log.debug("'process performance' graph not found")
             else:
                 cpuGraph = graph
@@ -86,7 +84,7 @@ class SplitOutPsGraphs(ZenPackMigration):
                         count.moveMeBetweenRels(cpuGraph.graphPoints, graph.graphPoints)
                     else:
                         log.warn('meh')
-                except Exception as e:
+                except Exception:
                     log.warn('Failed while creating Process Count graph')
 
             # Resequence any other graphs, if any.

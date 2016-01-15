@@ -17,7 +17,7 @@ log = logging.getLogger("zen.migrate")
 
 
 class FixBlockUtilization(ZenPackMigration):
-    version = Version(2, 0, 00)
+    version = Version(1, 1, 99)
 
     def migrate(self, pack):
         try:
