@@ -1,20 +1,20 @@
 ##############################################################################
-# 
+#
 # Copyright (C) Zenoss, Inc. 2009, all rights reserved.
-# 
+#
 # This content is made available according to terms specified in
 # License.zenoss under the directory where your Zenoss product is installed.
-# 
+#
 ##############################################################################
 
 
-import Globals
 from Products.ZenModel.ZenPack import ZenPackMigration
 from Products.ZenModel.migrate.Migrate import Version
 from Products.Zuul.facades import getFacade, ObjectNotFoundException
 
 import logging
 log = logging.getLogger("zen.migrate")
+
 
 class FixBlockUtilization(ZenPackMigration):
     version = Version(1, 1, 99)

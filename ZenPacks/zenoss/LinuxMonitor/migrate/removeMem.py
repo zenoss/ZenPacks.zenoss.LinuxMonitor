@@ -1,18 +1,22 @@
 ##############################################################################
 #
-# Copyright (C) Zenoss, Inc. 2015, all rights reserved.
+# Copyright (C) Zenoss, Inc. 2011, all rights reserved.
 #
 # This content is made available according to terms specified in
 # License.zenoss under the directory where your Zenoss product is installed.
 #
 ##############################################################################
 
-
 from Products.ZenModel.ZenPack import ZenPackMigration
 from Products.ZenModel.migrate.Migrate import Version
 
 import logging
 log = logging.getLogger("zen.migrate")
+__doc__ = """
+ Remove memory graph that doesn't improve the base graphs.
+
+https://dev.zenoss.com/tracint/ticket/2853
+"""
 
 
 def getSshLinux(dmd):
@@ -25,26 +29,21 @@ def getSshLinux(dmd):
     return sshLinux
 
 
-class RemoveCpuAlias(ZenPackMigration):
+class removeMem(ZenPackMigration):
+    """The Memory Utilization graphdef is replaced by the Free Memory and Free
+    Swap graphs in the LinuxMonitor zenpack.
     """
-    We are removing the cpu__pct alias on ssCpuIdle since it is now on ssCpuIdlePerCpu instead
-    """
-
     version = Version(2, 0, 0)
 
     def migrate(self, pack):
         try:
+            log.info('remove memory utilization graph')
             sshLinux = getSshLinux(pack.dmd)
             if sshLinux:
-                deviceTemplate = sshLinux.rrdTemplates.Device
-                # Get the ssCpuIdle datapoint
-                cpuIdleDp = deviceTemplate.datasources.cpu.datapoints.ssCpuIdle
-                # If it has a cpu__pct alias, delete it
-                if cpuIdleDp.hasAlias('cpu__pct'):
-                    log.info('Removing ssCpuIdle cpu__pct alias')
-                    cpuIdleDp.aliases._delObject('cpu__pct')
-        except Exception:
-            log.debug('Exception trying to remove cpu__pct alias from ssCpuIdle')
+                device_template = sshLinux.rrdTemplates.Device
+                device_template.graphDefs._delObject('Memory Utilization')
+        except Exception, e:
+            log.debug('Failed to delete memory utilization graph (%s: %s)' % (type(e).__name__, e))
 
 
-RemoveCpuAlias()
+removeMem()
