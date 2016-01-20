@@ -14,7 +14,7 @@ import os.path
 from Products.ZenModel.ZenPack import ZenPackBase
 
 log = logging.getLogger('zen.LinuxMonitor')
-
+import ZenPacks.zenoss.LinuxMonitor.patches
 skinsDir = os.path.join(os.path.dirname(__file__), 'skins')
 from Products.CMFCore.DirectoryView import registerDirectory
 if os.path.isdir(skinsDir):
