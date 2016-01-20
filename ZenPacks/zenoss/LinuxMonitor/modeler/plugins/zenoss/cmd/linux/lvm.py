@@ -45,7 +45,7 @@ class lvm(CommandPlugin):
 
     """
 
-    command = '/usr/sbin/pvs; /usr/sbin/vgs; /usr/sbin/lvs'
+    command = '$(/usr/bin/which pvs); $(/usr/bin/which vgs); $(/usr/bin/which lvs)'
 
     def process(self, device, results, log):
         vg_maps = []
