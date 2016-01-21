@@ -7,17 +7,32 @@ classes:
         properties:
             curpv:
                 label: Physical Volumes
+                grid_display: False
             curlv:
                 label: Logical Volumes
+                grid_display: False
             snapcount:
                 label: Snapshot Volumes
+                order: 4.0
+            vgsize:
+                label: Size
+                type: int
+                renderer: Zenoss.render.bytesString
+                order: 4.1
+            freesize:
+                label: Free
+                type: int
+                renderer: Zenoss.render.bytesString
+                order: 4.2
+            util:
+                label: '% Util'
+                type: float
+                renderer: Zenoss.render.availability
+                order: 4.3
             attributes:
                 label: Attributes
                 grid_display: False
-            vgsize:
-                label: Size
-            freesize:
-                label: Free
+                type: lines
 
     LogicalVolume:
         label: Logical Volume
@@ -26,10 +41,13 @@ classes:
             attributes:
                 label: Attributes
                 grid_display: False
+                type: lines
             lvsize:
                 label: Size
-            pool:
-                label: Pool
+                type: int
+                renderer: Zenoss.render.bytesString
+            active:
+                label: Active
 
     PhysicalVolume:
         label: Physical Volume
@@ -37,13 +55,26 @@ classes:
         properties:
             pvsize:
                 label: Size
+                type: int
+                renderer: Zenoss.render.bytesString
+                order: 4.1
+            free:
+                label: Free
+                type: int
+                renderer: Zenoss.render.bytesString
+                order: 4.2
+            util:
+                label: '% Util'
+                type: float
+                renderer: Zenoss.render.availability
+                order: 4.3
             format:
                 label: Format
+                order: 4.0
             attributes:
                 label: Attributes
                 grid_display: False
-            free:
-                label: Free
+                type: lines
 
 class_relationships:
     - Products.ZenModel.Device.Device 1:MC VolumeGroup

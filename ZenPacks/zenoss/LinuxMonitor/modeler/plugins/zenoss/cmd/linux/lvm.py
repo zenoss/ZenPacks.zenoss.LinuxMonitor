@@ -36,16 +36,17 @@ class lvm(CommandPlugin):
     VG         #PV #LV #SN Attr   VSize  VFree
     centos       1   2   0 wz--n- 19.51g 40.00m
     fileserver   2   3   0 wz--n- 39.99g 13.99g
-    LV     VG         Attr       LSize  Pool Origin Data%  Meta%  Move Log Cpy%Sync Convert
-    root   centos     -wi-ao---- 17.47g
-    swap   centos     -wi-ao----  2.00g
-    backup fileserver -wi-ao----  5.00g
-    media  fileserver -wi-ao----  1.00g
-    share  fileserver -wi-ao---- 20.00g
+    LV     VG         Attr       LSize       Active
+    root   centos     -wi-ao---- 18756927488 active
+    swap   centos     -wi-ao----  2147483648 active
+    backup fileserver -wi-ao----  5368709120 active
+    media  fileserver -wi-ao----  1073741824 active
+    share  fileserver -wi-ao---- 21474836480 active
 
     """
 
-    command = '$(/usr/bin/which pvs); $(/usr/bin/which vgs); $(/usr/bin/which lvs)'
+    command = '$(/usr/bin/which pvs) --units b --nosuffix; $(/usr/bin/which vgs) '\
+        '--units b --nosuffix; $(/usr/bin/which lvs) --units b --nosuffix -o lv_name,vg_name,lv_attr,lv_size,lv_active'
 
     def process(self, device, results, log):
         vg_maps = []
@@ -79,8 +80,9 @@ class lvm(CommandPlugin):
                 pv_om.vgname = columns[1]
                 pv_om.format = columns[2]
                 pv_om.attributes = self.pv_attributes(columns[3])
-                pv_om.pvsize = columns[4]
-                pv_om.free = columns[5]
+                pv_om.pvsize = int(columns[4])
+                pv_om.free = int(columns[5])
+                pv_om.util = float(pv_om.pvsize - pv_om.free)/pv_om.pvsize
                 pv_om.id = self.prepId(columns[0])
                 pv_om.relname = 'physicalVolumes'
                 pv_om.modname = 'ZenPacks.zenoss.LinuxMonitor.PhysicalVolume'
@@ -92,9 +94,10 @@ class lvm(CommandPlugin):
                 vg_om.curlv = columns[2]
                 vg_om.snapcount = columns[3]
                 vg_om.attributes = self.vg_attributes(columns[4])
-                vg_om.vgsize = columns[5]
-                vg_om.freesize = columns[6]
+                vg_om.vgsize = int(columns[5])
+                vg_om.freesize = int(columns[6])
                 vg_om.id = self.prepId(columns[0])
+                vg_om.util = float(vg_om.vgsize - vg_om.freesize)/vg_om.vgsize
                 vg_om.relname = 'volumeGroups'
                 vg_om.modname = 'ZenPacks.zenoss.LinuxMonitor.VolumeGroup'
                 vg_maps.append(vg_om)
@@ -104,9 +107,8 @@ class lvm(CommandPlugin):
                 lv_om.vgname = columns[1]
                 lv_om.id = self.prepId(columns[1]+columns[0])
                 lv_om.attributes = self.lv_attributes(columns[2])
-                lv_om.lvsize = columns[3]
-                if len(columns) > 4:
-                    lv_om.pool = columns[4]
+                lv_om.lvsize = int(columns[3])
+                lv_om.active = columns[4]
                 lv_om.relname = 'logicalVolumes'
                 lv_om.modname = 'ZenPacks.zenoss.LinuxMonitor.LogicalVolume'
                 lv_maps.append(lv_om)
