@@ -2058,10 +2058,6 @@
                 <property type="int" id="maxy" mode="w">
                     100
                 </property>
-                <property type="text" id="custom" mode="w">
-                    CDEF:percent=usedInodes,totalInodes,/,100,*
-                    AREA:percent#00cc00:utilization
-                </property>
                 <property type="boolean" id="hasSummary" mode="w">
                     True
                 </property>
@@ -2103,7 +2099,7 @@
                             0
                         </property>
                         <property select_variable="lineTypes" type="selection" id="lineType" mode="w">
-                            LINE
+                            DONTDRAW
                         </property>
                         <property type="long" id="lineWidth" mode="w">
                             1
@@ -2132,7 +2128,7 @@
                             1
                         </property>
                         <property select_variable="lineTypes" type="selection" id="lineType" mode="w">
-                            LINE
+                            DONTDRAW
                         </property>
                         <property type="long" id="lineWidth" mode="w">
                             1
