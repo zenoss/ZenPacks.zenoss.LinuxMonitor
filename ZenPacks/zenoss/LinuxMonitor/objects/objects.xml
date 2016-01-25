@@ -231,7 +231,7 @@
                     True
                 </property>
                 <property type="string" id="parser" mode="w">
-                    ZenPacks.zenoss.EnterpriseLinux.parsers.linux.diskstats
+                    ZenPacks.zenoss.LinuxMonitor.parsers.linux.diskstats
                 </property>
                 <tomanycont id="datapoints">
                     <object id="ssIORawReceived" module="Products.ZenModel.RRDDataPoint" class="RRDDataPoint">
