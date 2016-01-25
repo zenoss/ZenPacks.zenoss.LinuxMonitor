@@ -1381,7 +1381,7 @@
                     True
                 </property>
                 <property type="string" id="parser" mode="w">
-                    ZenPacks.zenoss.EnterpriseLinux.parsers.linux.ifconfig
+                    ZenPacks.zenoss.LinuxMonitor.parsers.linux.ifconfig
                 </property>
                 <tomanycont id="datapoints">
                     <object id="ifInErrors" module="Products.ZenModel.RRDDataPoint" class="RRDDataPoint">
