@@ -1,9 +1,11 @@
 name: ZenPacks.zenoss.LinuxMonitor
 
 classes:
+    DEFAULTS:
+        base: [zenpacklib.Component]
+
     VolumeGroup:
         label: Volume Group
-        base: [zenpacklib.Component]
         properties:
             curpv:
                 label: Physical Volumes
@@ -11,9 +13,6 @@ classes:
             curlv:
                 label: Logical Volumes
                 grid_display: False
-            snapcount:
-                label: Snapshot Volumes
-                order: 4.0
             vgsize:
                 label: Size
                 type: int
@@ -33,10 +32,12 @@ classes:
                 label: Attributes
                 grid_display: False
                 type: lines
+            uuid:
+                grid_display: False
+                details_display: False
 
     LogicalVolume:
         label: Logical Volume
-        base: [zenpacklib.Component]
         properties:
             attributes:
                 label: Attributes
@@ -48,10 +49,15 @@ classes:
                 renderer: Zenoss.render.bytesString
             active:
                 label: Active
+            vgname:
+                grid_display: False
+                details_display: False
+            uuid:
+                grid_display: False
+                details_display: False
 
     PhysicalVolume:
         label: Physical Volume
-        base: [zenpacklib.Component]
         properties:
             pvsize:
                 label: Size
@@ -75,13 +81,56 @@ classes:
                 label: Attributes
                 grid_display: False
                 type: lines
+            vgname:
+                grid_display: False
+                details_display: False
+            uuid:
+                grid_display: False
+                details_display: False
+
+    SnapshotVolume:
+        label: Snapshot Volume
+        properties:
+            attributes:
+                label: Attributes
+                grid_display: False
+                type: lines
+            lvsize:
+                label: Size
+                type: int
+                renderer: Zenoss.render.bytesString
+            active:
+                label: Active
+            origin:
+                grid_display: False
+            vgname:
+                grid_display: False
+                details_display: False
+            uuid:
+                grid_display: False
+                details_display: False
+            VolumeGroup:
+                grid_display: False
+                details_display: False
 
 class_relationships:
     - Products.ZenModel.Device.Device 1:MC VolumeGroup
     - VolumeGroup 1:MC PhysicalVolume
     - VolumeGroup 1:MC LogicalVolume
+    - VolumeGroup 1:MC SnapshotVolume
+    - LogicalVolume 1:M SnapshotVolume
 
 device_classes: !ZenPackSpec
     /Server/SSH/Linux:
         zProperties:
-            zCollectorPlugins: [zenoss.cmd.df, zenoss.cmd.linux.cpuinfo, zenoss.cmd.linux.ifconfig, zenoss.cmd.linux.memory, zenoss.cmd.linux.netstat_an, zenoss.cmd.linux.netstat_rn, zenoss.cmd.linux.process, zenoss.cmd.linux.rpm, zenoss.cmd.uname, zenoss.cmd.uname_a, zenoss.cmd.linux.lvm]
+            zCollectorPlugins: 
+                - zenoss.cmd.df
+                - zenoss.cmd.linux.cpuinfo
+                - zenoss.cmd.linux.ifconfig
+                - zenoss.cmd.linux.memory
+                - zenoss.cmd.linux.netstat_an
+                - zenoss.cmd.linux.netstat_rn
+                - zenoss.cmd.linux.process
+                - zenoss.cmd.linux.rpm
+                - zenoss.cmd.uname
+                - zenoss.cmd.uname_a
