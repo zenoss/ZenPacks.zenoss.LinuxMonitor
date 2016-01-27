@@ -27,15 +27,15 @@ class lvm(CommandPlugin):
     /sbin/pvdisplay; /sbin/vgdisplay; /sbin/lvdisplay - get LVM information on Linux machines
 
     sample output:
-    PV         VG         Fmt  Attr PSize  PFree
-    /dev/sda2  centos     lvm2 a--  19.51g 40.00m
-    /dev/sdb1  fileserver lvm2 a--  20.00g     0
-    /dev/sdc1  fileserver lvm2 a--  20.00g 13.99g
-    /dev/sdd1             lvm2 ---  10.00g 10.00g
-    /dev/sdd2             lvm2 ---  10.00g 10.00g
-    VG         #PV #LV #SN Attr   VSize  VFree
-    centos       1   2   0 wz--n- 19.51g 40.00m
-    fileserver   2   3   0 wz--n- 39.99g 13.99g
+    PV         VG         Fmt  Attr PSize       PFree
+    /dev/sda2  centos     lvm2 a--  20946354176    41943040
+    /dev/sdb1  fileserver lvm2 a--  21470642176           0
+    /dev/sdc1  fileserver lvm2 a--  21470642176 15023996928
+    /dev/sdd1             lvm2 ---  10737418240 10737418240
+    /dev/sdd2             lvm2 ---  10736369664 10736369664
+    VG         #PV #LV #SN Attr   VSize       VFree
+    centos       1   2   0 wz--n- 20946354176    41943040
+    fileserver   2   3   0 wz--n- 42941284352 15023996928
     LV     VG         Attr       LSize       Active
     root   centos     -wi-ao---- 18756927488 active
     swap   centos     -wi-ao----  2147483648 active
@@ -45,13 +45,15 @@ class lvm(CommandPlugin):
 
     """
 
-    command = '$(/usr/bin/which pvs) --units b --nosuffix; $(/usr/bin/which vgs) '\
-        '--units b --nosuffix; $(/usr/bin/which lvs) --units b --nosuffix -o lv_name,vg_name,lv_attr,lv_size,lv_active'
+    command = ('/usr/bin/sudo pvs --units b --nosuffix -o pv_name,vg_name,pv_fmt,pv_attr,pv_size,pv_free,pv_uuid; '
+               '/usr/bin/sudo vgs --units b --nosuffix -o vg_name,vg_attr,vg_size,vg_free,vg_uuid; '
+               '/usr/bin/sudo lvs --units b --nosuffix -o lv_name,vg_name,lv_attr,lv_size,lv_uuid,origin')
 
     def process(self, device, results, log):
         vg_maps = []
         pv_maps = []
         lv_maps = []
+        sv_maps = []
         for line in results.split('\n'):
             columns = line.split()
             if not columns:
@@ -72,7 +74,7 @@ class lvm(CommandPlugin):
                 inPV = False
                 continue
             if inPV:
-                if len(columns) < 6:
+                if len(columns) < 7:
                     # physical volume probably not part of a vg.  ignore for now
                     continue
                 pv_om = ObjectMap()
@@ -90,13 +92,11 @@ class lvm(CommandPlugin):
             elif inVG:
                 vg_om = ObjectMap()
                 vg_om.title = columns[0]
-                vg_om.curpv = columns[1]
-                vg_om.curlv = columns[2]
-                vg_om.snapcount = columns[3]
-                vg_om.attributes = self.vg_attributes(columns[4])
-                vg_om.vgsize = int(columns[5])
-                vg_om.freesize = int(columns[6])
+                vg_om.attributes = self.vg_attributes(columns[1])
+                vg_om.vgsize = int(columns[2])
+                vg_om.freesize = int(columns[3])
                 vg_om.id = self.prepId(columns[0])
+                vg_om.uuid = columns[4]
                 vg_om.util = float(vg_om.vgsize - vg_om.freesize)/vg_om.vgsize
                 vg_om.relname = 'volumeGroups'
                 vg_om.modname = 'ZenPacks.zenoss.LinuxMonitor.VolumeGroup'
@@ -105,13 +105,20 @@ class lvm(CommandPlugin):
                 lv_om = ObjectMap()
                 lv_om.title = columns[0]
                 lv_om.vgname = columns[1]
-                lv_om.id = self.prepId(columns[1]+columns[0])
                 lv_om.attributes = self.lv_attributes(columns[2])
                 lv_om.lvsize = int(columns[3])
-                lv_om.active = columns[4]
-                lv_om.relname = 'logicalVolumes'
-                lv_om.modname = 'ZenPacks.zenoss.LinuxMonitor.LogicalVolume'
-                lv_maps.append(lv_om)
+                lv_om.active = True if 'active' in lv_om.attributes else False
+                lv_om.id = self.prepId(columns[1]+'_'+columns[0])
+                lv_om.uuid = self.prepId(columns[4])
+                if len(columns) >= 6:
+                    lv_om.origin = columns[5]
+                    lv_om.relname = 'snapshotVolumes'
+                    lv_om.modname = 'ZenPacks.zenoss.LinuxMonitor.SnapshotVolume'
+                    sv_maps.append(lv_om)
+                else:
+                    lv_om.relname = 'logicalVolumes'
+                    lv_om.modname = 'ZenPacks.zenoss.LinuxMonitor.LogicalVolume'
+                    lv_maps.append(lv_om)
 
         maps = []
         maps.append(RelationshipMap(
@@ -122,6 +129,7 @@ class lvm(CommandPlugin):
         for vg_om in vg_maps:
             pv_vg_oms = []
             lv_vg_oms = []
+            sv_vg_oms = []
             for pv_om in pv_maps:
                 if pv_om.vgname == vg_om.title:
                     pv_vg_oms.append(pv_om)
@@ -131,6 +139,16 @@ class lvm(CommandPlugin):
                 modname="ZenPacks.zenoss.LinuxMonitor.PhysicalVolume",
                 objmaps=pv_vg_oms))
 
+            # import pdb; pdb.set_trace()
+            for sv_om in sv_maps:
+                if sv_om.vgname == vg_om.title:
+                    sv_vg_oms.append(sv_om)
+            maps.append(RelationshipMap(
+                relname="snapshotVolumes",
+                compname='volumeGroups/' + vg_om.id,
+                modname="ZenPacks.zenoss.LinuxMonitor.SnapshotVolume",
+                objmaps=sv_vg_oms))
+
             for lv_om in lv_maps:
                 if lv_om.vgname == vg_om.title:
                     lv_vg_oms.append(lv_om)
@@ -139,6 +157,20 @@ class lvm(CommandPlugin):
                 compname='volumeGroups/' + vg_om.id,
                 modname="ZenPacks.zenoss.LinuxMonitor.LogicalVolume",
                 objmaps=lv_vg_oms))
+            for lv_om in lv_maps:
+                if lv_om.vgname == vg_om.title:
+                    lv_sv_oms = []
+                    for sv_om in sv_maps:
+                        if sv_om.origin == lv_om.title:
+                            sv_om.set_logicalVolume = lv_om.id
+                            lv_sv_oms.append(sv_om)
+                    if lv_sv_oms:
+                        maps.append(RelationshipMap(
+                            relname="snapshotVolumes",
+                            compname='volumeGroups/' + vg_om.id,
+                            modname="ZenPacks.zenoss.LinuxMonitor.SnapshotVolume",
+                            objmaps=lv_sv_oms))
+
         return maps
 
     def pv_attributes(self, atts):
