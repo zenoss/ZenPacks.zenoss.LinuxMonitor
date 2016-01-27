@@ -100,6 +100,8 @@ classes:
                 type: int
                 renderer: Zenoss.render.bytesString
             active:
+                type: boolean
+                renderer: Zenoss.render.checkbox
                 label: Active
             origin:
                 grid_display: False
@@ -107,9 +109,6 @@ classes:
                 grid_display: False
                 details_display: False
             uuid:
-                grid_display: False
-                details_display: False
-            VolumeGroup:
                 grid_display: False
                 details_display: False
 
@@ -123,7 +122,7 @@ class_relationships:
 device_classes: !ZenPackSpec
     /Server/SSH/Linux:
         zProperties:
-            zCollectorPlugins: 
+            zCollectorPlugins:
                 - zenoss.cmd.df
                 - zenoss.cmd.linux.cpuinfo
                 - zenoss.cmd.linux.ifconfig
