@@ -6,6 +6,11 @@ classes:
 
     VolumeGroup:
         label: Volume Group
+        impacts:
+            - logicalVolumes
+            - snapshotVolumes
+        impacted_by:
+            - physicalVolumes
         properties:
             curpv:
                 label: Physical Volumes
@@ -38,6 +43,8 @@ classes:
 
     LogicalVolume:
         label: Logical Volume
+        impacted_by:
+            - volumeGroup
         properties:
             attributes:
                 label: Attributes
@@ -58,6 +65,8 @@ classes:
 
     PhysicalVolume:
         label: Physical Volume
+        impacts:
+            - volumeGroup
         properties:
             pvsize:
                 label: Size
@@ -90,6 +99,9 @@ classes:
 
     SnapshotVolume:
         label: Snapshot Volume
+        impacted_by:
+            - volumeGroup
+            - logicalVolume
         properties:
             attributes:
                 label: Attributes
