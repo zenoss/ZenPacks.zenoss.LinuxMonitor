@@ -47,7 +47,7 @@ class lvm(CommandPlugin):
 
     command = ('/usr/bin/sudo pvs --units b --nosuffix -o pv_name,vg_name,pv_fmt,pv_attr,pv_size,pv_free,pv_uuid; '
                '/usr/bin/sudo vgs --units b --nosuffix -o vg_name,vg_attr,vg_size,vg_free,vg_uuid; '
-               '/usr/bin/sudo lvs --units b --nosuffix -o lv_name,vg_name,lv_attr,lv_size,lv_active,lv_uuid,origin')
+               '/usr/bin/sudo lvs --units b --nosuffix -o lv_name,vg_name,lv_attr,lv_size,lv_uuid,origin')
 
     def process(self, device, results, log):
         vg_maps = []
@@ -107,11 +107,11 @@ class lvm(CommandPlugin):
                 lv_om.vgname = columns[1]
                 lv_om.attributes = self.lv_attributes(columns[2])
                 lv_om.lvsize = int(columns[3])
-                lv_om.active = columns[4]
+                lv_om.active = True if 'active' in lv_om.attributes else False
                 lv_om.id = self.prepId(columns[1]+'_'+columns[0])
-                lv_om.uuid = self.prepId(columns[5])
-                if len(columns) >= 7:
-                    lv_om.origin = columns[6]
+                lv_om.uuid = self.prepId(columns[4])
+                if len(columns) >= 6:
+                    lv_om.origin = columns[5]
                     lv_om.relname = 'snapshotVolumes'
                     lv_om.modname = 'ZenPacks.zenoss.LinuxMonitor.SnapshotVolume'
                     sv_maps.append(lv_om)
