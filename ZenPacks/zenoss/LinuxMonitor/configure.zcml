@@ -5,4 +5,23 @@
     xmlns:zcml="http://namespaces.zope.org/zcml"
     >
 
+    <!-- Impact -->
+    <configure zcml:condition="installed ZenPacks.zenoss.Impact">
+        <include package="ZenPacks.zenoss.Impact" file="meta.zcml"/>
+
+        <subscriber
+            provides="ZenPacks.zenoss.Impact.impactd.interfaces.IRelationshipDataProvider"
+            for="Products.ZenModel.CPU.CPU"
+            factory=".impact.CPURelationsProvider"
+            />
+
+        <subscriber
+            provides="ZenPacks.zenoss.Impact.impactd.interfaces.IRelationshipDataProvider"
+            for="Products.ZenModel.FileSystem.FileSystem"
+            factory=".impact.FileSystemRelationsProvider"
+            />
+
+    </configure>
+
 </configure>
+
