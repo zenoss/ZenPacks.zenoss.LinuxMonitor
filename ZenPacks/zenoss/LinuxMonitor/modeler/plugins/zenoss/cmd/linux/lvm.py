@@ -111,7 +111,7 @@ class lvm(CommandPlugin):
                 lv_om.id = self.prepId(columns[1]+'_'+columns[0])
                 lv_om.uuid = self.prepId(columns[4])
                 if len(columns) >= 6:
-                    lv_om.origin = columns[5]
+                    lv_om.origin = self.prepId(columns[1]+'_'+columns[5]) # columns[5]
                     lv_om.relname = 'snapshotVolumes'
                     lv_om.modname = 'ZenPacks.zenoss.LinuxMonitor.SnapshotVolume'
                     sv_maps.append(lv_om)
@@ -139,7 +139,6 @@ class lvm(CommandPlugin):
                 modname="ZenPacks.zenoss.LinuxMonitor.PhysicalVolume",
                 objmaps=pv_vg_oms))
 
-            # import pdb; pdb.set_trace()
             for sv_om in sv_maps:
                 if sv_om.vgname == vg_om.title:
                     sv_vg_oms.append(sv_om)
