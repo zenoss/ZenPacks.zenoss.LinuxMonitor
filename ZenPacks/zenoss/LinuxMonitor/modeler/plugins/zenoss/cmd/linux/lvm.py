@@ -21,6 +21,8 @@ from Products.DataCollector.plugins.CollectorPlugin import CommandPlugin
 from Products.DataCollector.plugins.DataMaps import ObjectMap, RelationshipMap
 log = logging.getLogger('zen.lvm')
 
+from Products.ZenUtils.Utils import prepId
+
 
 class lvm(CommandPlugin):
     """
@@ -110,10 +112,12 @@ class lvm(CommandPlugin):
                 lv_om.active = True if 'active' in lv_om.attributes else False
                 lv_om.id = self.prepId(columns[1]+'_'+columns[0])
                 lv_om.uuid = self.prepId(columns[4])
+                #import pdb;pdb.set_trace()
                 if len(columns) >= 6:
-                    lv_om.origin = columns[5]
+                    lv_om.origin = self.prepId(columns[1]+'_'+columns[5]) # columns[5]
                     lv_om.relname = 'snapshotVolumes'
                     lv_om.modname = 'ZenPacks.zenoss.LinuxMonitor.SnapshotVolume'
+                    lv_om.set_logicalVolume=self.prepId(columns[1]+'_'+columns[5])       # volume-f9c495b7-a7f1-4e8a-9e95-60fd8060e057
                     sv_maps.append(lv_om)
                 else:
                     lv_om.relname = 'logicalVolumes'
@@ -139,7 +143,7 @@ class lvm(CommandPlugin):
                 modname="ZenPacks.zenoss.LinuxMonitor.PhysicalVolume",
                 objmaps=pv_vg_oms))
 
-            # import pdb; pdb.set_trace()
+            #import pdb; pdb.set_trace()
             for sv_om in sv_maps:
                 if sv_om.vgname == vg_om.title:
                     sv_vg_oms.append(sv_om)
