@@ -43,6 +43,9 @@ classes:
 
     LogicalVolume:
         label: Logical Volume
+        impacts:
+            - snapshotVolumes
+            - openstack_core_components
         impacted_by:
             - volumeGroup
         properties:
@@ -62,6 +65,12 @@ classes:
             uuid:
                 grid_display: False
                 details_display: False
+            openstack_core_components:
+                type: entity
+                label: Cinder Integration
+                grid_display: false
+                api_only: true
+                api_backendtype: method
 
     PhysicalVolume:
         label: Physical Volume
@@ -102,6 +111,8 @@ classes:
         impacted_by:
             - volumeGroup
             - logicalVolume
+        impacts:
+            - openstack_core_components
         properties:
             attributes:
                 label: Attributes
@@ -123,6 +134,12 @@ classes:
             uuid:
                 grid_display: False
                 details_display: False
+            openstack_core_components:
+                type: entity
+                label: Cinder Integration
+                grid_display: false
+                api_only: true
+                api_backendtype: method
 
 class_relationships:
     - Products.ZenModel.Device.Device 1:MC VolumeGroup
@@ -143,5 +160,6 @@ device_classes: !ZenPackSpec
                 - zenoss.cmd.linux.netstat_rn
                 - zenoss.cmd.linux.process
                 - zenoss.cmd.linux.rpm
+                - zenoss.cmd.linux.lvm
                 - zenoss.cmd.uname
                 - zenoss.cmd.uname_a
