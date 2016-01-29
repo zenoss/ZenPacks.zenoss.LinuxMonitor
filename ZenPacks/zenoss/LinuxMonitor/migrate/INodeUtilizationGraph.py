@@ -14,12 +14,13 @@ from Products.ZenModel.migrate.Migrate import Version
 import logging
 log = logging.getLogger("zen.migrate")
 
+
 class INodeUtilizationGraph(ZenPackMigration):
 
     version = Version(2, 0, 0)
 
     def migrate(self, pack):
-    	log.info('Fixing the Linux FileSystem template')
+        log.info('Fixing the Linux FileSystem template')
         try:
             path = '/zport/dmd/Devices/Server/SSH/Linux/rrdTemplates/FileSystem'
             template = pack.dmd.unrestrictedTraverse(path)
@@ -28,5 +29,13 @@ class INodeUtilizationGraph(ZenPackMigration):
         else:
             graph = template.graphDefs._getOb('Inode Utilization')
             graph.custom = ''
+            for gp in graph.graphPoints():
+                if gp.id in ['totalInodes', 'usedInodes']:
+                    graph.graphPoints._delObject(gp.id)
+                    log.info(
+                        "Removing '{0}' graphpoint from {1} graph".format(
+                            gp.id, graph.id
+                        )
+                    )
 
 INodeUtilizationGraph()
