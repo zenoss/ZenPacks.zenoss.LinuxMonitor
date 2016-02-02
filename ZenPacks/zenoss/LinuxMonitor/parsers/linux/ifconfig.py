@@ -1,6 +1,6 @@
 ##############################################################################
 # 
-# Copyright (C) Zenoss, Inc. 2009, 2015 all rights reserved.
+# Copyright (C) Zenoss, Inc. 2009, 2015-2016 all rights reserved.
 # 
 # This content is made available according to terms specified in
 # License.zenoss under the directory where your Zenoss product is installed.
@@ -17,12 +17,20 @@ A command parser.
         
         
     Datapoints: 
-        
-        ifInPackets, ifInErrors, ifOutPackets, ifOutErrors, ifInOctets, 
-        ifOutOctets
-        
-        
+
+        ifInPackets,  ifOutPackets,
+        ifInErrors,   ifOutErrors,
+        ifInOctets,   ifOutOctets,
+        ifInDropped,  ifOutDropped,
+        ifInOverruns, ifOutOverruns,
+                      ifInFrame,
+                      ifOutCarrier,
+                      ifOutCollisions,
+                      ifOutTxQueueLen
+
+
     Example command output:
+
         (old format)
         eth0      Link encap:Ethernet  HWaddr 00:0C:29:96:8A:0F
         ...
@@ -46,8 +54,13 @@ A command parser.
 
     Datapoints:
 
-            ifInPackets, ifInErrors, ifOutPackets, ifOutErrors, ifInOctets,
-            ifOutOctets
+            ifInPackets,  ifOutPackets,
+            ifInErrors,   ifOutErrors,
+            ifInOctets,   ifOutOctets,
+            ifInDropped,  ifOutDropped,
+            ifInOverruns,
+                          ifOutCarrier,
+                          ifOutCollisions
 
     Example command output:
 
@@ -56,34 +69,56 @@ A command parser.
 
 """
 
+
 from Products.ZenRRD.ComponentCommandParser import ComponentCommandParser
 
+
+RX = 'RX'
+TX = 'TX'
+IN = 'In'
+OUT = 'Out'
+BYTES = '\s+bytes(\s|:)(?P<if{0}Octets>\d+)'
+PACKETS = '\s+packets(\s|:)(?P<if{0}Packets>\d+)'
+ERRORS = '\s+errors(\s|:)(?P<if{0}Errors>\d+)'
+DROPPED = '\s+dropped(\s|:)(?P<if{0}Dropped>\d+)'
+OVERRUNS = '\s+overruns(\s|:)(?P<if{0}Overruns>\d+)'
+FRAME = '\s+frame(\s|:)(?P<if{0}Frame>\d+)'
+CARRIER = '\s+carrier(\s|:)(?P<if{0}Carrier>\d+)'
+COLLISIONS = '\s+collisions(\s|:)(?P<if{0}Collisions>\d+)'
+TXQUEUELEN = '\s+txqueuelen(\s|:)(?P<if{0}TxQueueLen>\d+)'
+
+
 class DefaultScanConfig(object):
-    #for ifconfig
+    # for ifconfig
     componentSplit = '\n\n'
     componentScanner = r'^(?P<component>\S+?):?[ \t]+'
     scanners = [
-        r' RX packets:(?P<ifInPackets>\d+) errors:(?P<ifInErrors>\d+)',
-        r' TX packets:(?P<ifOutPackets>\d+) errors:(?P<ifOutErrors>\d+)',
-        r' RX bytes:(?P<ifInOctets>\d+) ',
-        r' TX bytes:(?P<ifOutOctets>\d+) ',
-
-        r' RX packets (?P<ifInPackets>\d+)  bytes (?P<ifInOctets>\d+)',
-        r' RX errors (?P<ifInErrors>\d+)',
-        r' TX packets (?P<ifOutPackets>\d+)  bytes (?P<ifOutOctets>\d+)',
-        r' TX errors (?P<ifOutErrors>\d+)',
+        # Debian, Ubuntu
+        r''.join([RX, PACKETS, ERRORS, DROPPED, OVERRUNS, FRAME]).format(IN),
+        r''.join([TX, PACKETS, ERRORS, DROPPED, OVERRUNS, CARRIER, COLLISIONS]).format(OUT),
+        r''.join([RX, BYTES]).format(IN),
+        r''.join([TX, BYTES]).format(OUT),
+        # RedHat, CentOS
+        r''.join([RX, PACKETS, BYTES]).format(IN),
+        r''.join([RX, ERRORS, DROPPED, OVERRUNS, FRAME]).format(IN),
+        r''.join([TX, PACKETS, BYTES]).format(OUT),
+        r''.join([TX, ERRORS, DROPPED, OVERRUNS, CARRIER, COLLISIONS]).format(OUT),
+        # Mixed
+        r''.join([TXQUEUELEN]).format(OUT),
         ]
     componentScanValue = 'interfaceName'
 
+
 class AltScanConfig(object):
-    #for ip utility which produce wery long output
+    # for ip utility which produce very long output
     componentSplit = '\n'
     componentScanner = r'^(\d+):(\s)(?P<component>\S+?):?[ \t]+'
     scanners = [
-        r'(.*)RX:(\s+)bytes(\s+)packets(\s+)errors(\s+)dropped(\s+)overrun(\s+)mcast(\s+)\\(\s+)(?P<ifInOctets>\d+)(\s+)(?P<ifInPackets>\d+)(\s+)(?P<ifInErrors>\d+)',
-        r'(.*)TX:(\s+)bytes(\s+)packets(\s+)errors(\s+)dropped(\s+)carrier(\s+)collsns(\s+)\\(\s+)(?P<ifOutOctets>\d+)(\s+)(?P<ifOutPackets>\d+)(\s+)(?P<ifOutErrors>\d+)',
+        r'(.*)RX:(\s+)bytes(\s+)packets(\s+)errors(\s+)dropped(\s+)overrun(\s+)mcast(\s+)\\(\s+)(?P<ifInOctets>\d+)(\s+)(?P<ifInPackets>\d+)(\s+)(?P<ifInErrors>\d+)(\s+)(?P<ifInDropped>\d+)(\s+)(?P<ifInOverruns>\d+)',
+        r'(.*)TX:(\s+)bytes(\s+)packets(\s+)errors(\s+)dropped(\s+)carrier(\s+)collsns(\s+)\\(\s+)(?P<ifOutOctets>\d+)(\s+)(?P<ifOutPackets>\d+)(\s+)(?P<ifOutErrors>\d+)(\s+)(?P<ifOutDropped>\d+)(\s+)(?P<ifOutCarrier>\d+)(\s+)(?P<ifOutCollisions>\d+)',
         ]
     componentScanValue = 'interfaceName'
+
 
 class ifconfig(ComponentCommandParser):
 
@@ -99,7 +134,6 @@ class ifconfig(ComponentCommandParser):
         if not result.values:
             self._setScanConfig(AltScanConfig)
             super(ifconfig, self).processResults(cmd, result)
-
 
     def _setScanConfig(self, config):
         self.componentSplit = config.componentSplit
