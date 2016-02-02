@@ -1470,6 +1470,118 @@
                             True
                         </property>
                     </object>
+                    <object id="ifInDropped" module="Products.ZenModel.RRDDataPoint" class="RRDDataPoint">
+                        <property type="text" id="zendoc" mode="w">
+                            The number of dropped packets due to reception errors.
+                        </property>
+                        <property select_variable="rrdtypes" type="selection" id="rrdtype" mode="w" >
+                            DERIVE
+                        </property>
+                        <property type="boolean" id="isrow" mode="w" >
+                            True
+                        </property>
+                        <property type="string" id="rrdmin" mode="w" >
+                            0
+                        </property>
+                    </object>
+                    <object id="ifInFrame" module="Products.ZenModel.RRDDataPoint" class="RRDDataPoint">
+                        <property type="text" id="zendoc" mode="w">
+                            The number received packets that experienced frame errors.
+                        </property>
+                        <property select_variable="rrdtypes" type="selection" id="rrdtype" mode="w" >
+                            DERIVE
+                        </property>
+                        <property type="boolean" id="isrow" mode="w" >
+                            True
+                        </property>
+                        <property type="string" id="rrdmin" mode="w" >
+                            0
+                        </property>
+                    </object>
+                    <object id="ifInOverruns" module="Products.ZenModel.RRDDataPoint" class="RRDDataPoint">
+                        <property type="text" id="zendoc" mode="w">
+                            The number of received packets that experienced data overruns.
+                        </property>
+                        <property select_variable="rrdtypes" type="selection" id="rrdtype" mode="w" >
+                            DERIVE
+                        </property>
+                        <property type="boolean" id="isrow" mode="w" >
+                            True
+                        </property>
+                        <property type="string" id="rrdmin" mode="w" >
+                            0
+                        </property>
+                    </object>
+                    <object id="ifOutCarrier" module="Products.ZenModel.RRDDataPoint" class="RRDDataPoint">
+                        <property type="text" id="zendoc" mode="w">
+                            The number received packets that experienced loss of carriers.
+                        </property>
+                        <property select_variable="rrdtypes" type="selection" id="rrdtype" mode="w" >
+                            DERIVE
+                        </property>
+                        <property type="boolean" id="isrow" mode="w" >
+                            True
+                        </property>
+                        <property type="string" id="rrdmin" mode="w" >
+                            0
+                        </property>
+                    </object>
+                    <object id="ifOutCollisions" module="Products.ZenModel.RRDDataPoint" class="RRDDataPoint">
+                        <property type="text" id="zendoc" mode="w">
+                            The number of transmitted packets that experienced Ethernet collisions. A nonzero value of this field indicates possibility of network congestion.
+                        </property>
+                        <property select_variable="rrdtypes" type="selection" id="rrdtype" mode="w" >
+                            DERIVE
+                        </property>
+                        <property type="boolean" id="isrow" mode="w" >
+                            True
+                        </property>
+                        <property type="string" id="rrdmin" mode="w" >
+                            0
+                        </property>
+                    </object>
+                    <object id="ifOutDropped" module="Products.ZenModel.RRDDataPoint" class="RRDDataPoint">
+                        <property type="text" id="zendoc" mode="w">
+                            The number of dropped transmitted packets due to transmission errors.
+                        </property>
+                        <property select_variable="rrdtypes" type="selection" id="rrdtype" mode="w" >
+                            DERIVE
+                        </property>
+                        <property type="boolean" id="isrow" mode="w" >
+                            True
+                        </property>
+                        <property type="string" id="rrdmin" mode="w" >
+                            0
+                        </property>
+                    </object>
+                    <object id="ifOutOverruns" module="Products.ZenModel.RRDDataPoint" class="RRDDataPoint">
+                        <property type="text" id="zendoc" mode="w">
+                            The number of transmitted packets that experienced data overruns.
+                        </property>
+                        <property select_variable="rrdtypes" type="selection" id="rrdtype" mode="w" >
+                            DERIVE
+                        </property>
+                        <property type="boolean" id="isrow" mode="w" >
+                            True
+                        </property>
+                        <property type="string" id="rrdmin" mode="w" >
+                            0
+                        </property>
+                    </object>
+                    <object id="ifOutTxQueueLen" module="Products.ZenModel.RRDDataPoint" class="RRDDataPoint">
+                        <property type="text" id="zendoc" mode="w">
+                            The field provides the information about the configured length of transmission queue.
+                        </property>
+                        <property select_variable="rrdtypes" type="selection" id="rrdtype" mode="w" >
+                            DERIVE
+                        </property>
+                        <property type="boolean" id="isrow" mode="w" >
+                            True
+                        </property>
+                        <property type="string" id="rrdmin" mode="w" >
+                            0
+                        </property>
+                    </object>
                 </tomanycont>
             </object>
         </tomanycont>
