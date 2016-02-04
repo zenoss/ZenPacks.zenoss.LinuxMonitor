@@ -1,0 +1,151 @@
+The <span class="zenpack">ZenPacks.zenoss.LinuxMonitor</span> ZenPack demonstrates how to develop new plugins that collect performance data using Secure Shell.
+
+
+This ZenPack demonstrates the Secure Shell (SSH) features, and enables modeling and monitoring several types of device components for devices placed in the <span class="ph filepath">/Server/SSH/Linux</span> device class by running commands and parsing the output. Parsing of command output is performed on the <span class="ph">Zenoss platform</span> server or on a distributed collector. The account used to monitor the device does not require root access or special privileges.
+
+
+== Prerequisites ==
+
+
+{| class="wikitable"
+!width="50%"|Prerequisite
+!width="50%"|Restriction
+|-
+|Product
+|<span class="ph">Zenoss platform</span> 4.x, Zenoss 2.4 or higher
+|-
+|Required ZenPacks
+|ZenPacks.zenoss.LinuxMonitor
+|}
+
+
+== Set Linux Server Monitoring Credentials ==
+
+
+All Linux servers must have a device entry in an organizer below the <span class="ph filepath">/Devices/Server/SSH/Linux</span> device class.
+
+
+<span class="tiptitle">Tip:</span>
+The SSH monitoring feature will attempt to use key-based authentication before using a configuration properties password value.
+
+
+<ol>
+<li>Select Infrastructure from the navigation bar.
+</li>
+<li>Click the device name in the device list.
+
+The device overview page appears.
+</li>
+<li>Select Configuration Properties from the left panel.
+</li>
+<li>Verify the credentials for the service account.
+
+The zCommandUsername property must be set. To use public key authentication you must verify that the public portion of the key referenced in zKeyPath is installed in the `~/.ssh/authorized_keys` file for the appropriate user on the linux server. If this key has a passphrase you should set it in the zCommandPassword property. If you'd rather use password authentication than setup keys, simply put the user's password in the zCommandPassword property.
+
+=== Using a Root User ===
+This ZenPack requires the ability to run the ''pvs'', ''vgs'', and ''lvs'' commands, remotely on your linux server(s) using SSH. By default, these ommands are only allowed to be run locally. To remotely run these commands, the root use must not be required to use TTY.
+
+# Install the '''sudo''' package on your server.
+# Allow root user to execute commands via ssh without a TTY.
+## Run ''visudo'' as root.
+## Find the line containing ''root    ALL=(ALL)       ALL''.
+## Add this line underneath it:
+##: Defaults:root        !requiretty
+## Type ''ESC'' then '':wq'' to save the sudo configuration.
+
+
+=== Using a Non-Root User ===
+This ZenPack requires the ability to run the ''pvs'', ''vgs'', and ''lvs'' commands, remotely on your linux server(s) using SSH. By default, these commands are only allowed to be run by the '''root''' user. Furthermore, this ZenPack expects these commands be in the user's path. Normally this is only true for the root user.
+
+Assuming that you've created a user named '''zenmonitor''' on your linux servers for monitoring purposes, you can follow these steps to allow the '''zenmonitor''' user to run ''pvs'', ''vgs'',  and the ''lvs'' commands.
+
+# Install the '''sudo''' package on your server.
+# Allow the *zenmonitor* user to run pvs,lvs,vgs.
+## Run ''visudo'' as root.
+## Add the following line to the bottom of the file.
+##: zenmonitor ALL=(ALL) NOPASSWD: /usr/sbin/pvs, /usr/sbin/vgs, /usr/sbin/lvs
+## Type ''ESC'' then '':wq'' to save the sudo configuration.
+# Allow *zenmonitor* to execute commands via ssh without a TTY.
+## Run ''visudo'' as root.
+## Find the line containing ''zenmonitor ALL=(ALL) NOPASSWD: /usr/sbin/pvs, /usr/sbin/vgs, /usr/sbin/lvs''.
+## Add this line underneath it:
+##: Defaults:zenmonitor        !requiretty
+## Type ''ESC'' then '':wq'' to save the sudo configuration.
+
+
+{| class="wikitable"
+|+ <span class="tablecap"><span class="tablecap">Linux Configuration Properties</span></span>
+!width="50%"|Name
+!width="50%"|Description
+|-
+|zCommandUsername
+
+|Linux user with privileges to gather performance information.
+
+|-
+|zCommandPassword
+
+|Password for the Linux user.
+
+|}
+
+
+</li></ol>
+
+
+== Add a Linux Server ==
+
+
+The following procedure assumes that credentials have been set.
+
+
+<ol>
+<li>Select Infrastructure from the navigation bar.
+</li>
+<li>Select Add a Single Device from the Add Device list of options.
+
+The Add a Single Device dialog appears.
+</li>
+<li>Enter the following information in the dialog:
+
+
+{| class="wikitable"
+|+ <span class="tablecap"><span class="tablecap">Adding Linux Device Details</span></span>
+!width="50%"|Name
+!width="50%"|Description
+|-
+|Name or IP
+
+|Linux host to model.
+
+|-
+|Device Class
+
+|<span class="ph filepath">/Server/SSH/Linux</span>
+
+|-
+|Model Device
+
+|Select this option unless adding a device with a user name and password different than found in the device class. If you do not select this option, then you must add the credentials (see ) and then manually model the device.
+
+|}
+
+
+</li>
+<li>Click '''Add'''.
+</li></ol>
+
+
+== Daemons ==
+
+
+{| class="wikitable"
+!width="50%"|Type
+!width="50%"|Name
+|-
+|Modeler
+|<span class="keyword cmdname">zenmodeler</span>
+|-
+|Performance Collector
+|<span class="keyword cmdname">zencommand</span>
+|}
