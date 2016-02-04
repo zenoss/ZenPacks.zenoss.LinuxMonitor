@@ -74,6 +74,9 @@ classes:
 
     LogicalVolume:
         label: Logical Volume
+        impacts:
+            - snapshotVolumes
+            - openstack_core_components
         impacted_by:
             - volumeGroup
         properties:
@@ -93,12 +96,21 @@ classes:
                 details_display: False
             uuid:
                 grid_display: False
+                details_display: False
+            openstack_core_components:
+                type: entity
+                label: Cinder Integration
+                grid_display: false
+                api_only: true
+                api_backendtype: method
 
     SnapshotVolume:
         label: Snapshot Volume
         impacted_by:
             - volumeGroup
             - logicalVolume
+        impacts:
+            - openstack_core_components
         properties:
             attributes:
                 label: Attributes
@@ -119,6 +131,13 @@ classes:
                 details_display: False
             uuid:
                 grid_display: False
+                details_display: False
+            openstack_core_components:
+                type: entity
+                label: Cinder Integration
+                grid_display: false
+                api_only: true
+                api_backendtype: method
 
 class_relationships:
     - Products.ZenModel.Device.Device 1:MC VolumeGroup
@@ -132,6 +151,7 @@ device_classes: !ZenPackSpec
         zProperties:
             zCollectorPlugins:
                 - zenoss.cmd.df
+                - zenoss.cmd.linux.alt_kernel_name
                 - zenoss.cmd.linux.cpuinfo
                 - zenoss.cmd.linux.ifconfig
                 - zenoss.cmd.linux.lvm
@@ -140,6 +160,7 @@ device_classes: !ZenPackSpec
                 - zenoss.cmd.linux.netstat_rn
                 - zenoss.cmd.linux.process
                 - zenoss.cmd.linux.rpm
+                - zenoss.cmd.linux.sudo_dmidecode
                 - zenoss.cmd.uname
                 - zenoss.cmd.uname_a
 
@@ -204,3 +225,4 @@ device_classes: !ZenPackSpec
                                 dpName: group_free
                                 lineType: AREA
                                 rpn: "size,-,size,/,-100,*"
+            zSshConcurrentSessions: 5

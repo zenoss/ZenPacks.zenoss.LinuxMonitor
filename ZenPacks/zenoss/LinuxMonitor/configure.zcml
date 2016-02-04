@@ -5,4 +5,34 @@
     xmlns:zcml="http://namespaces.zope.org/zcml"
     >
 
+    <!-- Impact -->
+    <configure zcml:condition="installed ZenPacks.zenoss.Impact">
+        <include package="ZenPacks.zenoss.Impact" file="meta.zcml"/>
+
+        <subscriber
+            provides="ZenPacks.zenoss.Impact.impactd.interfaces.IRelationshipDataProvider"
+            for="Products.ZenModel.CPU.CPU"
+            factory=".impact.CPURelationsProvider"
+            />
+
+        <subscriber
+            provides="ZenPacks.zenoss.Impact.impactd.interfaces.IRelationshipDataProvider"
+            for="Products.ZenModel.FileSystem.FileSystem"
+            factory=".impact.FileSystemRelationsProvider"
+            />
+
+    </configure>
+
+    <!-- OpenStack Cinder integration -->
+    <configure zcml:condition="installed ZenPacks.zenoss.OpenStackInfrastructure.interfaces">
+      <configure zcml:condition="have openstack_cinder_integration">
+          <utility
+              name="cinder.lvm"
+              factory=".openstack_cinder.CephCinderImplementationPlugin"
+              provides="ZenPacks.zenoss.OpenStackInfrastructure.interfaces.ICinderImplementationPlugin"
+              />
+      </configure>
+    </configure>
+
 </configure>
+
