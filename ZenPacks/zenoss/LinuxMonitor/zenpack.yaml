@@ -163,6 +163,7 @@ device_classes: !ZenPackSpec
                 - zenoss.cmd.linux.sudo_dmidecode
                 - zenoss.cmd.uname
                 - zenoss.cmd.uname_a
+            zSshConcurrentSessions: 5
 
         templates:
             PhysicalVolume:
@@ -225,4 +226,3 @@ device_classes: !ZenPackSpec
                                 dpName: group_free
                                 lineType: AREA
                                 rpn: "size,-,size,/,-100,*"
-            zSshConcurrentSessions: 5
