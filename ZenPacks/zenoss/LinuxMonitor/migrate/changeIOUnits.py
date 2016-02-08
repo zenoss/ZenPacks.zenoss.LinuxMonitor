@@ -34,14 +34,13 @@ class changeIOUnits(ZenPackMigration):
     version = Version(2, 0, 0)
 
     def migrate(self, pack):
-        try:
-            log.info("Changing IO graph unit from bytes/sec to sectors/sec.")
+        try:            
             sshLinux = getSshLinux(pack.dmd)
             if sshLinux:
                 IOgraph = sshLinux.rrdTemplates.Device.graphDefs.IO
                 log.debug("Current IO graph value is %r", IOgraph.units)
-                IOgraph.units = 'blocks/sec'
-
+                IOgraph.units = 'sectors/sec'
+                log.info("IO graph unit changed from bytes/sec to sectors/sec.")
         except Exception as ex:
             log.debug('Exception changing IO graph units from bytes/sec to sectors/sec.')
             log.exception(ex)
