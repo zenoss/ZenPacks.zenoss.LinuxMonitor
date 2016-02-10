@@ -187,6 +187,45 @@ device_classes: !ZenPackSpec
                         datapoints:
                             status:
                                 rrdmin: 0
+                    iostats:
+                        type: COMMAND
+                        commandTemplate: '/usr/bin/sudo /usr/bin/cat /proc/diskstats'
+                        usessh: true
+                        parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.iostats
+                        datapoints:
+                            totalReads:
+                                description: This is the total number of reads completed successfully.
+                                rrdmin: 0
+                            numReadsMerged:
+                                description: Reads which are adjacent to each other may be merged for efficiency. This field lets you know how often this was done.
+                                rrdmin: 0
+                            totalSectorsRead:
+                                description: This is the total number of sectors read successfully.
+                                rrdmin: 0
+                            totalMsReading:
+                                description: This is the total number of milliseconds spent by all reads.
+                                rrdmin: 0
+                            totalWrites:
+                                description: This is the total number of writes completed successfully.
+                                rrdmin: 0
+                            numWritesMerged:
+                                description: Writes which are adjacent to each other may be merged for efficiency. This field lets you know how often this was done.
+                                rrdmin: 0
+                            totalSectorsWritten:
+                                description: This is the total number of sectors written successfully.
+                                rrdmin: 0
+                            totalMsWriting:
+                                description: This is the total number of milliseconds spent by all writes.
+                                rrdmin: 0
+                            numIOInProgess:
+                                description: I/Os currently in progress. The field should go to zero.
+                                rrdmin: 0
+                            totalMsIO:
+                                description: Milliseconds spent doing I/Os. This field increases so long as totalMsWriting is nonzero.
+                                rrdmin: 0
+                            weightedMsPerIO:
+                                description: This field is incremented at each I/O start, I/O completion, I/O merge, or read of these stats by the number of I/Os in progress times the number of milliseconds spent doing I/O since the last update of this field.
+                                rrdmin: 0
                 graphs:
                     Physical Volume Utilization:
                         units: percent
