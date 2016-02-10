@@ -1218,7 +1218,7 @@
                             -1
                         </property>
                         <property type="string" id="rpn" mode="w">
-                            100,EXC,-
+                            100,EXC,-,0,MAX
                         </property>
                         <property type="string" id="dpName" mode="w">
                             cpu_ssCpuIdlePerCpu
