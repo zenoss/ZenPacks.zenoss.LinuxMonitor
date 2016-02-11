@@ -74,6 +74,7 @@ classes:
 
     LogicalVolume:
         label: Logical Volume
+        monitoring_templates: ['LogicalVolume']
         impacts:
             - snapshotVolumes
             - openstack_core_components
@@ -90,6 +91,7 @@ classes:
                 renderer: Zenoss.render.bytesString
             active:
                 label: Active
+                datapoint: status_state
                 renderer: Zenoss.render.checkbox
             vgname:
                 grid_display: False
@@ -122,6 +124,7 @@ classes:
                 renderer: Zenoss.render.bytesString
             active:
                 type: boolean
+                datapoint: status_state
                 renderer: Zenoss.render.checkbox
                 label: Active
             origin:
@@ -168,6 +171,7 @@ device_classes: !ZenPackSpec
         templates:
             PhysicalVolume:
                 description: Physical Volume Monitoring
+                targetPythonClass: ZenPacks.zenoss.LinuxMonitor.PhysicalVolume.PhysicalVolume
                 datasources:
                     volume:
                         type: COMMAND
@@ -181,11 +185,15 @@ device_classes: !ZenPackSpec
                                 rrdmin: 0
                     status:
                         type: COMMAND
-                        commandTemplate: '/usr/bin/sudo pvs -o pv_name,pv_missing'
+                        commandTemplate: "/usr/bin/sudo /usr/sbin/pvs --noheadings -o pv_name,pv_attr | awk '{split($$2, chars, \"\"); printf(\"%s \", $$1); for (i=1;i<=3;i++) printf(\"%d \", chars[i]==\"-\" ? 0 : 1); printf(\"\\n\")}'"
                         usessh: true
                         parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.pvsstatus
                         datapoints:
-                            status:
+                            allocatable:
+                                rrdmin: 0
+                            exported:
+                                rrdmin: 0
+                            missing:
                                 rrdmin: 0
                 graphs:
                     Physical Volume Utilization:
@@ -200,8 +208,23 @@ device_classes: !ZenPackSpec
                                 dpName: volume_free
                                 lineType: AREA
                                 rpn: "size,-,size,/,-100,*"
+                thresholds:
+                    unallocatable:
+                        dsnames: [status_allocatable]
+                        minval: 1
+                        eventClass: /Status
+                    exported:
+                        dsnames: [status_exported]
+                        maxval: 0
+                        severity: 2
+                        eventClass: /Status
+                    missing:
+                        dsnames: [status_missing]
+                        maxval: 0
+                        eventClass: /Status
             VolumeGroup:
                 description: Volume Group Monitoring
+                targetPythonClass: ZenPacks.zenoss.LinuxMonitor.VolumeGroup.VolumeGroup
                 datasources:
                     group:
                         type: COMMAND
@@ -212,6 +235,14 @@ device_classes: !ZenPackSpec
                             size:
                                 rrdmin: 0
                             free:
+                                rrdmin: 0
+                    status:
+                        type: COMMAND
+                        commandTemplate: "/usr/bin/sudo /usr/sbin/vgs --noheadings -o vg_name,vg_attr | awk '{ if (NF > 1) print $$1 \" 1\"; else print $$1 \" 0\"; }'"
+                        usessh: true
+                        parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.vgsstatus
+                        datapoints:
+                            partial:
                                 rrdmin: 0
                 graphs:
                     Volume Group Utilization:
@@ -226,3 +257,33 @@ device_classes: !ZenPackSpec
                                 dpName: group_free
                                 lineType: AREA
                                 rpn: "size,-,size,/,-100,*"
+            LogicalVolume:
+                description: Logical Volume Monitoring
+                targetPythonClass: ZenPacks.zenoss.LinuxMonitor.LogicalVolume.LogicalVolume
+                datasources:
+                    status:
+                        type: COMMAND
+                        commandTemplate: "/usr/bin/sudo /usr/sbin/lvs --noheadings -o vg_name,lv_name,lv_attr | /usr/bin/awk '{print $$1\"_\"$$2\" \"$$3}'"
+                        usessh: true
+                        parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.lvsstatus
+                        eventClass: /Status
+                        datapoints:
+                            state:
+                                rrdmin: 0
+                            health:
+                                rrdmin: 0
+            SnapshotVolume:
+                description: Snapshot Volume Monitoring
+                targetPythonClass: ZenPacks.zenoss.LinuxMonitor.SnapshotVolume.SnapshotVolume
+                datasources:
+                    status:
+                        type: COMMAND
+                        commandTemplate: "/usr/bin/sudo /usr/sbin/lvs --noheadings -o vg_name,lv_name,lv_attr | /usr/bin/awk '{print $$1\"_\"$$2\" \"$$3}'"
+                        usessh: true
+                        parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.lvsstatus
+                        eventClass: /Status
+                        datapoints:
+                            state:
+                                rrdmin: 0
+                            health:
+                                rrdmin: 0
