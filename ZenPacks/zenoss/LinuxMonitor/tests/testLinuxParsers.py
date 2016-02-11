@@ -16,6 +16,8 @@ from Products.ZenRRD.parsers.uptime import uptime
 from ZenPacks.zenoss.LinuxMonitor.parsers.linux.df import df
 from ZenPacks.zenoss.LinuxMonitor.parsers.linux.dfi import dfi
 from ZenPacks.zenoss.LinuxMonitor.parsers.linux.mem import mem
+from ZenPacks.zenoss.LinuxMonitor.parsers.linux.cpu import cpu
+from ZenPacks.zenoss.LinuxMonitor.parsers.linux.diskstats import diskstats
 
 class LinuxParsersTestCase(BaseParsersTestCase):
 
@@ -30,6 +32,8 @@ class LinuxParsersTestCase(BaseParsersTestCase):
                      '/bin/df -iPk': dfi,
                      '/usr/bin/uptime': uptime,
                      '/bin/cat /proc/meminfo': mem,
+                     '/bin/cat /proc/stat': cpu,
+                     '/bin/cat /proc/diskstats': diskstats
                      }
         
         self._testParsers(datadir, parserMap)
