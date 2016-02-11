@@ -1,0 +1,9 @@
+/usr/bin/sudo pvs --units b --nosuffix -o pv_name,pv_fmt,pv_attr,pv_size,pv_free,pv_uuid,vg_name; /usr/bin/sudo vgs --units b --nosuffix -o vg_name,vg_attr,vg_size,vg_free,vg_uuid; /usr/bin/sudo lvs --units b --nosuffix -o lv_name,vg_name,lv_attr,lv_size,lv_uuid,origin
+PV         Fmt  Attr PSize       PFree       PV UUID                                VG
+/dev/sda2  lvm2 a--  20946354176    41943040 hctl0n-t76R-AdMs-FG1x-IUxG-hbTi-FZlhXG centos
+/dev/sdb1  lvm2 a--  21470642176           0 KN4g1e-iko0-Zn9E-8jkZ-q7oE-cHZO-dEhGM2 fileserver
+VG         #PV #LV #SN Attr   VSize       VFree
+centos       dzxpdv  2   0 wz--n- 20946354176    41943040
+fileserver   dzxpbv  3   0 wz--n- 42941284352 15023996928
+LV     VG         Attr       LSize       Active
+root   centos     -wi-ao---- 18756927488 active
