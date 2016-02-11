@@ -147,6 +147,19 @@ classes:
             impacts:
                 - openstack_core_components
         properties:
+            attributes:
+                label: Attributes
+                grid_display: False
+                type: lines
+            lvsize:
+                label: Size
+                type: int
+                renderer: Zenoss.render.bytesString
+            active:
+                type: boolean
+                datapoint: status_state
+                renderer: Zenoss.render.checkbox
+                label: Active
             origin:
                 grid_display: False
 
