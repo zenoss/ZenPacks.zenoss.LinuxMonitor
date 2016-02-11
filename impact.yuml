@@ -1,0 +1,5 @@
+// Logical Volume Manager
+[Device]1-*>[Physical Volume]
+[Physical Volume]1-*>[Volume Group]
+[Volume Group]1-*>[Logical Volume]
+[Logical Volume]1-*>[Snapshot Volume]
