@@ -187,6 +187,50 @@ device_classes: !ZenPackSpec
                         datapoints:
                             status:
                                 rrdmin: 0
+                    diskstats:
+                        type: COMMAND
+                        commandTemplate: '/bin/cat /proc/diskstats'
+                        usessh: true
+                        parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.diskstats
+                        datapoints:
+                            totalReads:
+                                rrdtype: COUNTER
+                                description: This is the total number of reads completed successfully.
+                            numReadsMerged:
+                                rrdtype: DERIVE
+                                rrdmin: 0
+                                description: Reads which are adjacent to each other may be merged for efficiency. This field lets you know how often this was done.
+                            totalSectorsRead:
+                                rrdtype: COUNTER
+                                description: This is the total number of sectors read successfully.
+                            totalMsReading:
+                                rrdtype: COUNTER
+                                description: This is the total number of milliseconds spent by all reads.
+                            totalWrites:
+                                rrdtype: COUNTER
+                                description: This is the total number of writes completed successfully.
+                            numWritesMerged:
+                                rrdtype: DERIVE
+                                rrdmin: 0
+                                description: Writes which are adjacent to each other may be merged for efficiency. This field lets you know how often this was done.
+                            totalSectorsWritten:
+                                rrdtype: COUNTER
+                                description: This is the total number of sectors written successfully.
+                            totalMsWriting:
+                                rrdtype: COUNTER
+                                description: This is the total number of milliseconds spent by all writes.
+                            numIOInProgess:
+                                rrdtype: DERIVE
+                                rrdmin: 0
+                                description: I/Os currently in progress. The field should go to zero.
+                            totalMsIO:
+                                rrdtype: DERIVE
+                                rrdmin: 0
+                                description: Milliseconds spent doing I/Os. This field increases so long as totalMsWriting is nonzero.
+                            weightedMsPerIO:
+                                rrdtype: DERIVE
+                                rrdmin: 0
+                                description: This field is incremented at each I/O start, I/O completion, I/O merge, or read of these stats by the number of I/Os in progress times the number of milliseconds spent doing I/O since the last update of this field.
                 graphs:
                     Physical Volume Utilization:
                         units: percent
@@ -200,6 +244,35 @@ device_classes: !ZenPackSpec
                                 dpName: volume_free
                                 lineType: AREA
                                 rpn: "size,-,size,/,-100,*"
+                    Physical Volume IO Stats:
+                        units: per sec
+                        miny: 0
+                        maxy: 100
+                        graphpoints:
+                            RRQM:
+                                dpName: diskstats_numReadsMerged
+                                lineType: AREA
+                                rpn: "${here/sysUpTime},/,100,*"
+                            WRQM:
+                                dpName: diskstats_numWritesMerged
+                                lineType: AREA
+                                rpn: "${here/sysUpTime},/,100,*"
+                            Reads:
+                                dpName: diskstats_totalReads
+                                lineType: AREA
+                                rpn: "${here/sysUpTime},/,100,*"
+                            Writes:
+                                dpName: diskstats_totalWrites
+                                lineType: AREA
+                                rpn: "${here/sysUpTime},/,100,*"
+                            Sectors Read:
+                                dpName: diskstats_totalSectorsRead
+                                lineType: AREA
+                                rpn: "${here/sysUpTime},/,100,*"
+                            Sectors Written:
+                                dpName: diskstats_totalSectorsWritten
+                                lineType: AREA
+                                rpn: "${here/sysUpTime},/,100,*"
             VolumeGroup:
                 description: Volume Group Monitoring
                 datasources:
