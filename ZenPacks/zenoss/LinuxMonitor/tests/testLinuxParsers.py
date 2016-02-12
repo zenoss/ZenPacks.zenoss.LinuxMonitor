@@ -1,6 +1,6 @@
 ##############################################################################
 # 
-# Copyright (C) Zenoss, Inc. 2009, all rights reserved.
+# Copyright (C) Zenoss, Inc. 2009, 2016 all rights reserved.
 # 
 # This content is made available according to terms specified in
 # License.zenoss under the directory where your Zenoss product is installed.
@@ -15,7 +15,9 @@ from Products.ZenRRD.parsers.uptime import uptime
 
 from ZenPacks.zenoss.LinuxMonitor.parsers.linux.df import df
 from ZenPacks.zenoss.LinuxMonitor.parsers.linux.dfi import dfi
+from ZenPacks.zenoss.LinuxMonitor.parsers.linux.diskstats import diskstats
 from ZenPacks.zenoss.LinuxMonitor.parsers.linux.mem import mem
+
 
 class LinuxParsersTestCase(BaseParsersTestCase):
 
@@ -30,8 +32,8 @@ class LinuxParsersTestCase(BaseParsersTestCase):
                      '/bin/df -iPk': dfi,
                      '/usr/bin/uptime': uptime,
                      '/bin/cat /proc/meminfo': mem,
+                     '/bin/cat /proc/diskstats': diskstats,
                      }
-        
         self._testParsers(datadir, parserMap)
 
 
