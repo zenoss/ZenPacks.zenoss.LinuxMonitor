@@ -66,10 +66,7 @@ class lvm(CommandPlugin):
         lv_maps = []
         sv_maps = []
         lvm_parser = LVMAttributeParser()
-<<<<<<< HEAD
         section = ''
-=======
->>>>>>> update for lvm monitoring and modeling
         for line in results.split('\n'):
             columns = line.split()
             if not columns:
