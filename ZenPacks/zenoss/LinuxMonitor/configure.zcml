@@ -5,6 +5,12 @@
     xmlns:zcml="http://namespaces.zope.org/zcml"
     >
 
+    <adapter
+        factory="ZenPacks.zenoss.LinuxMonitor.info.FileSystemInfo"
+        for="ZenPacks.zenoss.LinuxMonitor.FileSystem.FileSystem"
+        provides="ZenPacks.zenoss.LinuxMonitor.interfaces.IFileSystemInfo"
+        />
+
     <!-- Impact -->
     <configure zcml:condition="installed ZenPacks.zenoss.Impact">
         <include package="ZenPacks.zenoss.Impact" file="meta.zcml"/>
@@ -33,6 +39,9 @@
               />
       </configure>
     </configure>
+
+    <!-- Browser -->
+    <include package=".browser"/>
 
 </configure>
 
