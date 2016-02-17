@@ -151,7 +151,7 @@ device_classes: !ZenPackSpec
         zProperties:
             zCollectorPlugins:
                 - zenoss.cmd.df
-                - zenoss.cmd.linux.alt_kernel_name
+                - zenoss.cmd.uname
                 - zenoss.cmd.linux.cpuinfo
                 - zenoss.cmd.linux.ifconfig
                 - zenoss.cmd.linux.lvm
@@ -161,8 +161,7 @@ device_classes: !ZenPackSpec
                 - zenoss.cmd.linux.process
                 - zenoss.cmd.linux.rpm
                 - zenoss.cmd.linux.sudo_dmidecode
-                - zenoss.cmd.uname
-                - zenoss.cmd.uname_a
+                - zenoss.cmd.linux.os_release
             zSshConcurrentSessions: 5
 
         templates:
