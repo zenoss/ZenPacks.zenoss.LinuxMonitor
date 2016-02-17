@@ -26,11 +26,16 @@ log = logging.getLogger('zen.lvm')
 
 class lvm(CommandPlugin):
     """
+    /usr/bin/fdisk -l  | grep '^Disk' | grep -v 'mapper\|identifier\|label' | awk '{gsub(":","");print $2" "$5}'
     /usr/bin/sudo pvs --units b --nosuffix -o pv_name,pv_fmt,pv_attr,pv_size,pv_free,pv_uuid,vg_name;
     /usr/bin/sudo vgs --units b --nosuffix -o vg_name,vg_attr,vg_size,vg_free,vg_uuid;
     /usr/bin/sudo lvs --units b --nosuffix -o lv_name,vg_name,lv_attr,lv_size,lv_uuid,origin
 
     sample output:
+    /dev/sda 21474836480
+    /dev/sdb 21474836480
+    /dev/sdc 21474836480
+    /dev/sdd 21474836480
     PV         Fmt  Attr PSize       PFree       PV UUID                                VG
     /dev/sda2  lvm2 a--  20946354176    41943040 hctl0n-t76R-AdMs-FG1x-IUxG-hbTi-FZlhXG centos
     /dev/sdb1  lvm2 a--  21470642176           0 KN4g1e-iko0-Zn9E-8jkZ-q7oE-cHZO-dEhGM2 fileserver
@@ -46,39 +51,38 @@ class lvm(CommandPlugin):
     backup fileserver -wi-ao----  5368709120 active
     media  fileserver -wi-ao----  1073741824 active
     share  fileserver -wi-ao---- 21474836480 active
-
     """
 
-    command = ('/usr/bin/sudo pvs --units b --nosuffix -o pv_name,pv_fmt,pv_attr,pv_size,pv_free,pv_uuid,vg_name; '
-               '/usr/bin/sudo vgs --units b --nosuffix -o vg_name,vg_attr,vg_size,vg_free,vg_uuid; '
-               '/usr/bin/sudo lvs --units b --nosuffix -o lv_name,vg_name,lv_attr,lv_size,lv_uuid,origin')
+    command = ('/usr/bin/echo "PD";/usr/bin/sudo /usr/sbin/fdisk -l  | /usr/bin/grep \'^Disk\' | /usr/bin/grep -v '
+               '\'mapper\|identifier\|label\' | /usr/bin/awk \'{gsub(":","");print $2" "$5}\'; '
+               '/usr/bin/sudo /sbin/pvs --units b --nosuffix -o pv_name,pv_fmt,pv_attr,pv_size,pv_free,pv_uuid,vg_name; '
+               '/usr/bin/sudo /sbin/vgs --units b --nosuffix -o vg_name,vg_attr,vg_size,vg_free,vg_uuid; '
+               '/usr/bin/sudo /sbin/lvs --units b --nosuffix -o lv_name,vg_name,lv_attr,lv_size,lv_uuid,lv_dm_path,origin')
 
     def process(self, device, results, log):
-        vg_maps = []
+        pd_maps = []
         pv_maps = []
+        vg_maps = []
         lv_maps = []
         sv_maps = []
         lvm_parser = LVMAttributeParser()
+        section = ''
         for line in results.split('\n'):
             columns = line.split()
             if not columns:
                 continue
-            if columns[0] == 'PV':
-                inPV = True
-                inVG = False
-                inLV = False
+            if columns[0] in ['PD', 'PV', 'VG', 'LV']:
+                section = columns[0]
                 continue
-            elif columns[0] == 'VG':
-                inVG = True
-                inPV = False
-                inLV = False
-                continue
-            elif columns[0] == 'LV':
-                inLV = True
-                inVG = False
-                inPV = False
-                continue
-            if inPV:
+            if section == 'PD':
+                pd_om = ObjectMap()
+                pd_om.title = columns[0]
+                pd_om.id = self.prepId(columns[0])
+                pd_om.size = int(columns[1])
+                pd_om.relname = 'physicalDisks'
+                pd_om.modname = 'ZenPacks.zenoss.LinuxMonitor.PhysicalDisk'
+                pd_maps.append(pd_om)
+            elif section == 'PV':
                 pv_om = ObjectMap()
                 pv_om.title = columns[0]
                 pv_om.id = self.prepId(columns[0])
@@ -91,8 +95,11 @@ class lvm(CommandPlugin):
                     pv_om.set_volumeGroup = columns[6]
                 pv_om.relname = 'physicalVolumes'
                 pv_om.modname = 'ZenPacks.zenoss.LinuxMonitor.PhysicalVolume'
+                for pd_om in pd_maps:
+                    if pd_om.title in pv_om.title:
+                        pv_om.set_physicalDisk = pd_om.id
                 pv_maps.append(pv_om)
-            elif inVG:
+            elif section == 'VG':
                 vg_om = ObjectMap()
                 vg_om.title = columns[0]
                 vg_om.id = self.prepId(columns[0])
@@ -103,7 +110,7 @@ class lvm(CommandPlugin):
                 vg_om.relname = 'volumeGroups'
                 vg_om.modname = 'ZenPacks.zenoss.LinuxMonitor.VolumeGroup'
                 vg_maps.append(vg_om)
-            elif inLV:
+            elif section == 'LV':
                 lv_om = ObjectMap()
                 lv_om.title = columns[0]
                 lv_om.vgname = columns[1]
@@ -112,8 +119,9 @@ class lvm(CommandPlugin):
                 lv_om.lvsize = int(columns[3])
                 lv_om.active = True if 'active' in lv_om.attributes else False
                 lv_om.uuid = columns[4]
-                if len(columns) == 6:
-                    lv_om.origin = columns[5]
+                lv_om.dm_path = columns[5]
+                if len(columns) == 7:
+                    lv_om.origin = columns[6]
                     lv_om.relname = 'snapshotVolumes'
                     lv_om.modname = 'ZenPacks.zenoss.LinuxMonitor.SnapshotVolume'
                     sv_maps.append(lv_om)
@@ -127,6 +135,11 @@ class lvm(CommandPlugin):
             relname="volumeGroups",
             modname="ZenPacks.zenoss.LinuxMonitor.VolumeGroup",
             objmaps=vg_maps))
+
+        maps.append(RelationshipMap(
+            relname='physicalDisks',
+            modname="ZenPacks.zenoss.LinuxMonitor.PhysicalDisk",
+            objmaps=pd_maps))
 
         maps.append(RelationshipMap(
             relname="physicalVolumes",

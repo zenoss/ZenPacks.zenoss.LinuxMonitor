@@ -10,8 +10,8 @@
 from . import schema
 
 import logging
-LOG = logging.getLogger('zen.lvm.SnapshotVolume')
 
+from Products.Zuul.interfaces import ICatalogTool
 from zope.interface import implements
 
 try:
@@ -23,6 +23,7 @@ try:
     openstack = True
 except ImportError:
     openstack = False
+LOG = logging.getLogger('zen.lvm.SnapshotVolume')
 
 
 class SnapshotVolume(schema.SnapshotVolume):
@@ -30,7 +31,6 @@ class SnapshotVolume(schema.SnapshotVolume):
     '''
     if openstack:
         implements(ICinderImplementationComponent)
-
 
     # The "integration key(s)" for this component must be made up of
     # a set of values that uniquely identify this resource and are
@@ -62,3 +62,11 @@ class SnapshotVolume(schema.SnapshotVolume):
             return get_cinder_components(self)
         else:
             return []
+
+    def filesystem(self):
+        results = ICatalogTool(self.device()).search('Products.ZenModel.FileSystem.FileSystem')
+        for brain in results:
+            fs = brain.getObject()
+            if fs.storageDevice == self.dm_path:
+                return fs
+        return None
