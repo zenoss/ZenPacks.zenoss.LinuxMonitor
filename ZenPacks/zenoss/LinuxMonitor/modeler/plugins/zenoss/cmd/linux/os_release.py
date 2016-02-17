@@ -112,7 +112,7 @@ def getOSModel(results):
         fline = ''.join(line.split()).lower()
         if fline and any((d in fline for d in SUPPORTED_DISTROS)):
             if 'pretty_name' in fline:
-                return line[fline.find(dist):].strip('"')
+                return line.split('=')[1].strip('"')
             elif RE_DISTR.match(line):
                 return line.strip()
 
