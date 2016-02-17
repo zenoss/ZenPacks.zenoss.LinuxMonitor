@@ -120,7 +120,7 @@ def getOSModel(results):
 class os_release(LinuxCommandPlugin):
 
     maptype = 'DeviceMap'
-    command = 'cat /etc/*-release'
+    command = '/bin/cat /etc/*-release'
     compname = ''
 
     def process(self, device, results, log):
