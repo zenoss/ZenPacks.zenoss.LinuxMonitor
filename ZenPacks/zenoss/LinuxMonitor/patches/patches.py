@@ -9,6 +9,7 @@
 
 from Products.ZenUtils.Utils import monkeypatch
 from Products.Zuul import getFacade
+from Products.Zuul.interfaces import ICatalogTool
 
 
 @monkeypatch('Products.ZenModel.Device.Device')
@@ -26,3 +27,15 @@ def getPingStatus(self):
             return 0
     else:
         return original(self)
+
+
+@monkeypatch('Products.ZenModel.FileSystem.FileSystem')
+def getLogicalVolume(self):
+    results = ICatalogTool(self.device()).search(
+        ('ZenPacks.zenoss.LinuxMonitor.LogicalVolume.LogicalVolume',
+         'ZenPacks.zenoss.LinuxMonitor.SnapshotVolume.SnapshotVolume'))
+    for brain in results:
+        lv = brain.getObject()
+        if lv.dm_path == self.storageDevice:
+            return lv
+    return None

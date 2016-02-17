@@ -4,10 +4,26 @@ classes:
     DEFAULTS:
         base: [zenpacklib.Component]
 
+    PhysicalDisk:
+        label: Physical Disk
+        dynamicview_views: [service_view]
+        dynamicview_relations:
+            impacts: 
+                - physicalVolume
+        properties:
+            size:
+                label: Size
+                type: int
+                renderer: Zenoss.render.bytesString
+
     PhysicalVolume:
         label: Physical Volume
-        impacts:
-            - volumeGroup
+        dynamicview_views: [service_view]
+        dynamicview_relations:
+            impacts:
+                - volumeGroup
+            impacted_by:
+                - physicalDisk
         properties:
             pvsize:
                 label: Size
@@ -38,11 +54,13 @@ classes:
 
     VolumeGroup:
         label: Volume Group
-        impacts:
-            - logicalVolumes
-            - snapshotVolumes
-        impacted_by:
-            - physicalVolumes
+        dynamicview_views: [service_view]
+        dynamicview_relations:
+            impacts:
+                - logicalVolumes
+                - snapshotVolumes
+            impacted_by:
+                - physicalVolumes
         properties:
             vgsize:
                 label: Size
@@ -75,11 +93,13 @@ classes:
     LogicalVolume:
         label: Logical Volume
         monitoring_templates: ['LogicalVolume']
-        impacts:
-            - snapshotVolumes
-            - openstack_core_components
-        impacted_by:
-            - volumeGroup
+        dynamicview_views: [service_view]
+        dynamicview_relations:
+            impacts:
+                - snapshotVolumes
+                - openstack_core_components
+            impacted_by:
+                - volumeGroup
         properties:
             attributes:
                 label: Attributes
@@ -105,46 +125,36 @@ classes:
                 grid_display: false
                 api_only: true
                 api_backendtype: method
+            filesystem:
+                label: File System
+                api_only: true
+                api_backendtype: method
+                type: entity
+            dm_path:
+                label: Device-mapper path
+                grid_display: False
+                details_display: False
+
 
     SnapshotVolume:
+        base: [LogicalVolume]
         label: Snapshot Volume
-        impacted_by:
-            - volumeGroup
-            - logicalVolume
-        impacts:
-            - openstack_core_components
+        dynamicview_views: [service_view]
+        dynamicview_relations:
+            impacted_by:
+                - volumeGroup
+                - logicalVolume
+            impacts:
+                - openstack_core_components
         properties:
-            attributes:
-                label: Attributes
-                grid_display: False
-                type: lines
-            lvsize:
-                label: Size
-                type: int
-                renderer: Zenoss.render.bytesString
-            active:
-                type: boolean
-                datapoint: status_state
-                renderer: Zenoss.render.checkbox
-                label: Active
             origin:
                 grid_display: False
-            vgname:
-                grid_display: False
-                details_display: False
-            uuid:
-                grid_display: False
-                details_display: False
-            openstack_core_components:
-                type: entity
-                label: Cinder Integration
-                grid_display: false
-                api_only: true
-                api_backendtype: method
 
 class_relationships:
     - Products.ZenModel.Device.Device 1:MC VolumeGroup
+    - Products.ZenModel.Device.Device 1:MC PhysicalDisk
     - Products.ZenModel.Device.Device 1:MC PhysicalVolume
+    - PhysicalDisk 1:M PhysicalVolume
     - VolumeGroup 1:M PhysicalVolume
     - VolumeGroup 1:MC LogicalVolume
     - LogicalVolume 1:MC SnapshotVolume
@@ -153,8 +163,9 @@ device_classes: !ZenPackSpec
     /Server/SSH/Linux:
         zProperties:
             zCollectorPlugins:
-                - zenoss.cmd.df
                 - zenoss.cmd.uname
+                - zenoss.cmd.linux.df
+                - zenoss.cmd.linux.alt_kernel_name
                 - zenoss.cmd.linux.cpuinfo
                 - zenoss.cmd.linux.ifconfig
                 - zenoss.cmd.linux.lvm
@@ -324,6 +335,7 @@ device_classes: !ZenPackSpec
                         dsnames: [status_allocatable]
                         minval: 1
                         eventClass: /Status
+                        explanation: Physical volume is not allocatable
                     exported:
                         dsnames: [status_exported]
                         maxval: 0
@@ -333,6 +345,7 @@ device_classes: !ZenPackSpec
                         dsnames: [status_missing]
                         maxval: 0
                         eventClass: /Status
+                        explanation: Physical volume is missing
             VolumeGroup:
                 description: Volume Group Monitoring
                 targetPythonClass: ZenPacks.zenoss.LinuxMonitor.VolumeGroup.VolumeGroup
@@ -349,12 +362,18 @@ device_classes: !ZenPackSpec
                                 rrdmin: 0
                     status:
                         type: COMMAND
-                        commandTemplate: "/usr/bin/sudo /usr/sbin/vgs --noheadings -o vg_name,vg_attr | awk '{ if (NF > 1) print $$1 \" 1\"; else print $$1 \" 0\"; }'"
+                        commandTemplate: "/usr/bin/sudo /usr/sbin/vgs --noheadings -o vg_name,vg_attr | awk '{split($$2, chars, \"\"); printf(\"%s \", $$1); for (i=1;i<=3;i++) printf(\"%d \", chars[i]==\"-\" ? 0 : 1); printf(\"\\n\")}'"
                         usessh: true
                         parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.vgsstatus
                         datapoints:
                             partial:
                                 rrdmin: 0
+                thresholds:
+                    partial:
+                        dsnames: [status_partial]
+                        minval: 1
+                        eventClass: /Status
+                        explanation: A physical volume for the volume group may be missing.
                 graphs:
                     Volume Group Utilization:
                         units: percent

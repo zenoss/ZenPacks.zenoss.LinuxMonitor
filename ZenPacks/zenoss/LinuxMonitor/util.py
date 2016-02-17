@@ -50,10 +50,11 @@ class LVMAttributeParser(object):
         attribute = self.lv_health(atts[8])
         if attribute:
             attributes.append(attribute)
-        if atts[9] == 'k':
-            attribute = 'skip activation'
-        if attribute:
-            attributes.append(attribute)
+        if len(atts) > 9:
+            if atts[9] == 'k':
+                attribute = 'skip activation'
+            if attribute:
+                attributes.append(attribute)
         return attributes
 
     def vg_attributes(self, atts):

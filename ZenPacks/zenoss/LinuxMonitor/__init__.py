@@ -10,9 +10,14 @@
 from . import zenpacklib
 import os.path
 from Products.CMFCore.DirectoryView import registerDirectory
+from Products.ZenUtils.Utils import unused
 
 skinsDir = os.path.join(os.path.dirname(__file__), 'skins')
 if os.path.isdir(skinsDir):
     registerDirectory(skinsDir, globals())
 
 zenpacklib.load_yaml()
+
+# Patch last to avoid import recursion problems.
+from ZenPacks.zenoss.LinuxMonitor import patches
+unused(patches)

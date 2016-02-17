@@ -37,7 +37,7 @@ class CPURelationsProvider(BaseRelationsProvider):
     def getEdges(self):
         cpu = self._object
         device = cpu.device()
-        if device.getDeviceClassName() == '/Server/SSH/Linux':
+        if '/Server/SSH/Linux' in device.getDeviceClassName():
             yield ImpactEdge(
                 IGlobalIdentifier(device).getGUID(),
                 IGlobalIdentifier(cpu).getGUID(),
@@ -51,9 +51,14 @@ class FileSystemRelationsProvider(BaseRelationsProvider):
     def getEdges(self):
         filesystem = self._object
         device = filesystem.device()
-        if device.getDeviceClassName() == '/Server/SSH/Linux':
+        logicalvolume = filesystem.getLogicalVolume()
+        if '/Server/SSH/Linux' in device.getDeviceClassName():
             yield ImpactEdge(
                 IGlobalIdentifier(device).getGUID(),
                 IGlobalIdentifier(filesystem).getGUID(),
                 self.relationship_provider)
-
+            if logicalvolume:
+                yield ImpactEdge(
+                    IGlobalIdentifier(logicalvolume).getGUID(),
+                    IGlobalIdentifier(filesystem).getGUID(),
+                    self.relationship_provider)
