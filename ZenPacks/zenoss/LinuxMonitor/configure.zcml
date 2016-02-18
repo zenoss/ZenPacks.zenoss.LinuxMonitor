@@ -23,7 +23,7 @@
 
         <subscriber
             provides="ZenPacks.zenoss.Impact.impactd.interfaces.IRelationshipDataProvider"
-            for="Products.ZenModel.FileSystem.FileSystem"
+            for="ZenPacks.zenoss.LinuxMonitor.FileSystem.FileSystem"
             factory=".impact.FileSystemRelationsProvider"
             />
 
