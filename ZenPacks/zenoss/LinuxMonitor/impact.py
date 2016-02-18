@@ -54,8 +54,8 @@ class FileSystemRelationsProvider(BaseRelationsProvider):
         logicalvolume = filesystem.getLogicalVolume()
         if '/Server/SSH/Linux' in device.getDeviceClassName():
             yield ImpactEdge(
-                IGlobalIdentifier(device).getGUID(),
                 IGlobalIdentifier(filesystem).getGUID(),
+                IGlobalIdentifier(device).getGUID(),
                 self.relationship_provider)
             if logicalvolume:
                 yield ImpactEdge(

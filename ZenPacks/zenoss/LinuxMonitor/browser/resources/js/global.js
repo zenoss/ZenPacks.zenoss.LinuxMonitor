@@ -9,39 +9,6 @@
 
 var ZC = Ext.ns('Zenoss.component');
 
-Zenoss.nav.appendTo('Component', [{
-    id: 'component_FileSystem',
-    text: _t('File System'),
-    xtype: 'FileSystem',
-    subComponentGridPanel: true,
-    filterNav: function(navpanel) {
-        switch (navpanel.refOwner.componentType) {
-            case 'LogicalVolume': return true;
-            default: return false;
-        }
-    },
-    setContext: function(uid) {
-        ZC.FileSystemPanel.superclass.setContext.apply(this, [uid]);
-    }
-}]);
-
-Zenoss.nav.appendTo('Component', [{
-    id: 'component_LogicalVolume',
-    text: _t('Logical Volume'),
-    xtype: 'LogicalVolumePanel',
-    subComponentGridPanel: true,
-    filterNav: function(navpanel) {
-        if (navpanel.refOwner.componentType == 'FileSystem') {
-            return true;
-        } else {
-            return false;
-        }
-    },
-    setContext: function(uid) {
-        ZC.LogicalVolumePanel.superclass.setContext.apply(this, [uid]);
-    }
-}]);
-
 Ext.apply(Zenoss.render, {
     linux_entityLinkFromGrid: function(obj, col, record) {
         if (!obj)

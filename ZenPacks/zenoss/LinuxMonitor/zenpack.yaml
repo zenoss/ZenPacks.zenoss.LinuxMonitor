@@ -4,8 +4,8 @@ classes:
     DEFAULTS:
         base: [zenpacklib.Component]
 
-    PhysicalDisk:
-        label: Physical Disk
+    HardDisk:
+        label: HardDisk
         dynamicview_views: [service_view]
         dynamicview_relations:
             impacts: 
@@ -23,7 +23,7 @@ classes:
             impacts:
                 - volumeGroup
             impacted_by:
-                - physicalDisk
+                - hardDisk
         properties:
             pvsize:
                 label: Size
@@ -152,9 +152,9 @@ classes:
 
 class_relationships:
     - Products.ZenModel.Device.Device 1:MC VolumeGroup
-    - Products.ZenModel.Device.Device 1:MC PhysicalDisk
+    - Products.ZenModel.Device.Device 1:MC HardDisk
     - Products.ZenModel.Device.Device 1:MC PhysicalVolume
-    - PhysicalDisk 1:M PhysicalVolume
+    - HardDisk 1:M PhysicalVolume
     - VolumeGroup 1:M PhysicalVolume
     - VolumeGroup 1:MC LogicalVolume
     - LogicalVolume 1:MC SnapshotVolume

@@ -79,8 +79,8 @@ class lvm(CommandPlugin):
                 pd_om.title = columns[0]
                 pd_om.id = self.prepId(columns[0])
                 pd_om.size = int(columns[1])
-                pd_om.relname = 'physicalDisks'
-                pd_om.modname = 'ZenPacks.zenoss.LinuxMonitor.PhysicalDisk'
+                pd_om.relname = 'hardDisks'
+                pd_om.modname = 'ZenPacks.zenoss.LinuxMonitor.HardDisk'
                 pd_maps.append(pd_om)
             elif section == 'PV':
                 pv_om = ObjectMap()
@@ -97,7 +97,7 @@ class lvm(CommandPlugin):
                 pv_om.modname = 'ZenPacks.zenoss.LinuxMonitor.PhysicalVolume'
                 for pd_om in pd_maps:
                     if pd_om.title in pv_om.title:
-                        pv_om.set_physicalDisk = pd_om.id
+                        pv_om.set_hardDisk = pd_om.id
                 pv_maps.append(pv_om)
             elif section == 'VG':
                 vg_om = ObjectMap()
@@ -137,8 +137,8 @@ class lvm(CommandPlugin):
             objmaps=vg_maps))
 
         maps.append(RelationshipMap(
-            relname='physicalDisks',
-            modname="ZenPacks.zenoss.LinuxMonitor.PhysicalDisk",
+            relname='hardDisks',
+            modname="ZenPacks.zenoss.LinuxMonitor.HardDisk",
             objmaps=pd_maps))
 
         maps.append(RelationshipMap(
