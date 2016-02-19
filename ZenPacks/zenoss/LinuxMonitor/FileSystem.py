@@ -26,6 +26,6 @@ class FileSystem(BaseFileSystem):
              'ZenPacks.zenoss.LinuxMonitor.SnapshotVolume.SnapshotVolume'))
         for brain in results:
             lv = brain.getObject()
-            if lv.dm_path == self.storageDevice:
+            if lv.mountpoint == self.title:
                 return lv
         return None
