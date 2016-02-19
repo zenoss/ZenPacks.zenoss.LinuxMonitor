@@ -6,6 +6,7 @@ classes:
 
     HardDisk:
         label: HardDisk
+        meta_type: LinuxHardDisk
         dynamicview_views: [service_view]
         dynamicview_relations:
             impacts: 
@@ -130,14 +131,15 @@ classes:
                 api_only: true
                 api_backendtype: method
                 type: entity
-            dm_path:
-                label: Device-mapper path
+            mountpoint:
                 grid_display: False
                 details_display: False
+            major_minor:
+                label: "Major:Minor"
+                grid_display: False
 
 
     SnapshotVolume:
-        base: [LogicalVolume]
         label: Snapshot Volume
         dynamicview_views: [service_view]
         dynamicview_relations:
@@ -149,6 +151,42 @@ classes:
         properties:
             origin:
                 grid_display: False
+            attributes:
+                label: Attributes
+                grid_display: False
+                type: lines
+            lvsize:
+                label: Size
+                type: int
+                renderer: Zenoss.render.bytesString
+            active:
+                label: Active
+                datapoint: status_state
+                renderer: Zenoss.render.checkbox
+            vgname:
+                grid_display: False
+                details_display: False
+            uuid:
+                grid_display: False
+                details_display: False
+            openstack_core_components:
+                type: entity
+                label: Cinder Integration
+                grid_display: False
+                api_only: true
+                api_backendtype: method
+            filesystem:
+                label: File System
+                api_only: true
+                api_backendtype: method
+                type: entity
+            mountpoint:
+                grid_display: False
+                details_display: False
+            major_minor:
+                label: "Major:Minor"
+                grid_display: False
+
 
 class_relationships:
     - Products.ZenModel.Device.Device 1:MC VolumeGroup

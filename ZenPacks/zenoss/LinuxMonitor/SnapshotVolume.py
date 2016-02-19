@@ -67,6 +67,6 @@ class SnapshotVolume(schema.SnapshotVolume):
         results = ICatalogTool(self.device()).search('Products.ZenModel.FileSystem.FileSystem')
         for brain in results:
             fs = brain.getObject()
-            if fs.storageDevice == self.dm_path:
+            if fs.title == self.mountpoint:
                 return fs
         return None
