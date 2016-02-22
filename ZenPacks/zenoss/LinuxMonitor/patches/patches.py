@@ -9,12 +9,18 @@
 
 from Products.ZenUtils.Utils import monkeypatch
 from Products.Zuul import getFacade
-from Products.Zuul.interfaces import ICatalogTool
 
 
 @monkeypatch('Products.ZenModel.Device.Device')
 def getPingStatus(self):
-    if self.path()[0][6] == 'Linux':
+    def monitored_with_ssh(device):
+        for template in device.getRRDTemplates():
+            for datasource in template.datasources():
+                if datasource.sourcetype == 'COMMAND' and datasource.usessh:
+                    return True
+
+        return False
+    if monitored_with_ssh(self):
         zep = getFacade('zep')
         fltr = zep.createEventFilter(element_identifier=self.id,
                                      event_class=('/Cmd/Fail', '/Status/Ping'),
@@ -27,15 +33,3 @@ def getPingStatus(self):
             return 0
     else:
         return original(self)
-
-
-@monkeypatch('Products.ZenModel.FileSystem.FileSystem')
-def getLogicalVolume(self):
-    results = ICatalogTool(self.device()).search(
-        ('ZenPacks.zenoss.LinuxMonitor.LogicalVolume.LogicalVolume',
-         'ZenPacks.zenoss.LinuxMonitor.SnapshotVolume.SnapshotVolume'))
-    for brain in results:
-        lv = brain.getObject()
-        if lv.dm_path == self.storageDevice:
-            return lv
-    return None

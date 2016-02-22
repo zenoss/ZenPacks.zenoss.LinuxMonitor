@@ -4,27 +4,12 @@ classes:
     DEFAULTS:
         base: [zenpacklib.Component]
 
-    HardDisk:
-        label: HardDisk
-        meta_type: LinuxHardDisk
-        dynamicview_views: [service_view]
-        dynamicview_relations:
-            impacts: 
-                - physicalVolume
-        properties:
-            size:
-                label: Size
-                type: int
-                renderer: Zenoss.render.bytesString
-
     PhysicalVolume:
         label: Physical Volume
         dynamicview_views: [service_view]
         dynamicview_relations:
             impacts:
                 - volumeGroup
-            impacted_by:
-                - hardDisk
         properties:
             pvsize:
                 label: Size
@@ -52,6 +37,16 @@ classes:
                 type: lines
             uuid:
                 grid_display: False
+            harddisk_id:
+                grid_display: False
+                details_display: False
+                index_type: field
+            harddisk:
+                label: Hard Disk
+                api_only: true
+                api_backendtype: method
+                type: entity
+
 
     VolumeGroup:
         label: Volume Group
@@ -134,6 +129,7 @@ classes:
             mountpoint:
                 grid_display: False
                 details_display: False
+                index_type: field
             major_minor:
                 label: "Major:Minor"
                 grid_display: False
@@ -183,6 +179,7 @@ classes:
             mountpoint:
                 grid_display: False
                 details_display: False
+                index_type: field
             major_minor:
                 label: "Major:Minor"
                 grid_display: False
@@ -190,9 +187,7 @@ classes:
 
 class_relationships:
     - Products.ZenModel.Device.Device 1:MC VolumeGroup
-    - Products.ZenModel.Device.Device 1:MC HardDisk
     - Products.ZenModel.Device.Device 1:MC PhysicalVolume
-    - HardDisk 1:M PhysicalVolume
     - VolumeGroup 1:M PhysicalVolume
     - VolumeGroup 1:MC LogicalVolume
     - LogicalVolume 1:MC SnapshotVolume

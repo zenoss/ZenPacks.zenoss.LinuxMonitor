@@ -11,6 +11,12 @@
         provides="ZenPacks.zenoss.LinuxMonitor.interfaces.IFileSystemInfo"
         />
 
+    <adapter
+        factory="ZenPacks.zenoss.LinuxMonitor.info.HardDiskInfo"
+        for="ZenPacks.zenoss.LinuxMonitor.HardDisk.HardDisk"
+        provides="ZenPacks.zenoss.LinuxMonitor.interfaces.IHardDiskInfo"
+        />
+
     <!-- Impact -->
     <configure zcml:condition="installed ZenPacks.zenoss.Impact">
         <include package="ZenPacks.zenoss.Impact" file="meta.zcml"/>
@@ -24,6 +30,12 @@
         <subscriber
             provides="ZenPacks.zenoss.Impact.impactd.interfaces.IRelationshipDataProvider"
             for="ZenPacks.zenoss.LinuxMonitor.FileSystem.FileSystem"
+            factory=".impact.HardDiskRelationsProvider"
+            />
+
+        <subscriber
+            provides="ZenPacks.zenoss.Impact.impactd.interfaces.IRelationshipDataProvider"
+            for="ZenPacks.zenoss.LinuxMonitor.HardDisk.HardDisk"
             factory=".impact.FileSystemRelationsProvider"
             />
 

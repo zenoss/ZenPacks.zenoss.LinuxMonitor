@@ -7,8 +7,9 @@
 #
 ##############################################################################
 
+import itertools
 from Products.ZenModel.FileSystem import FileSystem as BaseFileSystem
-from Products.Zuul.interfaces import ICatalogTool
+from . import zenpacklib
 
 
 class FileSystem(BaseFileSystem):
@@ -21,11 +22,17 @@ class FileSystem(BaseFileSystem):
         )
 
     def getLogicalVolume(self):
-        results = ICatalogTool(self.device()).search(
-            ('ZenPacks.zenoss.LinuxMonitor.LogicalVolume.LogicalVolume',
-             'ZenPacks.zenoss.LinuxMonitor.SnapshotVolume.SnapshotVolume'))
-        for brain in results:
-            lv = brain.getObject()
-            if lv.mountpoint == self.title:
-                return lv
-        return None
+        results = itertools.chain.from_iterable(
+            zenpacklib.catalog_search(
+                self.device(),
+                name,
+                mountpoint=self.mount)
+            for name in ('LogicalVolume', 'SnapshotVolume'))
+        for result in results:
+            try:
+                return result.getObject()
+            except Exception:
+                pass
+
+    def getRRDTemplateName(self):
+            return "FileSystem"

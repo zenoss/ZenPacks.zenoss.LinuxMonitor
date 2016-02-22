@@ -19,6 +19,8 @@ from ZenPacks.zenoss.Impact.impactd.interfaces import IRelationshipDataProvider
 from Products.ZenModel.CPU import CPU
 from Products.ZenModel.FileSystem import FileSystem
 
+from ZenPacks.zenoss.LinuxMonitor.HardDisk import HardDisk
+
 
 class BaseRelationsProvider(object):
     relationship_provider = "LinuxMonitor"
@@ -37,10 +39,27 @@ class CPURelationsProvider(BaseRelationsProvider):
     def getEdges(self):
         cpu = self._object
         device = cpu.device()
-        if '/Server/SSH/Linux' in device.getDeviceClassName():
+        yield ImpactEdge(
+            IGlobalIdentifier(device).getGUID(),
+            IGlobalIdentifier(cpu).getGUID(),
+            self.relationship_provider)
+
+
+class HardDiskRelationsProvider(BaseRelationsProvider):
+    implements(IRelationshipDataProvider)
+    adapts(HardDisk)
+
+    def getEdges(self):
+        hd = self._object
+        device = hd.device()
+        yield ImpactEdge(
+            IGlobalIdentifier(device).getGUID(),
+            IGlobalIdentifier(hd).getGUID(),
+            self.relationship_provider)
+        for pv in hd.getPhysicalvolumes():
             yield ImpactEdge(
-                IGlobalIdentifier(device).getGUID(),
-                IGlobalIdentifier(cpu).getGUID(),
+                IGlobalIdentifier(hd).getGUID(),
+                IGlobalIdentifier(pv).getGUID(),
                 self.relationship_provider)
 
 
@@ -52,13 +71,12 @@ class FileSystemRelationsProvider(BaseRelationsProvider):
         filesystem = self._object
         device = filesystem.device()
         logicalvolume = filesystem.getLogicalVolume()
-        if '/Server/SSH/Linux' in device.getDeviceClassName():
+        yield ImpactEdge(
+            IGlobalIdentifier(device).getGUID(),
+            IGlobalIdentifier(filesystem).getGUID(),
+            self.relationship_provider)
+        if logicalvolume:
             yield ImpactEdge(
                 IGlobalIdentifier(filesystem).getGUID(),
-                IGlobalIdentifier(device).getGUID(),
+                IGlobalIdentifier(logicalvolume).getGUID(),
                 self.relationship_provider)
-            if logicalvolume:
-                yield ImpactEdge(
-                    IGlobalIdentifier(logicalvolume).getGUID(),
-                    IGlobalIdentifier(filesystem).getGUID(),
-                    self.relationship_provider)

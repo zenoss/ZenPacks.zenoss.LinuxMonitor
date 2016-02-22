@@ -139,3 +139,67 @@ Ext.define("Zenoss.component.LinuxFileSystemPanel", {
 
 
 ZC.registerName('LinuxFileSystem', _t('File System'), _t('File Systems'));
+
+Ext.define("Zenoss.component.LinuxHardDiskPanel", {
+    alias:['widget.LinuxHardDiskPanel'],
+    extend:"Zenoss.component.ComponentGridPanel",
+    constructor: function(config) {
+        config = Ext.applyIf(config||{}, {
+            autoExpandColumn: 'name',
+            componentType: 'LinuxHardDisk',
+            fields: [
+                {name: 'uid'},
+                {name: 'name'},
+                {name: 'status'},
+                {name: 'severity'},
+                {name: 'usesMonitorAttribute'},
+                {name: 'monitor'},
+                {name: 'monitored'},
+                {name: 'locking'},
+                {name: 'mount'},
+                {name: 'storageDevice'},
+                {name: 'totalBytes'},
+                {name: 'availableBytes'},
+                {name: 'usedBytes'},
+                {name: 'capacityBytes'},
+                {name: 'size'},
+                {name: 'physicalvolumes_count'}
+            ],
+            columns: [{
+                id: 'severity',
+                dataIndex: 'severity',
+                header: _t('Events'),
+                renderer: Zenoss.render.severity,
+                width: 60
+            },{
+                id: 'name',
+                dataIndex: 'name',
+                header: _t('Name')
+            },{
+                id: 'size',
+                dataIndex: 'size',
+                header: _t('Size'),
+                renderer: Zenoss.render.bytesString
+            },{
+                id: 'physicalvolumes_count',
+                dataIndex: 'physicalvolumes_count',
+                header: _t('Physical Volumes')
+            },{
+                id: 'monitored',
+                dataIndex: 'monitored',
+                header: _t('Monitored'),
+                renderer: Zenoss.render.checkbox,
+                width: 60
+            },{
+                id: 'locking',
+                dataIndex: 'locking',
+                header: _t('Locking'),
+                renderer: Zenoss.render.locking_icons
+            }]
+        });
+        ZC.LinuxHardDiskPanel.superclass.constructor.call(this, config);
+    }
+});
+
+
+ZC.registerName('LinuxHardDisk', _t('HardDisk'), _t('HardDisks'));
