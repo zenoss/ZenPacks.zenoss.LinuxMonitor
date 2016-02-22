@@ -1935,7 +1935,7 @@
             </object>
         </tomanycont>
     </object>
-    <object id="/zport/dmd/Devices/Server/SSH/Linux/rrdTemplates/LinuxFileSystem" module="Products.ZenModel.RRDTemplate" class="RRDTemplate">
+    <object id="/zport/dmd/Devices/Server/SSH/Linux/rrdTemplates/FileSystem" module="Products.ZenModel.RRDTemplate" class="RRDTemplate">
         <property id="zendoc" type="string">
             Filesystem template
         </property>

@@ -9,6 +9,26 @@
 
 from Products.Zuul.infos.component.filesystem import FileSystemInfo as BaseFileSystemInfo
 from Products.Zuul.decorators import info
+from zope.interface import implements
+from ZenPacks.zenoss.LinuxMonitor.interfaces import IHardDiskInfo
+from Products.Zuul.infos import ProxyProperty
+from Products.Zuul.infos.component import ComponentInfo
+
+
+class HardDiskInfo(ComponentInfo):
+    implements(IHardDiskInfo)
+
+    size = ProxyProperty('size')
+
+    @property
+    @info
+    def physicalvolumes(self):
+        return self._object.getPhysicalVolumes()
+
+    @property
+    @info
+    def physicalvolumes_count(self):
+        return len(self.physicalvolumes)
 
 
 class FileSystemInfo(BaseFileSystemInfo):

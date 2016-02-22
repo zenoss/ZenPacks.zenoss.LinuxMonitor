@@ -33,7 +33,7 @@ class lvm(CommandPlugin):
     /usr/bin/sudo lvs --units b --nosuffix -o lv_name,vg_name,lv_attr,lv_size,lv_uuid,origin
 
     sample output:
-    PD
+    HD
     /dev/sda 21474836480
     /dev/sdb 21474836480
     /dev/sdc 21474836480
@@ -82,7 +82,7 @@ class lvm(CommandPlugin):
     MAJ:MIN can be used for diskstats
     """
 
-    command = ('/usr/bin/env echo "PD";sudo fdisk -l 2>&1 | grep \'^Disk\' | grep -v '
+    command = ('/usr/bin/env echo "HD";sudo fdisk -l 2>&1 | grep \'^Disk\' | grep -v '
                '\'mapper\|identifier\|label\' | awk \'{gsub(":","");print $2" "$5}\'; '
                'sudo pvs --units b --nosuffix -o pv_name,pv_fmt,pv_attr,pv_size,pv_free,pv_uuid,vg_name 2>&1; '
                'sudo vgs --units b --nosuffix -o vg_name,vg_attr,vg_size,vg_free,vg_uuid 2>&1; '
@@ -90,7 +90,7 @@ class lvm(CommandPlugin):
                'lsblk -rb 2>&1')
 
     def process(self, device, results, log):
-        pd_maps = []
+        hd_maps = []
         pv_maps = []
         vg_maps = []
         lv_maps = []
@@ -99,12 +99,12 @@ class lvm(CommandPlugin):
         self.lvm_parser = LVMAttributeParser()
         section = ''
         dev_blk_re = re.compile('(?P<device_block>.*) (?P<major_minor>\d+:\d+) \d+ \d+ \d+ \w+\s*(?P<mount>\S*)')
-        pd_re = re.compile('(?P<disk>\S+) (?P<size>\d+)')
+        hd_re = re.compile('(?P<disk>\S+) (?P<size>\d+)')
         pv_re = re.compile('\s*(?P<pv_name>\S+)\s*(?P<pv_fmt>\S+)\s*(?P<pv_attr>\S+)\s*(?P<pv_size>\S+)'
                            '\s*(?P<pv_free>\S+)\s*(?P<pv_uuid>\S+)\s*(?P<vg_name>\S*)')
         vg_re = re.compile('\s*(?P<vg_name>\S+)\s*(?P<vg_attr>\S+)\s*(?P<vg_size>\S+)\s*(?P<vg_free>\S+)\s*(?P<vg_uuid>\S+)')
         lv_re = re.compile('\s*(?P<lv_name>\S+)\s*(?P<vg_name>\S+)\s*(?P<lv_attr>\S+)\s*(?P<lv_size>\S+)\s*(?P<lv_uuid>\S+)\s*(?P<origin>\S*)')
-        parse_re = {'PD': pd_re, 'PV': pv_re, 'VG': vg_re, 'LV': lv_re, 'NAME': dev_blk_re}
+        parse_re = {'HD': hd_re, 'PV': pv_re, 'VG': vg_re, 'LV': lv_re, 'NAME': dev_blk_re}
         for line in results.split('\n'):
             if self.checkErr(line):
                 return []
@@ -118,14 +118,14 @@ class lvm(CommandPlugin):
                 columns = parse_re[section].match(line).groupdict()
             except (AttributeError, Exception):
                 continue
-            if section == 'PD':
-                pd_maps.append(self.makePDMap(columns))
+            if section == 'HD':
+                hd_maps.append(self.makeHDMap(columns))
             elif section == 'PV':
                 pv_om = self.makePVMap(columns)
                 pv_maps.append(pv_om)
-                for pd_om in pd_maps:
-                    if pd_om.title in pv_om.title:
-                        pv_om.set_hardDisk = pd_om.id
+                for hd_om in hd_maps:
+                    if hd_om.title in pv_om.title:
+                        pv_om.harddisk_id = hd_om.id
             elif section == 'VG':
                 vg_maps.append(self.makeVGMap(columns))
             elif section == 'LV':
@@ -149,9 +149,10 @@ class lvm(CommandPlugin):
             objmaps=vg_maps))
 
         maps.append(RelationshipMap(
-            relname='hardDisks',
+            compname='hw',
+            relname='harddisks',
             modname="ZenPacks.zenoss.LinuxMonitor.HardDisk",
-            objmaps=pd_maps))
+            objmaps=hd_maps))
 
         maps.append(RelationshipMap(
             relname="physicalVolumes",
@@ -191,14 +192,14 @@ class lvm(CommandPlugin):
                         objmaps=lv_sv_oms))
         return maps
 
-    def makePDMap(self, columns):
-        pd_om = ObjectMap()
-        pd_om.title = columns['disk']
-        pd_om.id = self.prepId(columns['disk'])
-        pd_om.size = int(columns['size'])
-        pd_om.relname = 'hardDisks'
-        pd_om.modname = 'ZenPacks.zenoss.LinuxMonitor.HardDisk'
-        return pd_om
+    def makeHDMap(self, columns):
+        hd_om = ObjectMap()
+        hd_om.title = columns['disk']
+        hd_om.id = self.prepId(columns['disk'])
+        hd_om.size = int(columns['size'])
+        hd_om.relname = 'harddisks'
+        hd_om.modname = 'ZenPacks.zenoss.LinuxMonitor.HardDisk'
+        return hd_om
 
     def makePVMap(self, columns):
         # pv_name,pv_fmt,pv_attr,pv_size,pv_free,pv_uuid,vg_name

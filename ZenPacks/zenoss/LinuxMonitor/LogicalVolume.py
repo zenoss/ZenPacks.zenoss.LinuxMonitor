@@ -9,9 +9,6 @@
 
 from . import schema
 
-import logging
-
-from Products.Zuul.interfaces import ICatalogTool
 from zope.interface import implements
 
 try:
@@ -23,7 +20,6 @@ try:
     openstack = True
 except ImportError:
     openstack = False
-LOG = logging.getLogger('zen.lvm.LogicalVolume')
 
 
 class LogicalVolume(schema.LogicalVolume):
@@ -64,9 +60,6 @@ class LogicalVolume(schema.LogicalVolume):
             return []
 
     def filesystem(self):
-        results = ICatalogTool(self.device()).search('Products.ZenModel.FileSystem.FileSystem')
-        for brain in results:
-            fs = brain.getObject()
-            if fs.title == self.mountpoint:
-                return fs
-        return None
+        for filesystem in self.device().os.filesystems():
+            if filesystem.title == self.mountpoint:
+                return filesystem

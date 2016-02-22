@@ -29,3 +29,8 @@ class PhysicalVolume(schema.PhysicalVolume):
             return 'Unknown'
 
         return '{}%'.format(int(float(pvsize-pvfree)/pvsize*100))
+
+    def harddisk(self):
+        for harddisk in self.device().hw.harddisks():
+            if harddisk.id == self.harddisk_id:
+                return harddisk
