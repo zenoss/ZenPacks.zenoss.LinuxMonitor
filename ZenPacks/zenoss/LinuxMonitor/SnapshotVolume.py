@@ -39,8 +39,11 @@ class SnapshotVolume(schema.SnapshotVolume):
         # will generate its own UUID for the snapshot and passes it on to LVM,
         # and the snapshot in LVM will have a UUID attached to it in its name
 
-        # self.name(): snapshot-366fc7b1-4c11-4ae6-9ec2-d096df0194e0
-        return ['cinder.lvm:snapshotvolume|%s' % (self.name())]
+        # self.name(): _snapshot-366fc7b1-4c11-4ae6-9ec2-d096df0194e0
+        snapshotname = self.name()
+        if self.name().startswith('_'):
+            snapshotname = self.name()[1:]
+        return ['cinder.lvm:snapshotvolume|%s' % (snapshotname)]
 
     def index_object(self, idxs=None):
         super(SnapshotVolume, self).index_object(idxs=idxs)
