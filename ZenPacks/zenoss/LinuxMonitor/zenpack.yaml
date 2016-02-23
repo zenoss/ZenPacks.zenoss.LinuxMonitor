@@ -237,7 +237,6 @@ device_classes: !ZenPackSpec
                             exported:
                                 rrdmin: 0
                             missing:
-<<<<<<< HEAD
                                 rrdmin: 0
                     diskstats:
                         type: COMMAND
@@ -263,8 +262,6 @@ device_classes: !ZenPackSpec
                                 description: Milliseconds spent by all reads in concrete moment of time.
                             writesCompleted:
                                 rrdtype: DERIVE
-=======
->>>>>>> 70218291eed886a0a2cf52dccce9b447a38c9f08
                                 rrdmin: 0
                                 description: The number of write requests that were issued to the device per second.
                             writesMerged:
@@ -304,7 +301,6 @@ device_classes: !ZenPackSpec
                                 dpName: volume_free
                                 lineType: AREA
                                 rpn: "size,-,size,/,-100,*"
-<<<<<<< HEAD
                     Operation Throughput:
                         units: operations/sec
                         miny: 0
@@ -367,8 +363,6 @@ device_classes: !ZenPackSpec
                                 dpName: diskstats_msDoingIOWeighted
                                 lineType: LINE
                                 rpn: "10,/"
-=======
->>>>>>> 70218291eed886a0a2cf52dccce9b447a38c9f08
                 thresholds:
                     unallocatable:
                         dsnames: [status_allocatable]
