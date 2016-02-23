@@ -48,10 +48,7 @@
                             True
                         </property>
                         <tomanycont id="aliases">
-                            <object id="cpu__pct" module="Products.ZenModel.RRDDataPointAlias" class="RRDDataPointAlias">
-                                <property id="formula" mode="w">
-                                    __EVAL:str(len(here.hw.cpus())) + ',/,100,EXC,-'
-                                </property>
+                            <object id="cpu_idle__pct" module="Products.ZenModel.RRDDataPointAlias" class="RRDDataPointAlias">
                             </object>
                         </tomanycont>
                     </object>
@@ -65,6 +62,10 @@
                         <property type="boolean" id="isrow" mode="w">
                             True
                         </property>
+                        <tomanycont id="aliases">
+                            <object id="cpu_interrupt__pct" module="Products.ZenModel.RRDDataPointAlias" class="RRDDataPointAlias">
+                            </object>
+                        </tomanycont>
                     </object>
                     <object id="ssCpuKernel" module="Products.ZenModel.RRDDataPoint" class="RRDDataPoint">
                         <property type="text" id="zendoc" mode="w">
@@ -76,6 +77,10 @@
                         <property type="boolean" id="isrow" mode="w">
                             True
                         </property>
+                        <tomanycont id="aliases">
+                            <object id="cpu_kernel__pct" module="Products.ZenModel.RRDDataPointAlias" class="RRDDataPointAlias">
+                            </object>
+                        </tomanycont>
                     </object>
                     <object id="ssCpuNice" module="Products.ZenModel.RRDDataPoint" class="RRDDataPoint">
                         <property type="text" id="zendoc" mode="w">
@@ -87,6 +92,10 @@
                         <property type="boolean" id="isrow" mode="w">
                             True
                         </property>
+                        <tomanycont id="aliases">
+                            <object id="cpu_nice__pct" module="Products.ZenModel.RRDDataPointAlias" class="RRDDataPointAlias">
+                            </object>
+                        </tomanycont>
                     </object>
                     <object id="ssCpuSystem" module="Products.ZenModel.RRDDataPoint" class="RRDDataPoint">
                         <property type="text" id="zendoc" mode="w">
@@ -98,6 +107,10 @@
                         <property type="boolean" id="isrow" mode="w">
                             True
                         </property>
+                        <tomanycont id="aliases">
+                            <object id="cpu_system__pct" module="Products.ZenModel.RRDDataPointAlias" class="RRDDataPointAlias">
+                            </object>
+                        </tomanycont>
                     </object>
                     <object id="ssCpuUser" module="Products.ZenModel.RRDDataPoint" class="RRDDataPoint">
                         <property type="text" id="zendoc" mode="w">
@@ -109,6 +122,10 @@
                         <property type="boolean" id="isrow" mode="w">
                             True
                         </property>
+                        <tomanycont id="aliases">
+                            <object id="cpu_user__pct" module="Products.ZenModel.RRDDataPointAlias" class="RRDDataPointAlias">
+                            </object>
+                        </tomanycont>
                     </object>
                     <object id="ssCpuWait" module="Products.ZenModel.RRDDataPoint" class="RRDDataPoint">
                         <property type="text" id="zendoc" mode="w">
@@ -120,6 +137,10 @@
                         <property type="boolean" id="isrow" mode="w">
                             True
                         </property>
+                        <tomanycont id="aliases">
+                            <object id="cpu_wait__pct" module="Products.ZenModel.RRDDataPointAlias" class="RRDDataPointAlias">
+                            </object>
+                        </tomanycont>
                     </object>
                     <object id="ssRawContexts" module="Products.ZenModel.RRDDataPoint" class="RRDDataPoint">
                         <property type="text" id="zendoc" mode="w">
@@ -159,7 +180,7 @@
                         <tomanycont id="aliases">
                             <object id="cpu__pct" module="Products.ZenModel.RRDDataPointAlias" class="RRDDataPointAlias">
                                 <property type="string" id="formula" mode="w">
-                                    100,EXC,-
+                                    100,EXC,-,0,MAX
                                 </property>
                             </object>
                         </tomanycont>
@@ -244,6 +265,10 @@
                         <property type="boolean" id="isrow" mode="w">
                             True
                         </property>
+                        <tomanycont id='aliases'>
+                        <object id='sys_io_received__bytes' module='Products.ZenModel.RRDDataPointAlias' class='RRDDataPointAlias'>
+                        </object>
+                        </tomanycont>
                     </object>
                     <object id="ssIORawSent" module="Products.ZenModel.RRDDataPoint" class="RRDDataPoint">
                         <property type="text" id="zendoc" mode="w">
@@ -255,6 +280,10 @@
                         <property type="boolean" id="isrow" mode="w">
                             True
                         </property>
+                        <tomanycont id='aliases'>
+                        <object id='sys_io_sent__bytes' module='Products.ZenModel.RRDDataPointAlias' class='RRDDataPointAlias'>
+                        </object>
+                        </tomanycont>
                     </object>
                 </tomanycont>
             </object>
@@ -295,7 +324,7 @@
                             0
                         </property>
                         <tomanycont id="aliases">
-                            <object id="memBuffer" module="Products.ZenModel.RRDDataPointAlias" class="RRDDataPointAlias">
+                            <object id="mem_buffers__bytes" module="Products.ZenModel.RRDDataPointAlias" class="RRDDataPointAlias">
                             </object>
                         </tomanycont>
                     </object>
@@ -310,7 +339,7 @@
                             0
                         </property>
                         <tomanycont id="aliases">
-                            <object id="memCached" module="Products.ZenModel.RRDDataPointAlias" class="RRDDataPointAlias">
+                            <object id="mem_cached__bytes" module="Products.ZenModel.RRDDataPointAlias" class="RRDDataPointAlias">
                             </object>
                         </tomanycont>
                     </object>
@@ -325,7 +354,7 @@
                             0
                         </property>
                         <tomanycont id="aliases">
-                            <object id="memoryAvailable__bytes" module="Products.ZenModel.RRDDataPointAlias" class="RRDDataPointAlias">
+                            <object id="mem_free__bytes" module="Products.ZenModel.RRDDataPointAlias" class="RRDDataPointAlias">
                             </object>
                         </tomanycont>
                     </object>
@@ -340,7 +369,7 @@
                             0
                         </property>
                         <tomanycont id="aliases">
-                            <object id="hrMemorySize" module="Products.ZenModel.RRDDataPointAlias" class="RRDDataPointAlias">
+                            <object id="mem_total__bytes" module="Products.ZenModel.RRDDataPointAlias" class="RRDDataPointAlias">
                             </object>
                         </tomanycont>
                     </object>
@@ -355,7 +384,7 @@
                             0
                         </property>
                         <tomanycont id="aliases">
-                            <object id="memAvailSwap" module="Products.ZenModel.RRDDataPointAlias" class="RRDDataPointAlias">
+                            <object id="mem_swap_free__bytes" module="Products.ZenModel.RRDDataPointAlias" class="RRDDataPointAlias">
                             </object>
                         </tomanycont>
                     </object>
@@ -370,7 +399,7 @@
                             0
                         </property>
                         <tomanycont id="aliases">
-                            <object id="hrSwapSize" module="Products.ZenModel.RRDDataPointAlias" class="RRDDataPointAlias">
+                            <object id="mem_swap_total__bytes" module="Products.ZenModel.RRDDataPointAlias" class="RRDDataPointAlias">
                             </object>
                         </tomanycont>
                     </object>
@@ -412,6 +441,10 @@
                         <property type="boolean" id="isrow" mode="w">
                             True
                         </property>
+                        <tomanycont id='aliases'>
+                        <object id='sys_1oad_1min' module='Products.ZenModel.RRDDataPointAlias' class='RRDDataPointAlias'>
+                        </object>
+                        </tomanycont>
                     </object>
                     <object id="laLoadInt15" module="Products.ZenModel.RRDDataPoint" class="RRDDataPoint">
                         <property type="text" id="zendoc" mode="w">
@@ -423,6 +456,10 @@
                         <property type="boolean" id="isrow" mode="w">
                             True
                         </property>
+                        <tomanycont id='aliases'>
+                        <object id='sys_load_15min' module='Products.ZenModel.RRDDataPointAlias' class='RRDDataPointAlias'>
+                        </object>
+                        </tomanycont>
                     </object>
                     <object id="laLoadInt5" module="Products.ZenModel.RRDDataPoint" class="RRDDataPoint">
                         <property type="text" id="zendoc" mode="w">
@@ -435,7 +472,7 @@
                             True
                         </property>
                         <tomanycont id="aliases">
-                            <object id="loadAverage5min" module="Products.ZenModel.RRDDataPointAlias" class="RRDDataPointAlias">
+                            <object id="sys_load_5min" module="Products.ZenModel.RRDDataPointAlias" class="RRDDataPointAlias">
                             </object>
                         </tomanycont>
                     </object>
@@ -446,6 +483,13 @@
                         <property type="boolean" id="isrow" mode="w">
                             True
                         </property>
+                        <tomanycont id="aliases">
+                            <object id="sys_uptime__secs" module="Products.ZenModel.RRDDataPointAlias" class="RRDDataPointAlias">
+                                <property type="string" id="formula" mode="w">
+                                    100,/
+                                </property>
+                            </object>
+                        </tomanycont>
                     </object>
                 </tomanycont>
             </object>
@@ -1394,9 +1438,13 @@
                         <property type="boolean" id="isrow" mode="w">
                             True
                         </property>
+                        <tomanycont id='aliases'>
+                            <object id='if_received_errors__persec' module='Products.ZenModel.RRDDataPointAlias' class='RRDDataPointAlias'>
+                            </object>
+                        </tomanycont>
                         <property type="string" id="rrdmin" mode="w">
                             0
-                        </property>
+                        </property>                        
                     </object>
                     <object id="ifInOctets" module="Products.ZenModel.RRDDataPoint" class="RRDDataPoint">
                         <property type="text" id="zendoc" mode="w">
@@ -1412,7 +1460,7 @@
                             0
                         </property>
                         <tomanycont id="aliases">
-                            <object id="inputOctets__bytes" module="Products.ZenModel.RRDDataPointAlias" class="RRDDataPointAlias">
+                            <object id="if_received__bytessec" module="Products.ZenModel.RRDDataPointAlias" class="RRDDataPointAlias">
                             </object>
                         </tomanycont>
                     </object>
@@ -1426,6 +1474,10 @@
                         <property type="boolean" id="isrow" mode="w">
                             True
                         </property>
+                        <tomanycont id="aliases">
+                            <object id="if_received_packets__persec" module="Products.ZenModel.RRDDataPointAlias" class="RRDDataPointAlias">
+                            </object>
+                        </tomanycont>
                     </object>
                     <object id="ifOutErrors" module="Products.ZenModel.RRDDataPoint" class="RRDDataPoint">
                         <property type="text" id="zendoc" mode="w">
@@ -1437,6 +1489,10 @@
                         <property type="boolean" id="isrow" mode="w">
                             True
                         </property>
+                        <tomanycont id="aliases">
+                            <object id="if_sent_errors_persec" module="Products.ZenModel.RRDDataPointAlias" class="RRDDataPointAlias">
+                            </object>
+                        </tomanycont>
                         <property type="string" id="rrdmin" mode="w">
                             0
                         </property>
@@ -1455,7 +1511,7 @@
                             0
                         </property>
                         <tomanycont id="aliases">
-                            <object id="outputOctets__bytes" module="Products.ZenModel.RRDDataPointAlias" class="RRDDataPointAlias">
+                            <object id="if_sent__bytessec" module="Products.ZenModel.RRDDataPointAlias" class="RRDDataPointAlias">
                             </object>
                         </tomanycont>
                     </object>
@@ -1469,6 +1525,10 @@
                         <property type="boolean" id="isrow" mode="w">
                             True
                         </property>
+                        <tomanycont id="aliases">
+                            <object id="if_sent_packets__persec" module="Products.ZenModel.RRDDataPointAlias" class="RRDDataPointAlias">
+                            </object>
+                        </tomanycont>
                     </object>
                     <object id="ifInDropped" module="Products.ZenModel.RRDDataPoint" class="RRDDataPoint">
                         <property type="text" id="zendoc" mode="w">
@@ -1922,6 +1982,13 @@
                         <property type="boolean" id="isrow" mode="w">
                             True
                         </property>
+                        <tomanycont id="aliases">
+                            <object id="fs_avail__bytes" module="Products.ZenModel.RRDDataPointAlias" class="RRDDataPointAlias">
+                                <property type="string" id="formula" mode="w">
+                                    ${here/blockSize},*
+                                </property>
+                            </object>
+                        </tomanycont>
                     </object>
                     <object id="usedBlocks" module="Products.ZenModel.RRDDataPoint" class="RRDDataPoint">
                         <property select_variable="rrdtypes" type="selection" id="rrdtype" mode="w">
@@ -1931,9 +1998,14 @@
                             True
                         </property>
                         <tomanycont id="aliases">
-                            <object id="usedFilesystemSpace__bytes" module="Products.ZenModel.RRDDataPointAlias" class="RRDDataPointAlias">
+                            <object id="fs_used__bytes" module="Products.ZenModel.RRDDataPointAlias" class="RRDDataPointAlias">
                                 <property type="string" id="formula" mode="w">
                                     ${here/blockSize},*
+                                </property>
+                            </object>
+                            <object id="fs_used__pct" module="Products.ZenModel.RRDDataPointAlias" class="RRDDataPointAlias">
+                                <property type="string" id="formula" mode="w">
+                                    ${here/getTotalBlocks},/,100,*
                                 </property>
                             </object>
                         </tomanycont>
@@ -1973,6 +2045,10 @@
                         <property type="boolean" id="isrow" mode="w">
                             True
                         </property>
+                        <tomanycont id='aliases'>
+                            <object id='fs_availinodes' module='Products.ZenModel.RRDDataPointAlias' class='RRDDataPointAlias'>
+                            </object>
+                        </tomanycont>
                     </object>
                     <object id="percentInodesUsed" module="Products.ZenModel.RRDDataPoint" class="RRDDataPoint">
                         <property select_variable="rrdtypes" type="selection" id="rrdtype" mode="w">
@@ -1981,6 +2057,10 @@
                         <property type="boolean" id="isrow" mode="w">
                             True
                         </property>
+                        <tomanycont id='aliases'>
+                            <object id='fs_inodes__pct' module='Products.ZenModel.RRDDataPointAlias' class='RRDDataPointAlias'>
+                            </object>
+                        </tomanycont>
                     </object>
                     <object id="totalInodes" module="Products.ZenModel.RRDDataPoint" class="RRDDataPoint">
                         <property select_variable="rrdtypes" type="selection" id="rrdtype" mode="w">
@@ -1989,6 +2069,10 @@
                         <property type="boolean" id="isrow" mode="w">
                             True
                         </property>
+                        <tomanycont id='aliases'>
+                            <object id='fs_inodes_total' module='Products.ZenModel.RRDDataPointAlias' class='RRDDataPointAlias'>
+                            </object>
+                        </tomanycont>
                     </object>
                     <object id="usedInodes" module="Products.ZenModel.RRDDataPoint" class="RRDDataPoint">
                         <property select_variable="rrdtypes" type="selection" id="rrdtype" mode="w">
@@ -1997,6 +2081,10 @@
                         <property type="boolean" id="isrow" mode="w">
                             True
                         </property>
+                        <tomanycont id='aliases'>
+                            <object id='fs_inodes_used' module='Products.ZenModel.RRDDataPointAlias' class='RRDDataPointAlias'>
+                            </object>
+                        </tomanycont>
                     </object>
                 </tomanycont>
             </object>
@@ -2343,6 +2431,10 @@
                         <property type="boolean" id="isrow" mode="w">
                             True
                         </property>
+                        <tomanycont id='aliases'>
+                           <object id='ps_count' module='Products.ZenModel.RRDDataPointAlias' class='RRDDataPointAlias'>
+                        </object>
+                        </tomanycont>
                     </object>
                     <object id="cpu" module="Products.ZenModel.RRDDataPoint" class="RRDDataPoint">
                         <property type="text" id="zendoc" mode="w">
@@ -2357,6 +2449,15 @@
                         <property type="boolean" id="isrow" mode="w">
                             True
                         </property>
+                        <tomanycont id="aliases">
+                            <object id="ps_cpu" module="Products.ZenModel.RRDDataPointAlias" class="RRDDataPointAlias">
+                            </object>
+                            <object id="ps_cpu__pct" module="Products.ZenModel.RRDDataPointAlias" class="RRDDataPointAlias">
+                                <property type="string" id="formula" mode="w">
+                                    100,*
+                                </property>
+                            </object>
+                        </tomanycont>
                     </object>
                     <object id="mem" module="Products.ZenModel.RRDDataPoint" class="RRDDataPoint">
                         <property type="text" id="zendoc" mode="w">
@@ -2368,6 +2469,13 @@
                         <property type="boolean" id="isrow" mode="w">
                             True
                         </property>
+                        <tomanycont id="aliases">
+                            <object id="ps_mem__bytes" module="Products.ZenModel.RRDDataPointAlias" class="RRDDataPointAlias">
+                                <property type="string" id="formula" mode="w">
+                                    1024,*
+                                </property>
+                            </object>
+                        </tomanycont>
                     </object>
                 </tomanycont>
             </object>

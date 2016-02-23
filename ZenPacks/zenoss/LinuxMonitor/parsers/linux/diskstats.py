@@ -1,140 +1,200 @@
 ##############################################################################
-# 
-# Copyright (C) Zenoss, Inc. 2009, all rights reserved.
-# 
+#
+# Copyright (C) Zenoss, Inc. 2016, all rights reserved.
+#
 # This content is made available according to terms specified in
 # License.zenoss under the directory where your Zenoss product is installed.
-# 
+#
 ##############################################################################
 
 
 """
 A command parser.
-    
-    Command: 
-        
+
+    Command:
+
         cat /proc/diskstats
-        
-        
-    Datapoints: 
-        
-        ssIORawReceived, ssIORawSent
-        
-        
+
+
+    Datapoints:
+
+        Storage device:
+            ssIORawReceived,
+            ssIORawSent
+
+        Partition:
+            readsCompleted,
+            readsMerged,
+            sectorsRead,
+            msReading,
+            writesCompleted,
+            writesMerged,
+            sectorsWritten,
+            msWriting,
+            ioInProgress,
+            msDoingIO,
+            msDoingIOWeighted
+
+
     Example command output:
-        
-        ...
-        1   14 ram14 0 0 0 0 0 0 0 0 0 0 0
-        1   15 ram15 0 0 0 0 0 0 0 0 0 0 0
-        8    0 sda 2419270 2387883 66904427 33826350 6127156 23952335 240718108 81693197 1 33303827 115529971
-        8    1 sda1 1371 2752 26 52
-        8    2 sda2 4807027 66901259 30089735 240717776
-        8   16 sdb 1826581 184642 64009266 26696906 16272358 19732741 288156896 442269902 0 26365198 468964973
-        ...
-        
+
+           2       0 fd0 5 0 40 207 0 0 0 0 0 207 207
+           8      16 sdb 27790 637 222124 40475 38 0 4347 88 0 36331 40535
+           8      17 sdb1 27632 637 220860 40333 38 0 4347 88 0 36191 40393
+           8       0 sda 32319 691 499909 108135 195490 9003 2410516 153855 0 121927 257759
+           8       1 sda1 760 0 41316 613 525 0 4144 80 0 401 693
+           8       2 sda2 31403 691 457345 107446 194965 9003 2406372 153775 0 121519 256990
+          11       0 sr0 0 0 0 0 0 0 0 0 0 0 0
+         253       0 dm-0 230 0 1840 237 0 0 0 0 0 82 237
+         253       1 dm-1 5393 0 242369 13478 203968 0 2406372 179808 0 51241 193296
+         253       2 dm-2 225 0 1794 565 3 0 24 2 0 344 567
+         253       3 dm-3 853 0 1514 2147 11 0 4107 37 0 463 2184
+         253       4 dm-4 105 0 840 128 0 0 0 0 0 128 128
+         253       5 dm-5 193 0 1544 208 1 0 8 1 0 209 209
+         253       6 dm-6 196 0 1568 354 1 0 8 0 0 203 354
+         253       7 dm-7 7 0 56 19 4 0 32 1 0 20 20
+         253       8 dm-8 193 0 1544 260 1 0 8 0 0 260 260
+         253       9 dm-9 822 0 1536 2108 5 0 7 1 0 289 2109
+         253      10 dm-10 6 0 48 19 6 0 48 1 0 20 20
+
 """
-import re
-from collections import namedtuple
-from Products.ZenRRD.CommandParser import CommandParser
+
 
 import logging
-log = logging.getLogger('zen.command.parsers.diskstats')
+import re
 
-# datafields in /proc/diskstats, per http://www.kernel.org/doc/Documentation/iostats.txt
-DiskStatsData = namedtuple("DiskStatsData", 
-    "total_reads  num_reads_merged  total_sectors_read    total_ms_reading "
-    "total_writes num_writes_merged total_sectors_written total_ms_writing "
-    "num_io_in_progess  total_ms_io  weighted_ms_per_io")
+from Products.ZenRRD.ComponentCommandParser import ComponentCommandParser
 
-OUTPUT_DATA_KEYS = ["ssIORawReceived", "ssIORawSent"]
 
-_reCache = {}
-def _getReMatcher(regex):
-    if regex not in _reCache:
-        try:
-            _reCache[regex] = re.compile(regex).match
-        except Exception:
-            _reCache[regex] = None
-    return _reCache[regex]        
+COMPONENT = r'(?P<component>([a-z]{1,2}d[a-z](\d+)?|c\d+t\d+d\d+s\d+|cciss\/c\dd\dp\d)\s)'
+PARTITION = r'[a-z]{1,2}d[a-z]\d+$'
+READS_COMPLETED = r'(?P<readsCompleted>\d+\s)'
+READS_MERGED = r'(?P<readsMerged>\d+\s)'
+SECTORS_READ = r'(?P<sectorsRead>\d+\s)'
+MS_READING = r'(?P<msReading>\d+\s)'
+WRITES_COMPLETED = r'(?P<writesCompleted>\d+\s)'
+WRITES_MERGED = r'(?P<writesMerged>\d+\s)'
+SECTORS_WRITTEN = r'(?P<sectorsWritten>\d+\s)'
+MS_WRITING = r'(?P<msWriting>\d+\s)'
+IO_IN_PROGESS = r'(?P<ioInProgress>\d+\s)'
+MS_DOING_IO = r'(?P<msDoingIO>\d+\s)'
+MS_DOING_IO_WEIGHTED = r'(?P<msDoingIOWeighted>\d+)'
 
-def _parseOutput(output, hdFilterFn=None):
-    """
-    Given "/proc/diskstats" output, filter out logical devices and find the
-    sum read sectors and write sectors of the physical devices. Return a
-    mapping of "ssIORawReceived" to that line's reads sectors and 
-    "ssIORawSent" to that line's writes sectors.
-    """
-    # if no filtering function given, accept anything
-    if hdFilterFn is None:
-        hdFilterFn = lambda s: True
+SS_IO_RAW_RECEIVED = 'ssIORawReceived'
+SS_IO_RAW_SENT = 'ssIORawSent'
 
-    totalReadSectors = 0
-    totalWrittenSectors = 0
-    
-    for line in output.strip().splitlines():
+PARTITION_DATAPOINTS = (SS_IO_RAW_RECEIVED, SS_IO_RAW_SENT)
 
-        words = line.split()
 
-        # some logical devices have length less than 14
-        # other logical devices start with dm-
-        if len(words) == 14:
-            diskid = words[2]
-            if hdFilterFn(diskid) and not diskid.startswith("dm-"):
-                diskstatsdata = DiskStatsData(*words[3:])
-                log.debug("extracted data for device '%s': %s", diskid, diskstatsdata)
-                totalReadSectors    += int(diskstatsdata.total_sectors_read)
-                totalWrittenSectors += int(diskstatsdata.total_sectors_written)
-    
-    return dict(zip(OUTPUT_DATA_KEYS, (totalReadSectors, totalWrittenSectors)))
+LOG = logging.getLogger('zen.command.parsers.diskstats')
 
-class diskstats(CommandParser):
 
-    HARD_DISK_MATCH_PROPERTY = 'zHardDiskMapMatch'
+def compileHDRegex(userDefindHDRegex):
+    try:
+        compiledHDRegex = re.compile(userDefindHDRegex)
+    except re.error:
+        compiledHDRegex = re.compile(PARTITION)
+    return compiledHDRegex
+
+
+class diskstats(ComponentCommandParser):
+
+    scanner = r''.join([COMPONENT, READS_COMPLETED, READS_MERGED,
+                        SECTORS_READ, MS_READING,
+                        WRITES_COMPLETED, WRITES_MERGED,
+                        SECTORS_WRITTEN, MS_WRITING,
+                        IO_IN_PROGESS, MS_DOING_IO, MS_DOING_IO_WEIGHTED])
+    splitter = '\n'
 
     def dataForParser(self, context, datapoint):
         ret = super(diskstats, self).dataForParser(context, datapoint)
-
-        # save global zHardDiskMapMatch filtering regex property, 
-        # to be copied to each datapoint's .data attribute
-        ret['hdFilterRegex'] = getattr(context, self.HARD_DISK_MATCH_PROPERTY, None)
-
+        ret['hdFilterRegex'] = getattr(context, 'zHardDiskMapMatch', None)
         return ret
 
     def processResults(self, cmd, result):
-        """
-        Given "/proc/diskstats" output, filter out any logical devices and sum
-        the total read sectors and write sectors for all physical devices. 
-        Assign the total read sectors to ssIORawReceived and the total write
-        sectors to ssIORawSent. Here is an example of the command's output:
+        datapointMap = dict((dp.id, dp) for dp in cmd.points)
+        if any((x in datapointMap for x in PARTITION_DATAPOINTS)):
+            userDefindHDRegex = cmd.points[0].data.get('hdFilterRegex')
+            hdRegex = compileHDRegex(userDefindHDRegex)
+            parser = StorageDeviceParser(datapointMap, hdRegex)
+        else:
+            parser = PartitionParser(cmd.points)
 
-        1    0 ram0 0 0 0 0 0 0 0 0 0 0 0
-        8    0 sda 10541549 14506876 290280380 125470349 29042916 90285293 954627734 801503911 0 134474409 926975991
-        
-        in this case [290280380, 954627734] would be returned.
-        """
-        pointsMap = dict((dp.id, dp) for dp in cmd.points)
-        destkeys = [key for key in OUTPUT_DATA_KEYS if key in pointsMap]
+        LOG.debug("Parser class: %s, Scanner: %s",
+                  parser.__class__, self.scanner)
 
-        # only bother parsing if there is some data of interest to be parsed
-        if destkeys:
+        parts = cmd.result.output.split(self.splitter)
+        for part in parts:
+            match = re.search(self.scanner, part)
+            if match:
+                parser.parse(match)
 
-            # see if a filtering regex was attached to the datapoints - just look
-            # at the first point, all will have the same value attached
-            hdRegex= cmd.points[0].data['hdFilterRegex']
-            log.debug("using hdRegex: %s", hdRegex)
-            hdFilterFn = None
-            if hdRegex:
-                try:
-                    hdFilterFn = _getReMatcher(hdRegex)
-                except Exception as e:
-                    log.warning("%s ignored, invalid regex specified: %s", self.HARD_DISK_MATCH_PROPERTY, e)
-
-            # parse command output to extract values
-            log.debug("about to parse: %s", cmd.result.output)
-            valueMap = _parseOutput(cmd.result.output, hdFilterFn)
-
-            # save (datapoint, value) tuples to result values
-            result.values.extend((pointsMap[key], valueMap[key]) for key in destkeys)
-            log.debug("parsed values: %s", zip(destkeys, (x[1] for x in result.values[-len(destkeys):])))
+        metrics = parser.getMetrics()
+        LOG.debug("Parsed metrics: %s", metrics)
+        if metrics:
+            result.values.extend(metrics)
 
         return result
+
+
+class Parser(object):
+
+    def __init__(self):
+        self._metrics = []
+
+    def parse(self, datapointMap, match):
+        for name, value in match.groupdict().items():
+            dp = datapointMap.get(name, None)
+            if dp:
+                if value in ('-', ''):
+                    value = 0
+                self._metrics.append((dp, float(value)))
+
+    def getMetrics(self):
+        return self._metrics
+
+
+class PartitionParser(Parser):
+
+    def __init__(self, datapoints):
+        super(PartitionParser, self).__init__()
+        self._components = {}
+        for dp in datapoints:
+            dp.component = dp.data['componentScanValue']
+            points = self._components.setdefault(dp.component, {})
+            points[dp.id] = dp
+
+    def parse(self, match):
+        component = match.groupdict()['component'].strip()
+        datapointMap = self._getDatapointMap(component)
+        if datapointMap:
+            super(PartitionParser, self).parse(datapointMap, match)
+
+    def _getDatapointMap(self, component):
+        for k, v in self._components.iteritems():
+            if component == k.split('_')[1]:
+                return v
+
+
+class StorageDeviceParser(Parser):
+
+    def __init__(self, datapointMap, hdRegex):
+        super(StorageDeviceParser, self).__init__()
+        self._datapointMap = datapointMap
+        self._hdRegex = hdRegex
+        self._sectorsRead = 0
+        self._sectorsWritten = 0
+
+    def parse(self, match):
+        groupdict = match.groupdict()
+        component = groupdict['component'].strip()
+        if self._hdRegex.match(component):
+            self._sectorsRead += int(groupdict['sectorsRead'])
+            self._sectorsWritten += int(groupdict['sectorsWritten'])
+
+    def getMetrics(self):
+        self._metrics.append((
+            self._datapointMap[SS_IO_RAW_RECEIVED], self._sectorsRead))
+        self._metrics.append((
+            self._datapointMap[SS_IO_RAW_SENT], self._sectorsWritten))
+        return self._metrics
