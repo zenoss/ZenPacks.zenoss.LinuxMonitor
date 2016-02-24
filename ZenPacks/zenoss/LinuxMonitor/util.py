@@ -19,12 +19,13 @@ class LVMAttributeParser(object):
     def pv_attributes(self, atts):
         # (a)llocatable, e(x)ported and (m)issing
         attributes = []
-        if atts[0] == 'a':
-            attributes.append('allocatable')
-        if atts[1] == 'x':
-            attributes.append('exported')
-        if atts[2] == 'm':
-            attributes.append('missing')
+        for i in range(len(atts)):
+            if i == 0 and atts[0] == 'a':
+                attributes.append('allocatable')
+            if i == 1 and atts[1] == 'x':
+                attributes.append('exported')
+            if i == 2 and atts[2] == 'm':
+                attributes.append('missing')
         return attributes
 
     def lv_attributes(self, atts):
