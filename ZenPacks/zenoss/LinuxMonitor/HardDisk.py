@@ -15,10 +15,8 @@ class HardDisk(BaseHardDisk):
     meta_type = 'LinuxHardDisk'
 
     _properties = BaseHardDisk._properties + (
-        {'id': 'physicalvolumes', 'label': 'Physical Volumes',
-            'type': 'entity', 'mode': 'w'},
         {'id': 'size', 'label': 'Size',
-            'type': 'string', 'mode': 'w'}
+            'type': 'string', 'mode': 'w'},
         )
 
     def getPhysicalVolumes(self):
@@ -32,7 +30,6 @@ class HardDisk(BaseHardDisk):
                 physicalvolumes.append(result.getObject())
             except Exception:
                 pass
-        self.physicalvolumes = physicalvolumes
         return physicalvolumes
 
     def getRRDTemplateName(self):

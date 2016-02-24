@@ -7,15 +7,30 @@
 
     <adapter
         factory="ZenPacks.zenoss.LinuxMonitor.info.FileSystemInfo"
-        for="ZenPacks.zenoss.LinuxMonitor.FileSystem.FileSystem"
+        for=".FileSystem.FileSystem"
         provides="ZenPacks.zenoss.LinuxMonitor.interfaces.IFileSystemInfo"
         />
 
     <adapter
         factory="ZenPacks.zenoss.LinuxMonitor.info.HardDiskInfo"
-        for="ZenPacks.zenoss.LinuxMonitor.HardDisk.HardDisk"
+        for=".HardDisk.HardDisk"
         provides="ZenPacks.zenoss.LinuxMonitor.interfaces.IHardDiskInfo"
         />
+
+<!-- DynamicView -->
+    <configure zcml:condition="installed ZenPacks.zenoss.DynamicView">
+        <subscriber
+            provides="ZenPacks.zenoss.DynamicView.interfaces.IRelationsProvider"
+            for=".FileSystem.FileSystem"
+            factory=".dynamicview.FileSystemRelationsProvider"
+            />
+        <subscriber
+            provides="ZenPacks.zenoss.DynamicView.interfaces.IRelationsProvider"
+            for=".HardDisk.HardDisk"
+            factory=".dynamicview.HardDiskRelationsProvider"
+            />
+
+    </configure>
 
     <!-- Impact -->
     <configure zcml:condition="installed ZenPacks.zenoss.Impact">
@@ -29,13 +44,13 @@
 
         <subscriber
             provides="ZenPacks.zenoss.Impact.impactd.interfaces.IRelationshipDataProvider"
-            for="ZenPacks.zenoss.LinuxMonitor.FileSystem.FileSystem"
+            for=".FileSystem.FileSystem"
             factory=".impact.HardDiskRelationsProvider"
             />
 
         <subscriber
             provides="ZenPacks.zenoss.Impact.impactd.interfaces.IRelationshipDataProvider"
-            for="ZenPacks.zenoss.LinuxMonitor.HardDisk.HardDisk"
+            for=".HardDisk.HardDisk"
             factory=".impact.FileSystemRelationsProvider"
             />
 

@@ -22,13 +22,8 @@ class HardDiskInfo(ComponentInfo):
 
     @property
     @info
-    def physicalvolumes(self):
-        return self._object.getPhysicalVolumes()
-
-    @property
-    @info
     def physicalvolumes_count(self):
-        return len(self.physicalvolumes)
+        return len(self._object.getPhysicalVolumes())
 
 
 class FileSystemInfo(BaseFileSystemInfo):

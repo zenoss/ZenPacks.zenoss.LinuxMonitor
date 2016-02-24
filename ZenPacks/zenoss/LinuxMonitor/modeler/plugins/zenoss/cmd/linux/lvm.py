@@ -195,7 +195,7 @@ class lvm(CommandPlugin):
     def makeHDMap(self, columns):
         hd_om = ObjectMap()
         hd_om.title = columns['disk']
-        hd_om.id = self.prepId(columns['disk'])
+        hd_om.id = 'disk-{}'.format(self.prepId(columns['disk']))
         hd_om.size = int(columns['size'])
         hd_om.relname = 'harddisks'
         hd_om.modname = 'ZenPacks.zenoss.LinuxMonitor.HardDisk'
@@ -205,13 +205,13 @@ class lvm(CommandPlugin):
         # pv_name,pv_fmt,pv_attr,pv_size,pv_free,pv_uuid,vg_name
         pv_om = ObjectMap()
         pv_om.title = columns['pv_name']
-        pv_om.id = self.prepId(columns['pv_name'])
+        pv_om.id = 'pv-{}'.format(self.prepId(columns['pv_name']))
         pv_om.format = columns['pv_fmt']
         pv_om.attributes = self.lvm_parser.pv_attributes(columns['pv_attr'])
         pv_om.pvsize = int(columns['pv_size'])
         pv_om.free = int(columns['pv_free'])
         pv_om.uuid = columns['pv_uuid']
-        pv_om.set_volumeGroup = columns['vg_name']
+        pv_om.set_volumeGroup = 'vg-{}'.format(columns['vg_name'])
         pv_om.relname = 'physicalVolumes'
         pv_om.modname = 'ZenPacks.zenoss.LinuxMonitor.PhysicalVolume'
         return pv_om
@@ -220,7 +220,7 @@ class lvm(CommandPlugin):
         # vg_name,vg_attr,vg_size,vg_free,vg_uuid
         vg_om = ObjectMap()
         vg_om.title = columns['vg_name']
-        vg_om.id = self.prepId(columns['vg_name'])
+        vg_om.id = 'vg-{}'.format(self.prepId(columns['vg_name']))
         vg_om.attributes = self.lvm_parser.vg_attributes(columns['vg_attr'])
         vg_om.vgsize = int(columns['vg_size'])
         vg_om.freesize = int(columns['vg_free'])
@@ -234,7 +234,7 @@ class lvm(CommandPlugin):
         lv_om = ObjectMap()
         lv_om.title = columns['lv_name']
         lv_om.vgname = columns['vg_name']
-        lv_om.id = self.prepId(columns['vg_name'])+'_'+self.prepId(columns['lv_name'])
+        lv_om.id = 'lv-{}'.format(self.prepId(columns['vg_name'])+'_'+self.prepId(columns['lv_name']))
         lv_om.attributes = self.lvm_parser.lv_attributes(columns['lv_attr'])
         lv_om.lvsize = int(columns['lv_size'])
         lv_om.active = True if 'active' in lv_om.attributes else False

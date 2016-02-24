@@ -77,6 +77,6 @@ class FileSystemRelationsProvider(BaseRelationsProvider):
             self.relationship_provider)
         if logicalvolume:
             yield ImpactEdge(
-                IGlobalIdentifier(filesystem).getGUID(),
                 IGlobalIdentifier(logicalvolume).getGUID(),
+                IGlobalIdentifier(filesystem).getGUID(),
                 self.relationship_provider)

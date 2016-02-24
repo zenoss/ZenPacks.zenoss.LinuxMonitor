@@ -10,6 +10,8 @@ classes:
         dynamicview_relations:
             impacts:
                 - volumeGroup
+            impacted_by:
+                - harddisk
         properties:
             pvsize:
                 label: Size
@@ -54,7 +56,6 @@ classes:
         dynamicview_relations:
             impacts:
                 - logicalVolumes
-                - snapshotVolumes
             impacted_by:
                 - physicalVolumes
         properties:
@@ -94,6 +95,7 @@ classes:
             impacts:
                 - snapshotVolumes
                 - openstack_core_components
+                - filesystem
             impacted_by:
                 - volumeGroup
         properties:
@@ -140,7 +142,6 @@ classes:
         dynamicview_views: [service_view]
         dynamicview_relations:
             impacted_by:
-                - volumeGroup
                 - logicalVolume
             impacts:
                 - openstack_core_components
