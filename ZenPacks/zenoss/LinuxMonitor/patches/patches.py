@@ -13,7 +13,14 @@ from Products.Zuul import getFacade
 
 @monkeypatch('Products.ZenModel.Device.Device')
 def getPingStatus(self):
-    if self.path()[0][6] == 'Linux':
+    def monitored_with_ssh(device):
+        for template in device.getRRDTemplates():
+            for datasource in template.datasources():
+                if datasource.sourcetype == 'COMMAND' and datasource.usessh:
+                    return True
+
+        return False
+    if monitored_with_ssh(self):
         zep = getFacade('zep')
         fltr = zep.createEventFilter(element_identifier=self.id,
                                      event_class=('/Cmd/Fail', '/Status/Ping'),

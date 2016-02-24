@@ -1943,7 +1943,7 @@
             Filesystem template
         </property>
         <property type="string" id="targetPythonClass" mode="w">
-            Products.ZenModel.FileSystem
+            ZenPacks.zenoss.LinuxMonitor.FileSystem.FileSystem
         </property>
         <tomanycont id="datasources">
             <object id="disk" module="Products.ZenModel.BasicDataSource" class="BasicDataSource">

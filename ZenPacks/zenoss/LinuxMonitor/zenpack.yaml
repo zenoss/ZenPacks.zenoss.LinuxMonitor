@@ -6,8 +6,12 @@ classes:
 
     PhysicalVolume:
         label: Physical Volume
-        impacts:
-            - volumeGroup
+        dynamicview_views: [service_view]
+        dynamicview_relations:
+            impacts:
+                - volumeGroup
+            impacted_by:
+                - harddisk
         properties:
             pvsize:
                 label: Size
@@ -35,14 +39,25 @@ classes:
                 type: lines
             uuid:
                 grid_display: False
+            harddisk_id:
+                grid_display: False
+                details_display: False
+                index_type: field
+            harddisk:
+                label: Hard Disk
+                api_only: true
+                api_backendtype: method
+                type: entity
+
 
     VolumeGroup:
         label: Volume Group
-        impacts:
-            - logicalVolumes
-            - snapshotVolumes
-        impacted_by:
-            - physicalVolumes
+        dynamicview_views: [service_view]
+        dynamicview_relations:
+            impacts:
+                - logicalVolumes
+            impacted_by:
+                - physicalVolumes
         properties:
             vgsize:
                 label: Size
@@ -74,11 +89,15 @@ classes:
 
     LogicalVolume:
         label: Logical Volume
-        impacts:
-            - snapshotVolumes
-            - openstack_core_components
-        impacted_by:
-            - volumeGroup
+        monitoring_templates: ['LogicalVolume']
+        dynamicview_views: [service_view]
+        dynamicview_relations:
+            impacts:
+                - snapshotVolumes
+                - openstack_core_components
+                - filesystem
+            impacted_by:
+                - volumeGroup
         properties:
             attributes:
                 label: Attributes
@@ -90,6 +109,7 @@ classes:
                 renderer: Zenoss.render.bytesString
             active:
                 label: Active
+                datapoint: status_state
                 renderer: Zenoss.render.checkbox
             vgname:
                 grid_display: False
@@ -103,15 +123,31 @@ classes:
                 grid_display: false
                 api_only: true
                 api_backendtype: method
+            filesystem:
+                label: File System
+                api_only: true
+                api_backendtype: method
+                type: entity
+            mountpoint:
+                grid_display: False
+                details_display: False
+                index_type: field
+            major_minor:
+                label: "Major:Minor"
+                grid_display: False
+
 
     SnapshotVolume:
         label: Snapshot Volume
-        impacted_by:
-            - volumeGroup
-            - logicalVolume
-        impacts:
-            - openstack_core_components
+        dynamicview_views: [service_view]
+        dynamicview_relations:
+            impacted_by:
+                - logicalVolume
+            impacts:
+                - openstack_core_components
         properties:
+            origin:
+                grid_display: False
             attributes:
                 label: Attributes
                 grid_display: False
@@ -121,11 +157,9 @@ classes:
                 type: int
                 renderer: Zenoss.render.bytesString
             active:
-                type: boolean
-                renderer: Zenoss.render.checkbox
                 label: Active
-            origin:
-                grid_display: False
+                datapoint: status_state
+                renderer: Zenoss.render.checkbox
             vgname:
                 grid_display: False
                 details_display: False
@@ -135,9 +169,22 @@ classes:
             openstack_core_components:
                 type: entity
                 label: Cinder Integration
-                grid_display: false
+                grid_display: False
                 api_only: true
                 api_backendtype: method
+            filesystem:
+                label: File System
+                api_only: true
+                api_backendtype: method
+                type: entity
+            mountpoint:
+                grid_display: False
+                details_display: False
+                index_type: field
+            major_minor:
+                label: "Major:Minor"
+                grid_display: False
+
 
 class_relationships:
     - Products.ZenModel.Device.Device 1:MC VolumeGroup
@@ -150,8 +197,9 @@ device_classes: !ZenPackSpec
     /Server/SSH/Linux:
         zProperties:
             zCollectorPlugins:
-                - zenoss.cmd.df
                 - zenoss.cmd.uname
+                - zenoss.cmd.linux.df
+                - zenoss.cmd.linux.alt_kernel_name
                 - zenoss.cmd.linux.cpuinfo
                 - zenoss.cmd.linux.ifconfig
                 - zenoss.cmd.linux.lvm
@@ -167,6 +215,7 @@ device_classes: !ZenPackSpec
         templates:
             PhysicalVolume:
                 description: Physical Volume Monitoring
+                targetPythonClass: ZenPacks.zenoss.LinuxMonitor.PhysicalVolume.PhysicalVolume
                 datasources:
                     volume:
                         type: COMMAND
@@ -180,11 +229,15 @@ device_classes: !ZenPackSpec
                                 rrdmin: 0
                     status:
                         type: COMMAND
-                        commandTemplate: '/usr/bin/sudo pvs -o pv_name,pv_missing'
+                        commandTemplate: "/usr/bin/sudo /usr/sbin/pvs --noheadings -o pv_name,pv_attr | awk '{split($$2, chars, \"\"); printf(\"%s \", $$1); for (i=1;i<=3;i++) printf(\"%d \", chars[i]==\"-\" ? 0 : 1); printf(\"\\n\")}'"
                         usessh: true
                         parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.pvsstatus
                         datapoints:
-                            status:
+                            allocatable:
+                                rrdmin: 0
+                            exported:
+                                rrdmin: 0
+                            missing:
                                 rrdmin: 0
                     diskstats:
                         type: COMMAND
@@ -311,8 +364,25 @@ device_classes: !ZenPackSpec
                                 dpName: diskstats_msDoingIOWeighted
                                 lineType: LINE
                                 rpn: "10,/"
+                thresholds:
+                    unallocatable:
+                        dsnames: [status_allocatable]
+                        minval: 1
+                        eventClass: /Status
+                        explanation: Physical volume is not allocatable
+                    exported:
+                        dsnames: [status_exported]
+                        maxval: 0
+                        severity: 2
+                        eventClass: /Status
+                    missing:
+                        dsnames: [status_missing]
+                        maxval: 0
+                        eventClass: /Status
+                        explanation: Physical volume is missing
             VolumeGroup:
                 description: Volume Group Monitoring
+                targetPythonClass: ZenPacks.zenoss.LinuxMonitor.VolumeGroup.VolumeGroup
                 datasources:
                     group:
                         type: COMMAND
@@ -324,6 +394,20 @@ device_classes: !ZenPackSpec
                                 rrdmin: 0
                             free:
                                 rrdmin: 0
+                    status:
+                        type: COMMAND
+                        commandTemplate: "/usr/bin/sudo /usr/sbin/vgs --noheadings -o vg_name,vg_attr | awk '{split($$2, chars, \"\"); printf(\"%s \", $$1); for (i=1;i<=3;i++) printf(\"%d \", chars[i]==\"-\" ? 0 : 1); printf(\"\\n\")}'"
+                        usessh: true
+                        parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.vgsstatus
+                        datapoints:
+                            partial:
+                                rrdmin: 0
+                thresholds:
+                    partial:
+                        dsnames: [status_partial]
+                        minval: 1
+                        eventClass: /Status
+                        explanation: A physical volume for the volume group may be missing.
                 graphs:
                     Volume Group Utilization:
                         units: percent
@@ -337,3 +421,33 @@ device_classes: !ZenPackSpec
                                 dpName: group_free
                                 lineType: AREA
                                 rpn: "size,-,size,/,-100,*"
+            LogicalVolume:
+                description: Logical Volume Monitoring
+                targetPythonClass: ZenPacks.zenoss.LinuxMonitor.LogicalVolume.LogicalVolume
+                datasources:
+                    status:
+                        type: COMMAND
+                        commandTemplate: "/usr/bin/sudo /usr/sbin/lvs --noheadings -o vg_name,lv_name,lv_attr | /usr/bin/awk '{print $$1\"_\"$$2\" \"$$3}'"
+                        usessh: true
+                        parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.lvsstatus
+                        eventClass: /Status
+                        datapoints:
+                            state:
+                                rrdmin: 0
+                            health:
+                                rrdmin: 0
+            SnapshotVolume:
+                description: Snapshot Volume Monitoring
+                targetPythonClass: ZenPacks.zenoss.LinuxMonitor.SnapshotVolume.SnapshotVolume
+                datasources:
+                    status:
+                        type: COMMAND
+                        commandTemplate: "/usr/bin/sudo /usr/sbin/lvs --noheadings -o vg_name,lv_name,lv_attr | /usr/bin/awk '{print $$1\"_\"$$2\" \"$$3}'"
+                        usessh: true
+                        parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.lvsstatus
+                        eventClass: /Status
+                        datapoints:
+                            state:
+                                rrdmin: 0
+                            health:
+                                rrdmin: 0

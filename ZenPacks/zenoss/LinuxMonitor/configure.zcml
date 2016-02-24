@@ -5,20 +5,29 @@
     xmlns:zcml="http://namespaces.zope.org/zcml"
     >
 
-    <!-- Impact -->
-    <configure zcml:condition="installed ZenPacks.zenoss.Impact">
-        <include package="ZenPacks.zenoss.Impact" file="meta.zcml"/>
+    <adapter
+        factory="ZenPacks.zenoss.LinuxMonitor.info.FileSystemInfo"
+        for=".FileSystem.FileSystem"
+        provides="ZenPacks.zenoss.LinuxMonitor.interfaces.IFileSystemInfo"
+        />
 
+    <adapter
+        factory="ZenPacks.zenoss.LinuxMonitor.info.HardDiskInfo"
+        for=".HardDisk.HardDisk"
+        provides="ZenPacks.zenoss.LinuxMonitor.interfaces.IHardDiskInfo"
+        />
+
+<!-- DynamicView -->
+    <configure zcml:condition="installed ZenPacks.zenoss.DynamicView">
         <subscriber
-            provides="ZenPacks.zenoss.Impact.impactd.interfaces.IRelationshipDataProvider"
-            for="Products.ZenModel.CPU.CPU"
-            factory=".impact.CPURelationsProvider"
+            provides="ZenPacks.zenoss.DynamicView.interfaces.IRelationsProvider"
+            for=".FileSystem.FileSystem"
+            factory=".dynamicview.FileSystemRelationsProvider"
             />
-
         <subscriber
-            provides="ZenPacks.zenoss.Impact.impactd.interfaces.IRelationshipDataProvider"
-            for="Products.ZenModel.FileSystem.FileSystem"
-            factory=".impact.FileSystemRelationsProvider"
+            provides="ZenPacks.zenoss.DynamicView.interfaces.IRelationsProvider"
+            for=".HardDisk.HardDisk"
+            factory=".dynamicview.HardDiskRelationsProvider"
             />
 
     </configure>
@@ -33,6 +42,9 @@
               />
       </configure>
     </configure>
+
+    <!-- Browser -->
+    <include package=".browser"/>
 
 </configure>
 

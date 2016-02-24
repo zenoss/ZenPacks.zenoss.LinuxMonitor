@@ -1,0 +1,26 @@
+# Classes
+[HardDisk]
+[LogicalVolume]
+[PhysicalVolume]
+[SnapshotVolume]
+[VolumeGroup]
+
+# Inheritence
+[Component]^-[HardDisk]
+[Component]^-[PhysicalVolume]
+[Component]^-[VolumeGroup]
+[Component]^-[LogicalVolume]
+[LogicalVolume]^-[SnapshotVolume]
+
+# Containing Relationships
+[Products.ZenModel.Device.Device]++volumeGroups-products_zenmodel_device_device[VolumeGroup]
+[Products.ZenModel.Device.Device]++hardDisks-products_zenmodel_device_device[HardDisk]
+[Products.ZenModel.Device.Device]++physicalVolumes-products_zenmodel_device_device[PhysicalVolume]
+[VolumeGroup]++logicalVolumes-volumeGroup[LogicalVolume]
+[LogicalVolume]++snapshotVolumes-logicalVolume[SnapshotVolume]
+
+# Non-Containing Relationships
+[HardDisk]physicalVolumes-.-hardDisk++[PhysicalVolume]
+[VolumeGroup]physicalVolumes-.-volumeGroup++[PhysicalVolume]
+[LogicalVolume]-.->[ZenPacks.zenoss.LinuxMonitor.FileSystem.FileSystem]
+[SnapshotVolume]-.->[ZenPacks.zenoss.LinuxMonitor.FileSystem.FileSystem]

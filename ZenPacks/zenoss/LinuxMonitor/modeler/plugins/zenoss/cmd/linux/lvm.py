@@ -16,19 +16,28 @@ volumes.
 """
 
 import logging
+import re
 
 from Products.DataCollector.plugins.CollectorPlugin import CommandPlugin
 from Products.DataCollector.plugins.DataMaps import ObjectMap, RelationshipMap
+
+from ZenPacks.zenoss.LinuxMonitor.util import LVMAttributeParser
 log = logging.getLogger('zen.lvm')
 
 
 class lvm(CommandPlugin):
     """
+    /usr/bin/fdisk -l  | grep '^Disk' | grep -v 'mapper\|identifier\|label' | awk '{gsub(":","");print $2" "$5}'
     /usr/bin/sudo pvs --units b --nosuffix -o pv_name,pv_fmt,pv_attr,pv_size,pv_free,pv_uuid,vg_name;
     /usr/bin/sudo vgs --units b --nosuffix -o vg_name,vg_attr,vg_size,vg_free,vg_uuid;
     /usr/bin/sudo lvs --units b --nosuffix -o lv_name,vg_name,lv_attr,lv_size,lv_uuid,origin
 
     sample output:
+    HD
+    /dev/sda 21474836480
+    /dev/sdb 21474836480
+    /dev/sdc 21474836480
+    /dev/sdd 21474836480
     PV         Fmt  Attr PSize       PFree       PV UUID                                VG
     /dev/sda2  lvm2 a--  20946354176    41943040 hctl0n-t76R-AdMs-FG1x-IUxG-hbTi-FZlhXG centos
     /dev/sdb1  lvm2 a--  21470642176           0 KN4g1e-iko0-Zn9E-8jkZ-q7oE-cHZO-dEhGM2 fileserver
@@ -44,86 +53,106 @@ class lvm(CommandPlugin):
     backup fileserver -wi-ao----  5368709120 active
     media  fileserver -wi-ao----  1073741824 active
     share  fileserver -wi-ao---- 21474836480 active
+    NAME MAJ:MIN RM SIZE RO TYPE MOUNTPOINT
+    fd0 2:0 1 4096 0 disk
+    sda 8:0 0 21474836480 0 disk
+    sda1 8:1 0 524288000 0 part /boot
+    sda2 8:2 0 20949499904 0 part
+    centos-root 253:0 0 18756927488 0 lvm /
+    centos-swap 253:1 0 2147483648 0 lvm [SWAP]
+    sdb 8:16 0 21474836480 0 disk
+    sdb1 8:17 0 21473787904 0 part
+    fileserver-share-real 253:2 0 21474836480 0 lvm
+    fileserver-share 253:3 0 21474836480 0 lvm /var/share
+    fileserver-snap 253:5 0 21474836480 0 lvm
+    sdc 8:32 0 21474836480 0 disk
+    sdc1 8:33 0 21473787904 0 part
+    fileserver-share-real 253:2 0 21474836480 0 lvm
+    fileserver-share 253:3 0 21474836480 0 lvm /var/share
+    fileserver-snap 253:5 0 21474836480 0 lvm
+    fileserver-snap-cow 253:4 0 5368709120 0 lvm
+    fileserver-snap 253:5 0 21474836480 0 lvm
+    fileserver-backup 253:6 0 5368709120 0 lvm /var/backup
+    fileserver-media 253:7 0 1073741824 0 lvm /var/media
+    fileserver-inactive 253:8 0 5368709120 0 lvm
+    sdd 8:48 0 21474836480 0 disk
+    sdd1 8:49 0 21473787904 0 part
+    sr0 11:0 1 63019008 0 rom
 
+    MAJ:MIN can be used for diskstats
     """
 
-    command = ('/usr/bin/sudo pvs --units b --nosuffix -o pv_name,pv_fmt,pv_attr,pv_size,pv_free,pv_uuid,vg_name; '
-               '/usr/bin/sudo vgs --units b --nosuffix -o vg_name,vg_attr,vg_size,vg_free,vg_uuid; '
-               '/usr/bin/sudo lvs --units b --nosuffix -o lv_name,vg_name,lv_attr,lv_size,lv_uuid,origin')
+    command = ('/usr/bin/env echo "HD";sudo fdisk -l 2>&1 | grep \'^Disk\' | grep -v '
+               '\'mapper\|identifier\|label\' | awk \'{gsub(":","");print $2" "$5}\'; '
+               'sudo pvs --units b --nosuffix -o pv_name,pv_fmt,pv_attr,pv_size,pv_free,pv_uuid,vg_name 2>&1; '
+               'sudo vgs --units b --nosuffix -o vg_name,vg_attr,vg_size,vg_free,vg_uuid 2>&1; '
+               'sudo lvs --units b --nosuffix -o lv_name,vg_name,lv_attr,lv_size,lv_uuid,origin 2>&1; '
+               'lsblk -rb 2>&1')
 
     def process(self, device, results, log):
-        vg_maps = []
+        hd_maps = []
         pv_maps = []
+        vg_maps = []
         lv_maps = []
         sv_maps = []
+        lsblk_dict = {}
+        self.lvm_parser = LVMAttributeParser()
+        section = ''
+        dev_blk_re = re.compile('(?P<device_block>.*) (?P<major_minor>\d+:\d+) \d+ \d+ \d+ \w+\s*(?P<mount>\S*)')
+        hd_re = re.compile('(?P<disk>\S+) (?P<size>\d+)')
+        pv_re = re.compile('\s*(?P<pv_name>\S+)\s*(?P<pv_fmt>\S+)\s*(?P<pv_attr>\S+)\s*(?P<pv_size>\S+)'
+                           '\s*(?P<pv_free>\S+)\s*(?P<pv_uuid>\S+)\s*(?P<vg_name>\S*)')
+        vg_re = re.compile('\s*(?P<vg_name>\S+)\s*(?P<vg_attr>\S+)\s*(?P<vg_size>\S+)\s*(?P<vg_free>\S+)\s*(?P<vg_uuid>\S+)')
+        lv_re = re.compile('\s*(?P<lv_name>\S+)\s*(?P<vg_name>\S+)\s*(?P<lv_attr>\S+)\s*(?P<lv_size>\S+)\s*(?P<lv_uuid>\S+)\s*(?P<origin>\S*)')
+        parse_re = {'HD': hd_re, 'PV': pv_re, 'VG': vg_re, 'LV': lv_re, 'NAME': dev_blk_re}
         for line in results.split('\n'):
-            columns = line.split()
-            if not columns:
+            if self.checkErr(line):
+                return []
+            res = line.split()
+            if not res:
                 continue
-            if columns[0] == 'PV':
-                inPV = True
-                inVG = False
-                inLV = False
+            if res[0] in parse_re.keys():
+                section = res[0]
                 continue
-            elif columns[0] == 'VG':
-                inVG = True
-                inPV = False
-                inLV = False
+            try:
+                columns = parse_re[section].match(line).groupdict()
+            except (AttributeError, Exception):
                 continue
-            elif columns[0] == 'LV':
-                inLV = True
-                inVG = False
-                inPV = False
-                continue
-            if inPV:
-                pv_om = ObjectMap()
-                pv_om.title = columns[0]
-                pv_om.id = self.prepId(columns[0])
-                pv_om.format = columns[1]
-                pv_om.attributes = self.pv_attributes(columns[2])
-                pv_om.pvsize = int(columns[3])
-                pv_om.free = int(columns[4])
-                pv_om.uuid = columns[5]
-                if len(columns) == 7:
-                    pv_om.set_volumeGroup = columns[6]
-                pv_om.relname = 'physicalVolumes'
-                pv_om.modname = 'ZenPacks.zenoss.LinuxMonitor.PhysicalVolume'
+            if section == 'HD':
+                hd_maps.append(self.makeHDMap(columns))
+            elif section == 'PV':
+                pv_om = self.makePVMap(columns)
                 pv_maps.append(pv_om)
-            elif inVG:
-                vg_om = ObjectMap()
-                vg_om.title = columns[0]
-                vg_om.id = self.prepId(columns[0])
-                vg_om.attributes = self.vg_attributes(columns[1])
-                vg_om.vgsize = int(columns[2])
-                vg_om.freesize = int(columns[3])
-                vg_om.uuid = columns[4]
-                vg_om.relname = 'volumeGroups'
-                vg_om.modname = 'ZenPacks.zenoss.LinuxMonitor.VolumeGroup'
-                vg_maps.append(vg_om)
-            elif inLV:
-                lv_om = ObjectMap()
-                lv_om.title = columns[0]
-                lv_om.vgname = columns[1]
-                lv_om.id = self.prepId(columns[1]+'_'+columns[0])
-                lv_om.attributes = self.lv_attributes(columns[2])
-                lv_om.lvsize = int(columns[3])
-                lv_om.active = True if 'active' in lv_om.attributes else False
-                lv_om.uuid = columns[4]
-                if len(columns) == 6:
-                    lv_om.origin = columns[5]
-                    lv_om.relname = 'snapshotVolumes'
-                    lv_om.modname = 'ZenPacks.zenoss.LinuxMonitor.SnapshotVolume'
+                for hd_om in hd_maps:
+                    if hd_om.title in pv_om.title:
+                        pv_om.harddisk_id = hd_om.id
+            elif section == 'VG':
+                vg_maps.append(self.makeVGMap(columns))
+            elif section == 'LV':
+                lv_om = self.makeLVMap(columns)
+                if lv_om.relname == 'snapshotVolumes':
                     sv_maps.append(lv_om)
                 else:
-                    lv_om.relname = 'logicalVolumes'
-                    lv_om.modname = 'ZenPacks.zenoss.LinuxMonitor.LogicalVolume'
                     lv_maps.append(lv_om)
+            elif section == 'NAME':
+                # device block can be 'vg_name-lv_name' or 'vg_name-lv_name (DM-X)' format
+                # depending on linux flavor
+                device_block = columns['device_block'].split()[0]
+                lsblk_dict[device_block] = {}
+                lsblk_dict[device_block]['mount'] = columns['mount']
+                lsblk_dict[device_block]['major_minor'] = columns['major_minor']
 
         maps = []
         maps.append(RelationshipMap(
             relname="volumeGroups",
             modname="ZenPacks.zenoss.LinuxMonitor.VolumeGroup",
             objmaps=vg_maps))
+
+        maps.append(RelationshipMap(
+            compname='hw',
+            relname='harddisks',
+            modname="ZenPacks.zenoss.LinuxMonitor.HardDisk",
+            objmaps=hd_maps))
 
         maps.append(RelationshipMap(
             relname="physicalVolumes",
@@ -135,6 +164,14 @@ class lvm(CommandPlugin):
             compname = 'volumeGroups/' + vg_om.id
             for lv_om in lv_maps:
                 if lv_om.vgname == vg_om.title:
+                    device_block = lv_om.vgname+'-'+lv_om.title
+                    try:
+                        lv_om.mountpoint = lsblk_dict[device_block]['mount']
+                        lv_om.major_minor = lsblk_dict[device_block]['major_minor']
+                    except KeyError:
+                        # device block not found
+                        log.debug('device block {} not found for logical volume {} in volume group {}'
+                                  .format(lv_om.vgname+'-'+lv_om.title, lv_om.title, lv_om.vgname))
                     lv_vg_oms.append(lv_om)
             maps.append(RelationshipMap(
                 relname="logicalVolumes",
@@ -155,157 +192,59 @@ class lvm(CommandPlugin):
                         objmaps=lv_sv_oms))
         return maps
 
-    def pv_attributes(self, atts):
-        # (a)llocatable, e(x)ported and (m)issing
-        attributes = []
-        if atts[0] == 'a':
-            attributes.append('allocatable')
-        if atts[1] == 'x':
-            attributes.append('exported')
-        if atts[2] == 'm':
-            attributes.append('missing')
-        return attributes
+    def makeHDMap(self, columns):
+        hd_om = ObjectMap()
+        hd_om.title = columns['disk']
+        hd_om.id = 'disk-{}'.format(self.prepId(columns['disk']))
+        hd_om.size = int(columns['size'])
+        hd_om.relname = 'harddisks'
+        hd_om.modname = 'ZenPacks.zenoss.LinuxMonitor.HardDisk'
+        return hd_om
 
-    def lv_attributes(self, atts):
-        attributes = []
-        attribute = self.lv_volume_type(atts[0])
-        if attribute:
-            attributes.append(attribute)
-        attribute = self.lv_permissions(atts[1])
-        if attribute:
-            attributes.append(attribute)
-        attribute = self.lv_allocation_policy(atts[2])
-        if attribute:
-            attributes.append(attribute)
-        attribute = self.lv_state(atts[4])
-        if attribute:
-            attributes.append(attribute)
-        attribute = self.lv_device(atts[5])
-        if attribute:
-            attributes.append(attribute)
-        attribute = self.lv_target_type(atts[6])
-        if attribute:
-            attributes.append(attribute)
-        attribute = self.lv_health(atts[8])
-        if attribute:
-            attributes.append(attribute)
-        if atts[9] == 'k':
-            attribute = 'skip activation'
-        if attribute:
-            attributes.append(attribute)
-        return attributes
+    def makePVMap(self, columns):
+        # pv_name,pv_fmt,pv_attr,pv_size,pv_free,pv_uuid,vg_name
+        pv_om = ObjectMap()
+        pv_om.title = columns['pv_name']
+        pv_om.id = 'pv-{}'.format(self.prepId(columns['pv_name']))
+        pv_om.format = columns['pv_fmt']
+        pv_om.attributes = self.lvm_parser.pv_attributes(columns['pv_attr'])
+        pv_om.uuid = columns['pv_uuid']
+        pv_om.set_volumeGroup = 'vg-{}'.format(columns['vg_name']) if columns['vg_name'] else ''
+        pv_om.relname = 'physicalVolumes'
+        pv_om.modname = 'ZenPacks.zenoss.LinuxMonitor.PhysicalVolume'
+        return pv_om
 
-    def vg_attributes(self, atts):
-        attributes = []
-        attribute = self.vg_permissions(atts[0])
-        if attribute:
-            attributes.append(attribute)
-        if atts[1] == 'z':
-            attributes.append('resizable')
-        if atts[2] == 'x':
-            attributes.append('exported')
-        if atts[3] == 'p':
-            attributes.append('partial')
-        attribute = self.vg_allocation_policy(atts[4])
-        if attribute:
-            attributes.append(attribute)
-        attribute = self.vg_cluster(atts[5])
-        if attribute:
-            attributes.append(attribute)
-        return attributes
+    def makeVGMap(self, columns):
+        # vg_name,vg_attr,vg_size,vg_free,vg_uuid
+        vg_om = ObjectMap()
+        vg_om.title = columns['vg_name']
+        vg_om.id = 'vg-{}'.format(self.prepId(columns['vg_name']))
+        vg_om.attributes = self.lvm_parser.vg_attributes(columns['vg_attr'])
+        vg_om.uuid = columns['vg_uuid']
+        vg_om.relname = 'volumeGroups'
+        vg_om.modname = 'ZenPacks.zenoss.LinuxMonitor.VolumeGroup'
+        return vg_om
 
-    def vg_permissions(self, att):
-        # 1  Permissions: (w)riteable, (r)ead-only
-        return {'w': 'writeable',
-                'r': 'read-only'}.get(att, None)
+    def makeLVMap(self, columns):
+        # lv_name,vg_name,lv_attr,lv_size,lv_uuid,origin
+        lv_om = ObjectMap()
+        lv_om.title = columns['lv_name']
+        lv_om.vgname = columns['vg_name']
+        lv_om.id = 'lv-{}'.format(self.prepId(columns['vg_name'])+'_'+self.prepId(columns['lv_name']))
+        lv_om.attributes = self.lvm_parser.lv_attributes(columns['lv_attr'])
+        lv_om.lvsize = int(columns['lv_size'])
+        lv_om.uuid = columns['lv_uuid']
+        if columns['origin']:
+            lv_om.origin = columns['origin']
+            lv_om.relname = 'snapshotVolumes'
+            lv_om.modname = 'ZenPacks.zenoss.LinuxMonitor.SnapshotVolume'
+        else:
+            lv_om.relname = 'logicalVolumes'
+            lv_om.modname = 'ZenPacks.zenoss.LinuxMonitor.LogicalVolume'
+        return lv_om
 
-    def vg_allocation_policy(self, att):
-        #  Allocation policy: (c)ontiguous, c(l)ing, (n)ormal, (a)nywhere
-        return {'c': 'contiguous',
-                'l': 'cling',
-                'n': 'normal',
-                'a': 'anywhere'}.get(att, None)
-
-    def vg_cluster(self, att):
-        # (c)lustered, (s)hared
-        return {'c': 'clustered',
-                's': 'shared'}.get(att, None)
-
-    def lv_volume_type(self, att):
-        # Volume type: (m)irrored, (M)irrored without initial sync, (o)rigin, (O)rigin with merging snapshot,
-        # (r)aid, (R)aid without initial sync, (s)napshot, merging (S)napshot, (p)vmove, (v)irtual, mirror
-        # or raid (i)mage, mirror or raid (I)mage out-of-sync, mirror (l)og device, under (c)onversion,
-        # thin (V)olume, (t)hin pool, (T)hin pool data, raid or thin pool m(e)tadata
-        return {'m': 'mirrored',
-                'M': 'mirrored without initial sync',
-                'o': 'origin',
-                'O': 'origin with merging snapshot',
-                'r': 'raid',
-                'R': 'raid without initial sync',
-                's': 'snapshot',
-                'S': 'merging snapshot',
-                'p': 'pvmove',
-                'v': 'virtual',
-                'i': 'mirror or raid image',
-                'I': 'image out of sync',
-                'l': 'mirror log device',
-                'c': 'under conversion',
-                'V': 'thin volume',
-                't': 'thin pool',
-                'T': 'thin pool data',
-                'e': 'raid or thin pool metadata'}.get(att, None)
-
-    def lv_permissions(self, att):
-        # Permissions: (w)riteable, (r)ead-only, (R)ead-only activation of non-read-only volume
-        return {'w': 'writeable',
-                'r': 'read-only',
-                'R': 'read-only activation of non-read-only volume'}.get(att, None)
-
-    def lv_allocation_policy(self, att):
-        # Allocation policy: (a)nywhere, (c)ontiguous, (i)nherited, c(l)ing, (n)ormal
-        return {'a': 'anywhere',
-                'c': 'contiguous',
-                'i': 'inherited',
-                'l': 'cling',
-                'n': 'normal',
-                'A': 'anywhere (Locked)',
-                'C': 'contiguous (Locked)',
-                'I': 'inherited (Locked)',
-                'L': 'cling (Locked)',
-                'N': 'normal (Locked)'}.get(att, None)
-
-    def lv_state(self, att):
-        # State: (a)ctive, (s)uspended, (I)nvalid snapshot, invalid (S)uspended snapshot,
-        # snapshot (m)erge failed, suspended snapshot (M)erge failed,
-        # mapped (d)evice present without tables, mapped device present with (i)nactive table
-        return {'a': 'active',
-                's': 'suspended',
-                'I': 'invalid snapshot',
-                'S': 'invalid suspended snapshot',
-                'm': 'snapshot merge failed',
-                'M': 'suspended snapshot merge failed',
-                'd': 'mapped device present without tables',
-                'i': 'mapped device present with inactive table'}.get(att, None)
-
-    def lv_device(self, att):
-        # device (o)pen, (X) unknown
-        return {'o': 'open',
-                'X': 'unknown'}.get(att, None)
-
-    def lv_target_type(self, att):
-        # Target  type: (C)ache, (m)irror, (r)aid, (s)napshot, (t)hin, (u)nknown, (v)irtual
-        return {'C': 'cache',
-                'm': 'mirror',
-                'r': 'raid',
-                's': 'snapshot',
-                't': 'thin',
-                'u': 'unknown',
-                'v': 'virtual'}.get(att, None)
-
-    def lv_health(self, att):
-        # Volume Health: (p)artial, (r)efresh needed, (m)ismatches exist, (w)ritemostly, (X) unknown
-        return {'p': 'partial',
-                'r': 'refresh needed',
-                'm': 'mismatches exist',
-                'w': 'writemostly',
-                'X': 'unknown'}.get(att, None)
+    def checkErr(self, line):
+        if 'no tty present' in line or 'sudo: sorry, you must have a tty to run sudo' in line:
+            log.warning('No tty present.  Ensure that user is sudo and change sudo settings to disable requiretty for your user account.')
+            return True
+        return False

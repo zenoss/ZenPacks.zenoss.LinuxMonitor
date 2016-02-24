@@ -9,9 +9,6 @@
 
 from . import schema
 
-import logging
-LOG = logging.getLogger('zen.lvm.LogicalVolume')
-
 from zope.interface import implements
 
 try:
@@ -30,7 +27,6 @@ class LogicalVolume(schema.LogicalVolume):
     '''
     if openstack:
         implements(ICinderImplementationComponent)
-
 
     # The "integration key(s)" for this component must be made up of
     # a set of values that uniquely identify this resource and are
@@ -62,3 +58,8 @@ class LogicalVolume(schema.LogicalVolume):
             return get_cinder_components(self)
         else:
             return []
+
+    def filesystem(self):
+        for filesystem in self.device().os.filesystems():
+            if filesystem.title == self.mountpoint:
+                return filesystem
