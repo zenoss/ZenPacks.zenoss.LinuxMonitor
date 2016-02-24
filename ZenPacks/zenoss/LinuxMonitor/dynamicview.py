@@ -20,7 +20,7 @@ import logging
 from zope.component import adapts
 from zope.interface import implements
 
-from ZenPacks.zenoss.DynamicView import TAG_ALL, TAG_IMPACTED_BY
+from ZenPacks.zenoss.DynamicView import TAG_ALL, TAG_IMPACTED_BY, TAG_IMPACTS
 from ZenPacks.zenoss.DynamicView.interfaces import IRelationsProvider
 from ZenPacks.zenoss.DynamicView.model.adapters import BaseRelationsProvider
 
@@ -31,53 +31,22 @@ LOG = logging.getLogger('zen.LinuxMonitor')
 
 class FileSystemRelationsProvider(BaseRelationsProvider):
 
-    """DynamicView IRelationsProvider adaptor factory for FileSystem."""
-
     implements(IRelationsProvider)
     adapts(FileSystem)
 
     def relations(self, type=TAG_ALL):
-        """Generate IRelation instances.
-
-        One (filesystem <- impacted_by <- member) IRelation for each member.
-
-        NOTE: Anything that can be a member of an FileSystem should have a
-        corresponding IRelationsProvider adapter that yields a
-        (member -> impacts -> filesystem) IRelation.
-
-        """
         if type in (TAG_ALL, TAG_IMPACTED_BY):
-            try:
-                for element in self._adapted.getElements():
-                    yield self.constructRelationTo(element, TAG_IMPACTED_BY)
-            except Exception:
-                LOG.exception(
-                    "failed to get elements for %s",
-                    self._adapted.getPrimaryId())
+            lv = self._adapted.getLogicalVolume()
+            if lv:
+                yield self.constructRelationTo(lv, TAG_IMPACTED_BY)
 
 
 class HardDiskRelationsProvider(BaseRelationsProvider):
-
-    """DynamicView IRelationsProvider adaptor factory for FileSystem."""
 
     implements(IRelationsProvider)
     adapts(HardDisk)
 
     def relations(self, type=TAG_ALL):
-        """Generate IRelation instances.
-
-        One (harddisk <- impacted_by <- member) IRelation for each member.
-
-        NOTE: Anything that can be a member of an HardDisk should have a
-        corresponding IRelationsProvider adapter that yields a
-        (member -> impacts -> harddisk) IRelation.
-
-        """
-        if type in (TAG_ALL, TAG_IMPACTED_BY):
-            try:
-                for element in self._adapted.getElements():
-                    yield self.constructRelationTo(element, TAG_IMPACTED_BY)
-            except Exception:
-                LOG.exception(
-                    "failed to get elements for %s",
-                    self._adapted.getPrimaryId())
+        if type in (TAG_ALL, TAG_IMPACTS):
+            for pv in self._adapted.getPhysicalVolumes():
+                yield self.constructRelationTo(pv, TAG_IMPACTS)

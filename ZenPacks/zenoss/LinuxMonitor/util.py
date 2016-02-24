@@ -45,17 +45,18 @@ class LVMAttributeParser(object):
         attribute = self.lv_device(atts[5])
         if attribute:
             attributes.append(attribute)
-        attribute = self.lv_target_type(atts[6])
-        if attribute:
-            attributes.append(attribute)
-        attribute = self.lv_health(atts[8])
-        if attribute:
-            attributes.append(attribute)
-        if len(atts) > 9:
-            if atts[9] == 'k':
-                attribute = 'skip activation'
+        if len(atts) > 6:
+            attribute = self.lv_target_type(atts[6])
             if attribute:
                 attributes.append(attribute)
+            attribute = self.lv_health(atts[8])
+            if attribute:
+                attributes.append(attribute)
+            if len(atts) > 9:
+                if atts[9] == 'k':
+                    attribute = 'skip activation'
+                if attribute:
+                    attributes.append(attribute)
         return attributes
 
     def vg_attributes(self, atts):

@@ -13,6 +13,7 @@ from . import zenpacklib
 
 class HardDisk(BaseHardDisk):
     meta_type = 'LinuxHardDisk'
+    size = None
 
     _properties = BaseHardDisk._properties + (
         {'id': 'size', 'label': 'Size',

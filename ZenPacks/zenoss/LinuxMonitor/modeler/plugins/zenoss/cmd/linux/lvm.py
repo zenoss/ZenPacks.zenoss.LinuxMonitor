@@ -208,10 +208,8 @@ class lvm(CommandPlugin):
         pv_om.id = 'pv-{}'.format(self.prepId(columns['pv_name']))
         pv_om.format = columns['pv_fmt']
         pv_om.attributes = self.lvm_parser.pv_attributes(columns['pv_attr'])
-        pv_om.pvsize = int(columns['pv_size'])
-        pv_om.free = int(columns['pv_free'])
         pv_om.uuid = columns['pv_uuid']
-        pv_om.set_volumeGroup = 'vg-{}'.format(columns['vg_name'])
+        pv_om.set_volumeGroup = 'vg-{}'.format(columns['vg_name']) if columns['vg_name'] else ''
         pv_om.relname = 'physicalVolumes'
         pv_om.modname = 'ZenPacks.zenoss.LinuxMonitor.PhysicalVolume'
         return pv_om
@@ -222,8 +220,6 @@ class lvm(CommandPlugin):
         vg_om.title = columns['vg_name']
         vg_om.id = 'vg-{}'.format(self.prepId(columns['vg_name']))
         vg_om.attributes = self.lvm_parser.vg_attributes(columns['vg_attr'])
-        vg_om.vgsize = int(columns['vg_size'])
-        vg_om.freesize = int(columns['vg_free'])
         vg_om.uuid = columns['vg_uuid']
         vg_om.relname = 'volumeGroups'
         vg_om.modname = 'ZenPacks.zenoss.LinuxMonitor.VolumeGroup'
@@ -237,7 +233,6 @@ class lvm(CommandPlugin):
         lv_om.id = 'lv-{}'.format(self.prepId(columns['vg_name'])+'_'+self.prepId(columns['lv_name']))
         lv_om.attributes = self.lvm_parser.lv_attributes(columns['lv_attr'])
         lv_om.lvsize = int(columns['lv_size'])
-        lv_om.active = True if 'active' in lv_om.attributes else False
         lv_om.uuid = columns['lv_uuid']
         if columns['origin']:
             lv_om.origin = columns['origin']
