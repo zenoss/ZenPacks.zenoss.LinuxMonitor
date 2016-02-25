@@ -369,7 +369,6 @@ device_classes: !ZenPackSpec
                         dsnames: [status_allocatable]
                         minval: 1
                         eventClass: /Status
-                        explanation: Physical volume is not allocatable
                     exported:
                         dsnames: [status_exported]
                         maxval: 0
@@ -379,7 +378,6 @@ device_classes: !ZenPackSpec
                         dsnames: [status_missing]
                         maxval: 0
                         eventClass: /Status
-                        explanation: Physical volume is missing
             VolumeGroup:
                 description: Volume Group Monitoring
                 targetPythonClass: ZenPacks.zenoss.LinuxMonitor.VolumeGroup.VolumeGroup
@@ -407,7 +405,6 @@ device_classes: !ZenPackSpec
                         dsnames: [status_partial]
                         minval: 1
                         eventClass: /Status
-                        explanation: A physical volume for the volume group may be missing.
                 graphs:
                     Volume Group Utilization:
                         units: percent
