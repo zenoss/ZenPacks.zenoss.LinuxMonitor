@@ -37,7 +37,7 @@
       <configure zcml:condition="have openstack_cinder_integration">
           <utility
               name="cinder.lvm"
-              factory=".openstack_cinder.CephCinderImplementationPlugin"
+              factory=".openstack_cinder.LinuxCinderImplementationPlugin"
               provides="ZenPacks.zenoss.OpenStackInfrastructure.interfaces.ICinderImplementationPlugin"
               />
       </configure>

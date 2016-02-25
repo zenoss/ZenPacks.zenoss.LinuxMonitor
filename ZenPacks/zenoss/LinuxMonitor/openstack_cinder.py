@@ -22,7 +22,7 @@ from ZenPacks.zenoss.OpenStackInfrastructure.cinder_integration \
     import BaseCinderImplementationPlugin
 
 
-class CephCinderImplementationPlugin(BaseCinderImplementationPlugin):
+class LinuxCinderImplementationPlugin(BaseCinderImplementationPlugin):
     implements(ICinderImplementationPlugin)
 
     def getVolumeIntegrationKeys(self, osi_volume):
@@ -37,9 +37,9 @@ class CephCinderImplementationPlugin(BaseCinderImplementationPlugin):
 
     @classmethod
     def reindex_implementation_components(cls, dmd):
-        results = ICatalogTool(dmd.devices).search(
-            ('ZenPacks.zenoss.LinuxMonitor.LinuxVolume.LinuxVolume',
-             'ZenPacks.zenoss.LinuxMonitor.LinuxVolume.LinuxVolume',)
+        results = ICatalogTool(dmd).search(
+            ('ZenPacks.zenoss.LinuxMonitor.LogicalVolume.LogicalVolume',
+             'ZenPacks.zenoss.LinuxMonitor.SnapshotVolume.SnapshotVolume',)
         )
 
         for brain in results:
