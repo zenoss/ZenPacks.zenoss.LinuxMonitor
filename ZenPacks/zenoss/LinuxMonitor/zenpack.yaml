@@ -390,3 +390,66 @@ device_classes: !ZenPackSpec
                                 rrdtype: DERIVE
                                 rrdmin: 0
                                 description: This field is incremented at each I/O start, I/O completion, I/O merge, or read of these stats by the number of I/Os in progress times the number of milliseconds spent doing I/O since the last update of this field.
+                graphs:
+                    Operation Throughput:
+                        units: operations/sec
+                        miny: 0
+                        graphpoints:
+                            Reads:
+                                dpName: diskstats_readsCompleted
+                                lineType: LINE
+                            Writes:
+                                dpName: diskstats_writesCompleted
+                                lineType: LINE
+                    Merge Rate:
+                        units: operations merged/sec
+                        miny: 0
+                        graphpoints:
+                            Reads:
+                                dpName: diskstats_readsMerged
+                                lineType: LINE
+                            Writes:
+                                dpName: diskstats_writesMerged
+                                lineType: LINE
+                    Sector Throughput:
+                        units: sectors/sec
+                        miny: 0
+                        graphpoints:
+                            Read:
+                                dpName: diskstats_sectorsRead
+                                lineType: LINE
+                            Written:
+                                dpName: diskstats_sectorsWritten
+                                lineType: LINE
+                    IO Operations in Progress:
+                        units: operations
+                        miny: 0
+                        graphpoints:
+                            IO:
+                                dpName: diskstats_ioInProgress
+                                lineType: LINE
+                    IO Utilization:
+                        units: percent
+                        miny: 0
+                        maxy: 100
+                        graphpoints:
+                            Reading:
+                                dpName: diskstats_msReading
+                                lineType: LINE
+                                rpn: "10,/"
+                            Writing:
+                                dpName: diskstats_msWriting
+                                lineType: LINE
+                                rpn: "10,/"
+                            Doing IO:
+                                dpName: diskstats_msDoingIO
+                                lineType: LINE
+                                rpn: "10,/"
+                    Weighted IO Utilization:
+                        units: weighted percent
+                        miny: 0
+                        graphpoints:
+                            Weighted IO:
+                                dpName: diskstats_msDoingIOWeighted
+                                lineType: LINE
+                                rpn: "10,/"
