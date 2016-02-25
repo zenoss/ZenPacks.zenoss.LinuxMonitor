@@ -239,56 +239,6 @@ device_classes: !ZenPackSpec
                                 rrdmin: 0
                             missing:
                                 rrdmin: 0
-                    diskstats:
-                        type: COMMAND
-                        commandTemplate: '/bin/cat /proc/diskstats'
-                        usessh: true
-                        parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.diskstats
-                        datapoints:
-                            readsCompleted:
-                                rrdtype: DERIVE
-                                rrdmin: 0
-                                description: The number of read requests that were issued to the device per second.
-                            readsMerged:
-                                rrdtype: DERIVE
-                                rrdmin: 0
-                                description: The number of read requests merged per second that were queued to the device.
-                            sectorsRead:
-                                rrdtype: DERIVE
-                                rrdmin: 0
-                                description: The number of sectors read from the device per second.
-                            msReading:
-                                rrdtype: DERIVE
-                                rrdmin: 0
-                                description: Milliseconds spent by all reads in concrete moment of time.
-                            writesCompleted:
-                                rrdtype: DERIVE
-                                rrdmin: 0
-                                description: The number of write requests that were issued to the device per second.
-                            writesMerged:
-                                rrdtype: DERIVE
-                                rrdmin: 0
-                                description: The number of write requests merged per second that were queued to the device.
-                            sectorsWritten:
-                                rrdtype: DERIVE
-                                rrdmin: 0
-                                description: The number of sectors written to the device per second.
-                            msWriting:
-                                rrdtype: DERIVE
-                                rrdmin: 0
-                                description: Milliseconds spent by all writes in concrete moment of time.
-                            ioInProgress:
-                                rrdtype: GAUGE
-                                rrdmin: 0
-                                description: I/Os currently in progress.
-                            msDoingIO:
-                                rrdtype: DERIVE
-                                rrdmin: 0
-                                description: Milliseconds spent doing I/Os in concrete moment of time.
-                            msDoingIOWeighted:
-                                rrdtype: DERIVE
-                                rrdmin: 0
-                                description: This field is incremented at each I/O start, I/O completion, I/O merge, or read of these stats by the number of I/Os in progress times the number of milliseconds spent doing I/O since the last update of this field.
                 graphs:
                     Utilization:
                         units: percent
@@ -302,68 +252,6 @@ device_classes: !ZenPackSpec
                                 dpName: volume_free
                                 lineType: AREA
                                 rpn: "size,-,size,/,-100,*"
-                    Operation Throughput:
-                        units: operations/sec
-                        miny: 0
-                        graphpoints:
-                            Reads:
-                                dpName: diskstats_readsCompleted
-                                lineType: LINE
-                            Writes:
-                                dpName: diskstats_writesCompleted
-                                lineType: LINE
-                    Merge Rate:
-                        units: operations merged/sec
-                        miny: 0
-                        graphpoints:
-                            Reads:
-                                dpName: diskstats_readsMerged
-                                lineType: LINE
-                            Writes:
-                                dpName: diskstats_writesMerged
-                                lineType: LINE
-                    Sector Throughput:
-                        units: sectors/sec
-                        miny: 0
-                        graphpoints:
-                            Read:
-                                dpName: diskstats_sectorsRead
-                                lineType: LINE
-                            Written:
-                                dpName: diskstats_sectorsWritten
-                                lineType: LINE
-                    IO Operations in Progress:
-                        units: operations
-                        miny: 0
-                        graphpoints:
-                            IO:
-                                dpName: diskstats_ioInProgress
-                                lineType: LINE
-                    IO Utilization:
-                        units: percent
-                        miny: 0
-                        maxy: 100
-                        graphpoints:
-                            Reading:
-                                dpName: diskstats_msReading
-                                lineType: LINE
-                                rpn: "10,/"
-                            Writing:
-                                dpName: diskstats_msWriting
-                                lineType: LINE
-                                rpn: "10,/"
-                            Doing IO:
-                                dpName: diskstats_msDoingIO
-                                lineType: LINE
-                                rpn: "10,/"
-                    Weighted IO Utilization:
-                        units: weighted percent
-                        miny: 0
-                        graphpoints:
-                            Weighted IO:
-                                dpName: diskstats_msDoingIOWeighted
-                                lineType: LINE
-                                rpn: "10,/"
                 thresholds:
                     unallocatable:
                         dsnames: [status_allocatable]
@@ -448,3 +336,57 @@ device_classes: !ZenPackSpec
                                 rrdmin: 0
                             health:
                                 rrdmin: 0
+            HardDisk:
+                description: Hard Disk Monitoring
+                targetPythonClass: ZenPacks.zenoss.LinuxMonitor.HardDisk.HardDisk
+                datasources:
+                    diskstats:
+                        type: COMMAND
+                        commandTemplate: '/bin/cat /proc/diskstats'
+                        usessh: true
+                        parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.diskstats
+                        datapoints:
+                            readsCompleted:
+                                rrdtype: DERIVE
+                                rrdmin: 0
+                                description: The number of read requests that were issued to the device per second.
+                            readsMerged:
+                                rrdtype: DERIVE
+                                rrdmin: 0
+                                description: The number of read requests merged per second that were queued to the device.
+                            sectorsRead:
+                                rrdtype: DERIVE
+                                rrdmin: 0
+                                description: The number of sectors read from the device per second.
+                            msReading:
+                                rrdtype: DERIVE
+                                rrdmin: 0
+                                description: Milliseconds spent by all reads in concrete moment of time.
+                            writesCompleted:
+                                rrdtype: DERIVE
+                                rrdmin: 0
+                                description: The number of write requests that were issued to the device per second.
+                            writesMerged:
+                                rrdtype: DERIVE
+                                rrdmin: 0
+                                description: The number of write requests merged per second that were queued to the device.
+                            sectorsWritten:
+                                rrdtype: DERIVE
+                                rrdmin: 0
+                                description: The number of sectors written to the device per second.
+                            msWriting:
+                                rrdtype: DERIVE
+                                rrdmin: 0
+                                description: Milliseconds spent by all writes in concrete moment of time.
+                            ioInProgress:
+                                rrdtype: GAUGE
+                                rrdmin: 0
+                                description: I/Os currently in progress.
+                            msDoingIO:
+                                rrdtype: DERIVE
+                                rrdmin: 0
+                                description: Milliseconds spent doing I/Os in concrete moment of time.
+                            msDoingIOWeighted:
+                                rrdtype: DERIVE
+                                rrdmin: 0
+                                description: This field is incremented at each I/O start, I/O completion, I/O merge, or read of these stats by the number of I/Os in progress times the number of milliseconds spent doing I/O since the last update of this field.
