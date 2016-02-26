@@ -202,4 +202,4 @@ Ext.define("Zenoss.component.LinuxHardDiskPanel", {
 });
 
 
-ZC.registerName('LinuxHardDisk', _t('HardDisk'), _t('HardDisks'));
+ZC.registerName('LinuxHardDisk', _t('Hard Disk'), _t('Hard Disks'));
