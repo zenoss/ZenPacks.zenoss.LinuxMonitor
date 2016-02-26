@@ -164,7 +164,9 @@ class lvm(CommandPlugin):
             compname = 'volumeGroups/' + vg_om.id
             for lv_om in lv_maps:
                 if lv_om.vgname == vg_om.title:
-                    device_block = lv_om.vgname+'-'+lv_om.title
+                    device_block = '{}-{}'.format(
+                        lv_om.vgname.replace('-', '--'),
+                        lv_om.title.replace('-', '--'))
                     try:
                         lv_om.mountpoint = lsblk_dict[device_block]['mount']
                         lv_om.major_minor = lsblk_dict[device_block]['major_minor']
