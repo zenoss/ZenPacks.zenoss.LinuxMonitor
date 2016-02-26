@@ -13,12 +13,18 @@ from . import zenpacklib
 
 class HardDisk(BaseHardDisk):
     meta_type = 'LinuxHardDisk'
+    major_minor = None
     size = None
+    mount = None
 
     _properties = BaseHardDisk._properties + (
         {'id': 'size', 'label': 'Size',
             'type': 'string', 'mode': 'w'},
-        )
+        {'id': 'major_minor', 'type': 'string',
+            'mode': 'w'},
+        {'id':'mount', 'type': 'string',
+            'mode':'w'}
+    )
 
     def getPhysicalVolumes(self):
         results = zenpacklib.catalog_search(

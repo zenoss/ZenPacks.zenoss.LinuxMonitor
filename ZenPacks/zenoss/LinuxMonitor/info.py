@@ -19,6 +19,8 @@ class HardDiskInfo(ComponentInfo):
     implements(IHardDiskInfo)
 
     size = ProxyProperty('size')
+    major_minor = ProxyProperty('major_minor')
+    mount = ProxyProperty('mount')
 
     @property
     @info

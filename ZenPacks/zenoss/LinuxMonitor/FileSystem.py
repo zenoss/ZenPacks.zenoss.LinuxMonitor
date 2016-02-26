@@ -36,3 +36,27 @@ class FileSystem(BaseFileSystem):
 
     def getRRDTemplateName(self):
             return "FileSystem"
+
+    def harddisk(self):
+        device =self.device()
+        results = device.componentSearch.search({'meta_type': 'LinuxHardDisk'})
+        for brain in results:
+            obj = brain.getObject()
+            if obj.mount == self.mount:
+                return obj
+
+    def getDefaultGraphDefs(self, drange=None):
+        graphs = super(FileSystem, self).getDefaultGraphDefs()
+        comp = self.harddisk()
+        if comp:
+            for graph in comp.getDefaultGraphDefs(drange):
+                graphs.append(graph)
+        return graphs
+
+    def getGraphObjects(self):
+        graphs = super(FileSystem, self).getGraphObjects()
+        comp = self.harddisk()
+        if comp:
+            for graph in comp.getGraphObjects():
+                graphs.append(graph)
+        return graphs

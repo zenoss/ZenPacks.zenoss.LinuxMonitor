@@ -34,3 +34,19 @@ class PhysicalVolume(schema.PhysicalVolume):
         for harddisk in self.device().hw.harddisks():
             if harddisk.id == self.harddisk_id:
                 return harddisk
+
+    def getDefaultGraphDefs(self, drange=None):
+        graphs = super(PhysicalVolume, self).getDefaultGraphDefs()
+        comp = self.harddisk()
+        if comp:
+            for graph in comp.getDefaultGraphDefs(drange):
+                graphs.append(graph)
+        return graphs
+
+    def getGraphObjects(self):
+        graphs = super(PhysicalVolume, self).getGraphObjects()
+        comp = self.harddisk()
+        if comp:
+            for graph in comp.getGraphObjects():
+                graphs.append(graph)
+        return graphs

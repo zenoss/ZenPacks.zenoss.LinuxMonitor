@@ -19,4 +19,5 @@ class IFileSystemInfo(LIFileSystemInfo):
 
 class IHardDiskInfo(IComponentInfo):
     size = schema.Int(title=_t(u'Size'), readonly=True, group="Details")
+    major_minor = schema.Text(title=_t(u'Maj:Min'), readonly=True, group="Details")
     physicalvolumes_count = schema.Int(title=_t(u'Physical Volumes'), group="Details")
