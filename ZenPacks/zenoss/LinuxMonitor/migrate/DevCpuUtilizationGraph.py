@@ -29,6 +29,6 @@ class DevCpuUtilizationGraph(ZenPackMigration):
             log.debug('Unable to find CPU Utilization graph for Device')
         else:
             template.graphDefs._delObject(graph.id)
-            log.info("Removing {0} graph from Device".format(graph.id))
+            log.info("Removing redundant {0} graph".format(graph.id))
 
 DevCpuUtilizationGraph()
