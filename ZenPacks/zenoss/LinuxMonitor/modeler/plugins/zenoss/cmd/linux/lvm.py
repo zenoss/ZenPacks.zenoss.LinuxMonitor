@@ -121,7 +121,7 @@ class lvm(CommandPlugin):
                 pv_om = self.makePVMap(columns)
                 pv_maps.append(pv_om)
                 for hd_om in hd_maps:
-                    if hd_om.title in pv_om.title:
+                    if hd_om.title == pv_om.title.split('/')[-1]:
                         pv_om.harddisk_id = hd_om.id
             elif section == 'VG':
                 vg_maps.append(self.makeVGMap(columns))
@@ -139,7 +139,7 @@ class lvm(CommandPlugin):
                 lsblk_dict[device_block] = {}
                 lsblk_dict[device_block]['mount'] = columns['mount']
                 lsblk_dict[device_block]['major_minor'] = columns['major_minor']
-                if columns['type'] in ('disk', 'lvm'):
+                if columns['type'] in ('disk', 'lvm', 'part'):
                     hd_maps.append(self.makeHDMap(columns))
 
         maps = []
