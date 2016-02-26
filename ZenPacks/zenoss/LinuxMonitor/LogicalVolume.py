@@ -63,3 +63,27 @@ class LogicalVolume(schema.LogicalVolume):
         for filesystem in self.device().os.filesystems():
             if filesystem.title == self.mountpoint:
                 return filesystem
+
+    def harddisk(self):
+        device =self.device()
+        results = device.componentSearch.search({'meta_type': 'LinuxHardDisk'})
+        for brain in results:
+            obj = brain.getObject()
+            if obj.major_minor == self.major_minor:
+                return obj
+
+    def getDefaultGraphDefs(self, drange=None):
+        graphs = super(LogicalVolume, self).getDefaultGraphDefs()
+        comp = self.harddisk()
+        if comp:
+            for graph in comp.getDefaultGraphDefs(drange):
+                graphs.append(graph)
+        return graphs
+
+    def getGraphObjects(self, drange=None):
+        graphs = super(LogicalVolume, self).getGraphObjects()
+        comp = self.harddisk()
+        if comp:
+            for graph in comp.getGraphObjects(drange):
+                graphs.append(graph)
+        return graphs

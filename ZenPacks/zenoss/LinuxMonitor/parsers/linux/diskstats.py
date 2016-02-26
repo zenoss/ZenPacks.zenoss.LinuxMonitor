@@ -109,6 +109,7 @@ class diskstats(ComponentCommandParser):
     def dataForParser(self, context, datapoint):
         ret = super(diskstats, self).dataForParser(context, datapoint)
         ret['hdFilterRegex'] = getattr(context, 'zHardDiskMapMatch', None)
+        ret['major_minor'] = getattr(context, 'major_minor', None)
         return ret
 
     def processResults(self, cmd, result):
@@ -119,6 +120,13 @@ class diskstats(ComponentCommandParser):
             parser = StorageDeviceParser(datapointMap, hdRegex)
         else:
             parser = PartitionParser(cmd.points)
+
+        if cmd.points[0].data.get('major_minor'):
+            major_minor = cmd.points[0].data.get('major_minor')
+            pattern = r'(?P<component>{0}\s+{1}\s+\S+\s)'.format(
+                *major_minor.split(':'))
+            self.scanner =self.scanner.replace(COMPONENT, pattern)
+            parser = BlockParser(cmd.points)
 
         LOG.debug("Parser class: %s, Scanner: %s",
                   parser.__class__, self.scanner)
@@ -198,3 +206,18 @@ class StorageDeviceParser(Parser):
         self._metrics.append((
             self._datapointMap[SS_IO_RAW_SENT], self._sectorsWritten))
         return self._metrics
+
+
+class BlockParser(Parser):
+
+    def __init__(self, datapoints):
+        self._metrics = []
+        self._dataPointMap = dict((dp.id, dp) for dp in datapoints)
+
+    def parse(self, match):
+        for name, value in match.groupdict().items():
+            dp = self._dataPointMap.get(name, None)
+            if dp:
+                if value in ('-', ''):
+                    value = 0
+                self._metrics.append((dp, float(value)))
