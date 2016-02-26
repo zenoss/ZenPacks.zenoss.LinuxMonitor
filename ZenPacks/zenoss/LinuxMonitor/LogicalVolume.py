@@ -80,10 +80,10 @@ class LogicalVolume(schema.LogicalVolume):
                 graphs.append(graph)
         return graphs
 
-    def getGraphObjects(self, drange=None):
+    def getGraphObjects(self):
         graphs = super(LogicalVolume, self).getGraphObjects()
         comp = self.harddisk()
         if comp:
-            for graph in comp.getGraphObjects(drange):
+            for graph in comp.getGraphObjects():
                 graphs.append(graph)
         return graphs
