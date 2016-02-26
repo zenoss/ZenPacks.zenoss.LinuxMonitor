@@ -11,7 +11,7 @@ classes:
             impacts:
                 - volumeGroup
             impacted_by:
-                - harddisk
+                - getBlockDevice
         properties:
             pvsize:
                 label: Size
@@ -43,8 +43,8 @@ classes:
                 grid_display: False
                 details_display: False
                 index_type: field
-            harddisk:
-                label: Hard Disk
+            getBlockDevice:
+                label: Block Device
                 api_only: true
                 api_backendtype: method
                 type: entity
@@ -94,10 +94,11 @@ classes:
         dynamicview_relations:
             impacts:
                 - snapshotVolumes
+                - getFileSystem
                 - openstack_core_components
-                - filesystem
             impacted_by:
                 - volumeGroup
+                - getBlockDevice
         properties:
             attributes:
                 label: Attributes
@@ -123,8 +124,13 @@ classes:
                 grid_display: false
                 api_only: true
                 api_backendtype: method
-            filesystem:
+            getFileSystem:
                 label: File System
+                api_only: true
+                api_backendtype: method
+                type: entity
+            getBlockDevice:
+                label: Block Device
                 api_only: true
                 api_backendtype: method
                 type: entity
@@ -135,6 +141,7 @@ classes:
             major_minor:
                 label: "Major:Minor"
                 grid_display: False
+                index_type: field
 
 
     SnapshotVolume:
@@ -143,8 +150,10 @@ classes:
         dynamicview_relations:
             impacted_by:
                 - logicalVolume
+                - getBlockDevice
             impacts:
                 - openstack_core_components
+                - getFileSystem
         properties:
             origin:
                 grid_display: False
@@ -172,8 +181,13 @@ classes:
                 grid_display: False
                 api_only: true
                 api_backendtype: method
-            filesystem:
+            getFileSystem:
                 label: File System
+                api_only: true
+                api_backendtype: method
+                type: entity
+            getBlockDevice:
+                label: Block Device
                 api_only: true
                 api_backendtype: method
                 type: entity
@@ -184,6 +198,7 @@ classes:
             major_minor:
                 label: "Major:Minor"
                 grid_display: False
+                index_type: field
 
 
 class_relationships:

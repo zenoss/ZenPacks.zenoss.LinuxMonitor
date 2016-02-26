@@ -7,9 +7,11 @@
 #
 ##############################################################################
 
-from . import schema
-
 from zope.interface import implements
+
+from Products.ZenUtils.Utils import prepId
+
+from . import schema
 
 try:
     from ZenPacks.zenoss.OpenStackInfrastructure.interfaces \
@@ -59,22 +61,32 @@ class LogicalVolume(schema.LogicalVolume):
         else:
             return []
 
-    def filesystem(self):
-        for filesystem in self.device().os.filesystems():
-            if filesystem.title == self.mountpoint:
-                return filesystem
+    def getFileSystem(self):
+        """Return filesystem mounting this logical volume."""
+        try:
+            # Assumes all FileSystem ids are prepId(mount). Currently they are.
+            return self.device().os.filesystems._getOb(prepId(self.mountpoint))
+        except Exception:
+            pass
 
-    def harddisk(self):
-        device =self.device()
+    def getBlockDevice(self):
+        if not self.major_minor:
+            return
+
+        device = self.device()
         results = device.componentSearch.search({'meta_type': 'LinuxHardDisk'})
         for brain in results:
-            obj = brain.getObject()
-            if obj.major_minor == self.major_minor:
-                return obj
+            try:
+                obj = brain.getObject()
+            except Exception:
+                pass
+            else:
+                if obj.major_minor == self.major_minor:
+                    return obj
 
     def getDefaultGraphDefs(self, drange=None):
         graphs = super(LogicalVolume, self).getDefaultGraphDefs()
-        comp = self.harddisk()
+        comp = self.getBlockDevice()
         if comp:
             for graph in comp.getDefaultGraphDefs(drange):
                 graphs.append(graph)
@@ -82,7 +94,7 @@ class LogicalVolume(schema.LogicalVolume):
 
     def getGraphObjects(self):
         graphs = super(LogicalVolume, self).getGraphObjects()
-        comp = self.harddisk()
+        comp = self.getBlockDevice()
         if comp:
             for graph in comp.getGraphObjects():
                 graphs.append(graph)

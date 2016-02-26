@@ -164,9 +164,13 @@ class lvm(CommandPlugin):
             compname = 'volumeGroups/' + vg_om.id
             for lv_om in lv_maps:
                 if lv_om.vgname == vg_om.title:
+                    # LVM delimits VG-LV with a hyphen. To unambiguously handle
+                    # LVs and VGs with hyphens in their name, it doubles
+                    # hypens in the LV and VG names. We have to do the same.
                     device_block = '{}-{}'.format(
                         lv_om.vgname.replace('-', '--'),
                         lv_om.title.replace('-', '--'))
+
                     try:
                         lv_om.mountpoint = lsblk_dict[device_block]['mount']
                         lv_om.major_minor = lsblk_dict[device_block]['major_minor']
@@ -186,6 +190,16 @@ class lvm(CommandPlugin):
                     lv_sv_oms = []
                     for sv_om in sv_maps:
                         if sv_om.origin == lv_om.title:
+                            device_block = '{}-{}'.format(
+                                sv_om.vgname.replace('-', '--'),
+                                sv_om.title.replace('-', '--'))
+                            try:
+                                sv_om.mountpoint = lsblk_dict[device_block]['mount']
+                                sv_om.major_minor = lsblk_dict[device_block]['major_minor']
+                            except KeyError:
+                                # device block not found
+                                log.debug('device block {} not found for snapshot volume {} in volume group {}'
+                                          .format(sv_om.vgname+'-'+sv_om.title, sv_om.title, sv_om.vgname))
                             lv_sv_oms.append(sv_om)
                     maps.append(RelationshipMap(
                         relname="snapshotVolumes",
