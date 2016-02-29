@@ -30,14 +30,15 @@ class PhysicalVolume(schema.PhysicalVolume):
 
         return '{}%'.format(int(float(pvsize-pvfree)/pvsize*100))
 
-    def harddisk(self):
-        for harddisk in self.device().hw.harddisks():
-            if harddisk.id == self.harddisk_id:
-                return harddisk
+    def getBlockDevice(self):
+        try:
+            return self.device().hw.harddisks._getOb(self.harddisk_id)
+        except Exception:
+            pass
 
     def getDefaultGraphDefs(self, drange=None):
         graphs = super(PhysicalVolume, self).getDefaultGraphDefs()
-        comp = self.harddisk()
+        comp = self.getBlockDevice()
         if comp:
             for graph in comp.getDefaultGraphDefs(drange):
                 graphs.append(graph)
@@ -45,7 +46,7 @@ class PhysicalVolume(schema.PhysicalVolume):
 
     def getGraphObjects(self):
         graphs = super(PhysicalVolume, self).getGraphObjects()
-        comp = self.harddisk()
+        comp = self.getBlockDevice()
         if comp:
             for graph in comp.getGraphObjects():
                 graphs.append(graph)

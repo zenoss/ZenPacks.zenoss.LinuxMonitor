@@ -27,4 +27,4 @@ def optional_import(module_name, patch_module_name):
             LOG.exception("failed to apply %s patches", patch_module_name)
 
 
-optional_import('Products.ZenModel', 'patches')
+optional_import('Products.ZenModel', 'platform')
