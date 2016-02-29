@@ -11,9 +11,9 @@ import re
 import logging
 from Products.ZenRRD.ComponentCommandParser import ComponentCommandParser
 
-log = logging.getLogger("zen.command.parsers.pvstats")
+log = logging.getLogger("zen.command.parsers.pvvgstats")
 
-class pvstats(ComponentCommandParser):
+class pvvgstats(ComponentCommandParser):
 
     componentSplit = '\n'
 
@@ -27,7 +27,9 @@ class pvstats(ComponentCommandParser):
         ifs = {}
         for dp in cmd.points:
             dp.component = dp.data['componentScanValue']
-            points = ifs.setdefault(dp.component.split('-')[-1], {})
+            bits = dp.component.split('-')
+            comp_name = "-".join(bits[1:]) if len(bits) > 2 else bits[-1]
+            points = ifs.setdefault(comp_name, {})
             points[dp.id] = dp
 
         parts = cmd.result.output.split(self.componentSplit)

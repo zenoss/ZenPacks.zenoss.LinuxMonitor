@@ -221,7 +221,7 @@ device_classes: !ZenPackSpec
                         type: COMMAND
                         commandTemplate: '/usr/bin/env sudo pvs --noheadings --units b --nosuffix -o pv_name,pv_size,pv_free'
                         usessh: true
-                        parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.pvstats
+                        parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.pvvgstats
                         datapoints:
                             size:
                                 rrdmin: 0
@@ -274,9 +274,9 @@ device_classes: !ZenPackSpec
                 datasources:
                     group:
                         type: COMMAND
-                        commandTemplate: '/usr/bin/sudo /usr/sbin/vgs --noheadings --units b --nosuffix -o vg_name,vg_size,vg_free'
+                        commandTemplate: '/usr/bin/env sudo vgs --noheadings --units b --nosuffix -o vg_name,vg_size,vg_free'
                         usessh: true
-                        parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.utilization
+                        parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.pvvgstats
                         datapoints:
                             size:
                                 rrdmin: 0
