@@ -4,6 +4,28 @@ classes:
     DEFAULTS:
         base: [zenpacklib.Component]
 
+    LinuxService:
+        label: OS Service
+        properties:
+            loaded_status:
+                label: Loaded Status
+                order: 1.1
+            active_status:
+                label: Active Status
+                order: 1.2
+            main_pid:
+                label: Main PID
+                type: int
+                order: 1.3
+            processes:
+                label: Processes
+                type: lines
+                order: 1.4
+            description:
+                label: Description
+                order: 1.5
+
+
     PhysicalVolume:
         label: Physical Volume
         dynamicview_views: [service_view]
