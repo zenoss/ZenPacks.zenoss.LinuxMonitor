@@ -219,9 +219,9 @@ device_classes: !ZenPackSpec
                 datasources:
                     volume:
                         type: COMMAND
-                        commandTemplate: '/usr/bin/sudo /usr/sbin/pvs --noheadings --units b --nosuffix -o pv_name,pv_size,pv_free'
+                        commandTemplate: '/usr/bin/env sudo pvs --noheadings --units b --nosuffix -o pv_name,pv_size,pv_free'
                         usessh: true
-                        parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.utilization
+                        parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.pvstats
                         datapoints:
                             size:
                                 rrdmin: 0
@@ -248,10 +248,12 @@ device_classes: !ZenPackSpec
                             size:
                                 dpName: volume_size
                                 lineType: DONTDRAW
+                                legend: Total
                             free:
                                 dpName: volume_free
                                 lineType: AREA
                                 rpn: "size,-,size,/,-100,*"
+                                legend: Used
                 thresholds:
                     unallocatable:
                         dsnames: [status_allocatable]
