@@ -228,6 +228,238 @@ device_classes: !ZenPackSpec
             zSshConcurrentSessions: 5
 
         templates:
+            Device:
+                description: Template for gathering performance data via SSH commands.
+                targetPythonClass: Products.ZenModel.Device
+
+                datasources:
+                    cpu:
+                        type: COMMAND
+                        usessh: true
+                        commandTemplate: "/usr/bin/env cat /proc/stat"
+                        parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.cpu
+
+                        datapoints:
+                            ssCpuIdlePerCpu:
+                                rrdtype: DERIVE
+                                rrdmin: 0
+                                aliases:
+                                    cpu_idle__pct: ""
+                                    cpu__pct: "100,EXC,-,0,MAX"
+
+                            ssCpuUserPerCpu:
+                                rrdtype: DERIVE
+                                rrdmin: 0
+                                aliases:
+                                    cpu_user__pct: ""
+
+                            ssCpuSystemPerCpu:
+                                rrdtype: DERIVE
+                                rrdmin: 0
+                                aliases:
+                                    cpu_system__pct: ""
+
+                            ssCpuWaitPerCpu:
+                                rrdtype: DERIVE
+                                rrdmin: 0
+                                aliases:
+                                    cpu_wait__pct: ""
+
+                    uptime:
+                        type: COMMAND
+                        usessh: true
+                        commandTemplate: "/usr/bin/env uptime"
+                        parser: uptime
+
+                        datapoints:
+                            sysUpTime:
+                                rrdmin: 0
+                                aliases:
+                                    uptime__seconds: "100,/"
+
+                            laLoadInt15:
+                                rrdmin: 0
+                                aliases:
+                                    sys_load_15min: ""
+
+                            laLoadInt5:
+                                rrdmin: 0
+                                aliases:
+                                    sys_load_5min: ""
+
+                            laLoadInt1:
+                                rrdmin: 0
+                                aliases:
+                                    sys_load_1min: ""
+
+                    mem:
+                        type: COMMAND
+                        usessh: true
+                        commandTemplate: "/usr/bin/env cat /proc/meminfo"
+                        parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.mem
+
+                        datapoints:
+                            Buffers:
+                                rrdmin: 0
+                                aliases:
+                                    mem_buffers__bytes: ""
+                                    mem_buffers__pct: "${here/hw/totalMemory},/,*,100"
+
+                            Cached:
+                                rrdmin: 0
+                                aliases:
+                                    mem_cached__bytes: ""
+                                    mem_cached__pct: "${here/hw/totalMemory},/,*,100"
+
+                            MemFree:
+                                rrdmin: 0
+                                aliases:
+                                    mem_free__bytes: ""
+                                    mem_free__pct: "${here/hw/totalMemory},/,*,100"
+                                    mem_used__bytes: "${here/hw/totalMemory},EXC,-,0,MAX"
+                                    mem_used__pct: "${here/hw/totalMemory},/,1,-,100,*,ABS"
+
+                            MemTotal:
+                                rrdmin: 0
+                                aliases:
+                                    mem_total__bytes: ""
+
+                            SwapFree:
+                                rrdmin: 0
+                                aliases:
+                                    mem_swap_free__bytes: ""
+                                    mem_swap_free__pct: "${here/os/totalSwap},/,*,100"
+                                    mem_swap_used__bytes: "${here/os/totalSwap},EXC,-,0,MAX"
+                                    mem_swap_used__pct: "${here/os/totalSwap},/,1,-,100,*,ABS"
+
+                            SwapTotal:
+                                rrdmin: 0
+                                aliases:
+                                    mem_swap_total__bytes: ""
+
+                    io:
+                        type: COMMAND
+                        usessh: true
+                        commandTemplate: "/usr/bin/env cat /proc/diskstats"
+                        parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.diskstats
+
+                        datapoints:
+                            ssIORawReceived:
+                                rrdtype: DERIVE
+                                rrdmin: 0
+                                aliases:
+                                    sys_io_received__sectorssec: ""
+
+                            ssIORawSent:
+                                rrdtype: DERIVE
+                                rrdmin: 0
+                                aliases:
+                                    sys_io_sent__sectorssec: ""
+
+                graphs:
+                    CPU Utilization:
+                        units: percent
+                        miny: 0
+                        maxy: 100
+
+                        graphpoints:
+                            Busy:
+                                dpName: cpu_ssCpuIdlePerCpu
+                                rpn: "100,EXC,-,0,MAX"
+                                format: "%7.2lf%%"
+
+                            User:
+                                dpName: cpu_ssCpuUserPerCpu
+                                format: "%7.2lf%%"
+
+                            System:
+                                dpName: cpu_ssCpuSystemPerCpu
+                                format: "%7.2lf%%"
+
+                            Wait:
+                                dpName: cpu_ssCpuWaitPerCpu
+                                format: "%7.2lf%%"
+
+                    Load Average:
+                        units: processes
+                        miny: 0
+
+                        graphpoints:
+                            15 Minute:
+                                dpName: uptime_laLoadInt15
+                                format: "%7.2lf"
+
+                            5 Minute:
+                                dpName: uptime_laLoadInt5
+                                format: "%7.2lf"
+
+                            1 Minute:
+                                dpName: uptime_laLoadInt1
+                                format: "%7.2lf"
+
+                    Memory Utilization:
+                        units: percent
+                        miny: 0
+                        maxy: 100
+
+                        graphpoints:
+                            Used:
+                                dpName: mem_MemFree
+                                rpn: "${here/hw/totalMemory},/,1,-,100,*,ABS"
+                                format: "%7.2lf%%"
+
+                            Cached:
+                                dpName: mem_Cached
+                                rpn: "${here/hw/totalMemory},/,100,*"
+                                format: "%7.2lf%%"
+
+                            Buffers:
+                                dpName: mem_Buffers
+                                rpn: "${here/hw/totalMemory},/,100,*"
+                                format: "%7.2lf%%"
+
+                            Swap:
+                                dpName: mem_SwapFree
+                                rpn: "${here/os/totalSwap},/,1,-,100,*,ABS"
+                                format: "%7.2lf%%"
+
+                    Memory Usage:
+                        units: bytes
+                        base: true
+                        miny: 0
+
+                        graphpoints:
+                            Used:
+                                dpName: mem_MemFree
+                                rpn: "${here/hw/totalMemory},EXC,-,0,MAX"
+                                format: "%7.2lf%%"
+
+                            Cached:
+                                dpName: mem_Cached
+                                format: "%7.2lf%%"
+
+                            Buffers:
+                                dpName: mem_Buffers
+                                format: "%7.2lf%%"
+
+                            Swap:
+                                dpName: mem_SwapFree
+                                rpn: "${here/os/totalSwap},EXC,-,0,MAX"
+                                format: "%7.2lf%%"
+
+                    IO Throughput:
+                        units: sectors/sec
+                        miny: 0
+
+                        graphpoints:
+                            Read:
+                                dpName: io_ssIORawReceived
+                                format: "%7.2lf%s"
+
+                            Written:
+                                dpName: io_ssIORawSent
+                                format: "%7.2lf%s"
+
             PhysicalVolume:
                 description: Physical Volume Monitoring
                 targetPythonClass: ZenPacks.zenoss.LinuxMonitor.PhysicalVolume.PhysicalVolume
