@@ -610,6 +610,111 @@ device_classes: !ZenPackSpec
                                 dpName: intf_ifOutDropped
                                 format: "%7.2lf%s"
 
+            FileSystem:
+                description: "File system monitoring for Linux via SSH."
+                targetPythonClass: Products.ZenModel.FileSystem
+
+                datasources:
+                    disk:
+                        type: COMMAND
+                        usessh: true
+                        commandTemplate: "/bin/df -kP"
+                        parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.df
+                        component: "${here/id}"
+
+                        datapoints:
+                            usedBlocks:
+                                rrdmin: 0
+                                aliases:
+                                    fs_used__bytes: "${here/blockSize},*"
+
+                            availBlocks:
+                                rrdmin: 0
+                                aliases:
+                                    fs_avail__bytes: ""
+                                    fs_used__pct: "${here/getTotalBlocks},/,1,-,-100,*"
+
+                    idisk:
+                        type: COMMAND
+                        usessh: true
+                        commandTemplate: "/bin/df -ikP"
+                        parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.dfi
+                        component: "${here/id}"
+
+                        datapoints:
+                            percentInodesUsed:
+                                rrdmin: 0
+                                aliases:
+                                    fs_inodes__pct: ""
+
+                            totalInodes:
+                                rrdmin: 0
+                                aliases:
+                                    fs_inodes_total: ""
+
+                            usedInodes:
+                                rrdmin: 0
+                                aliases:
+                                    fs_inodes_used: ""
+
+                            availableInodes:
+                                rrdmin: 0
+                                aliases:
+                                    fs_inodes_avail: ""
+
+                thresholds:
+                    "90 percent used":
+                        type: MinMaxThreshold
+                        minval: "here.getTotalBlocks() * 0.10"
+                        eventClass: /Perf/FileSystem
+                        dsnames:
+                            - disk_availBlocks
+
+                graphs:
+                    Utilization:
+                        units: percent
+                        miny: 0
+                        maxy: 100
+
+                        graphpoints:
+                            Used:
+                                dpName: disk_availBlocks
+                                rpn: "${here/getTotalBlocks},/,1,-,-100,*"
+                                format: "%7.2lf%%"
+
+                    Usage:
+                        units: bytes
+                        miny: 0
+                        base: true
+
+                        graphpoints:
+                            Used:
+                                dpName: disk_usedBlocks
+                                rpn: "${here/blockSize},*"
+
+                    Inode Utilization:
+                        units: percent
+                        miny: 0
+                        maxy: 100
+
+                        graphpoints:
+                            Used:
+                                dpName: idisk_percentInodesUsed
+                                format: "%7.2lf%%"
+
+                    Inode Usage:
+                        units: inodes
+                        miny: 0
+
+                        graphpoints:
+                            Total:
+                                dpName: idisk_totalInodes
+                                format: "%7.2lf%s"
+
+                            Used:
+                                dpName: idisk_usedInodes
+                                format: "%7.2lf%s"
+
             PhysicalVolume:
                 description: Physical Volume Monitoring
                 targetPythonClass: ZenPacks.zenoss.LinuxMonitor.PhysicalVolume.PhysicalVolume
