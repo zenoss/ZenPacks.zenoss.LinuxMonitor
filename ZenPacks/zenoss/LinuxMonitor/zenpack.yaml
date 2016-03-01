@@ -715,6 +715,75 @@ device_classes: !ZenPackSpec
                                 dpName: idisk_usedInodes
                                 format: "%7.2lf%s"
 
+            OSProcess:
+                description: "Process monitoring for Linux via SSH."
+                targetPythonClass: Products.ZenModel.OSProcess
+
+                datasources:
+                    ps:
+                        type: COMMAND
+                        usessh: true
+                        commandTemplate: "/bin/ps -eo pid,rss,cputime,args"
+                        parser: ps
+                        component: "${here/id}"
+
+                        datapoints:
+                            count:
+                                rrdmin: 0
+                                aliases:
+                                    ps_count: ""
+
+                            cpu:
+                                rrdtype: DERIVE
+                                rrdmin: 0
+                                aliases:
+                                    ps_cpu: ""
+                                    ps_cpu__pct: "100,*"
+
+                            mem:
+                                rrdmin: 0
+                                aliases:
+                                    ps_mem__bytes: ""
+
+                thresholds:
+                    count:
+                        type: MinMaxThreshold
+                        minval: "here.getMinProcessCount()"
+                        maxval: "here.getMaxProcessCount()"
+                        eventClass: /Status
+                        severity: Warning
+                        dsnames: [ps_count]
+
+                graphs:
+                    Process Count:
+                        units: processes
+                        miny: 0
+
+                        graphpoints:
+                            Running:
+                                dpName: ps_count
+                                format: "%7.0lf"
+
+                    CPU Utilization:
+                        units: percent
+                        miny: 0
+
+                        graphpoints:
+                            Used:
+                                dpName: ps_cpu
+                                rpn: "100,*"
+                                format: "%7.2lf%%"
+
+                    Memory Usage:
+                        units: bytes
+                        miny: 0
+                        base: true
+
+                        graphpoints:
+                            Used:
+                                dpName: ps_mem
+                                format: "%7.2lf%s"
+
             PhysicalVolume:
                 description: Physical Volume Monitoring
                 targetPythonClass: ZenPacks.zenoss.LinuxMonitor.PhysicalVolume.PhysicalVolume
