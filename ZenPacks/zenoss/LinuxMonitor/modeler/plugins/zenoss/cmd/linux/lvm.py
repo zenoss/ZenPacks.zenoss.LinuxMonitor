@@ -139,6 +139,8 @@ class lvm(CommandPlugin):
                 lsblk_dict[device_block] = {}
                 lsblk_dict[device_block]['mount'] = columns['mount']
                 lsblk_dict[device_block]['major_minor'] = columns['major_minor']
+                if any(columns['device_block'] == om.title for om in hd_maps):
+                    continue
                 if columns['type'] in ('disk', 'lvm', 'part'):
                     hd_maps.append(self.makeHDMap(columns))
 
