@@ -1,20 +1,20 @@
 ##############################################################################
-# 
+#
 # Copyright (C) Zenoss, Inc. 2009, all rights reserved.
-# 
+#
 # This content is made available according to terms specified in
 # License.zenoss under the directory where your Zenoss product is installed.
-# 
+#
 ##############################################################################
 
 
 __doc__ = """cpuinfo
-Modeling plugin that parses the contents of /proc/cpuinfo to gather 
+Modeling plugin that parses the contents of /proc/cpuinfo to gather
 information about the device's processor(s).
 """
 
 import re
-
+from Products.DataCollector.plugins.DataMaps  import MultiArgs
 from Products.DataCollector.plugins.CollectorPlugin import CommandPlugin
 
 class CpuinfoException(Exception):
@@ -25,25 +25,27 @@ class Cpuinfo(object):
     Initialized with a dictionary that contains the colon-delimited items
     found in /proc/cpuinfo.
     """
-    
+
     def __init__(self, cpuinfoDict):
         self.cpuinfoDict = cpuinfoDict
-    
+
     def getProductKey(self):
         """
         Gets the product key from a dictionary based on /proc/cpuinfo.
         """
         if 'vendor_id' in self.cpuinfoDict and \
                 'model name' in self.cpuinfoDict:
-            productKey = ' '.join([self.cpuinfoDict['vendor_id'],
+            model_name = ' '.join([self.cpuinfoDict['vendor_id'],
                                    self.cpuinfoDict['model name']])
+            vendor_id = self.cpuinfoDict['vendor_id']
+            productKey = MultiArgs(model_name, vendor_id)
         elif 'cpu' in self.cpuinfoDict:
             productKey = self.cpuinfoDict['cpu']
         else:
             raise CpuinfoException(
                     'Could not find product key in /proc/cpuinfo.')
         return productKey
-    
+
     def getCacheSizeL2(self):
         """
         Gets the cache size from a dictionary based on /proc/cpuinfo.
