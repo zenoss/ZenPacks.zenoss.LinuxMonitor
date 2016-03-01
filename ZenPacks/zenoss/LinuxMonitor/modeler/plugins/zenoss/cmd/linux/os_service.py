@@ -1,10 +1,10 @@
 ##############################################################################
-# 
+#
 # Copyright (C) Zenoss, Inc. 2016, all rights reserved.
-# 
+#
 # This content is made available according to terms specified in
 # License.zenoss under the directory where your Zenoss product is installed.
-# 
+#
 ##############################################################################
 
 
@@ -30,7 +30,7 @@ Systemd output('systemctl list-units -t service --all --no-page --no-legend | aw
      Main PID: 445 (systemd-udevd)
        Memory: 496.0K
        CGroup: /system.slice/systemd-udevd.service
-               ??445 /usr/lib/systemd/systemd-udevd
+               445 /usr/lib/systemd/systemd-udevd
     systemd-update-done.service - Update is Completed
        Loaded: loaded (/usr/lib/systemd/system/systemd-update-done.service; static; vendor preset: disabled)
        Active: inactive (dead)
@@ -125,24 +125,33 @@ Systemv output('service --status-all'):
 """
 
 
-__doc__ = """os_service
-Collect linux services information using appropriate init service command.
-"""
-
-
 import re
 
 from Products.DataCollector.plugins.CollectorPlugin import LinuxCommandPlugin
 
 
-RE_SYSTEMD_SERVICE = re.compile('(?P<title>[@A-Za-z0-9\-\.]+)\.service\s\-\s(?P<description>.+)\s+Loaded:\s(?P<loaded_status>\w.+\))\s+Active:\s(?P<active_status>\w+\s\(\w+\)(\ssince.+ago)?)(.+Main\sPID:\s(?P<main_pid>\d+))?')
-RE_UPSTART_SERVICE = re.compile('(?P<title>[A-Za-z0-9\-\.]+)\s(?P<active_status>[\w/]+)(.\sprocess\s(?P<main_pid>\d+))?')
-RE_SYSTEMV_SERVICE = re.compile('(?P<title>[A-Za-z0-9_\-\.\s:]+)((\s|:)\(pid\s+(?P<main_pid>\d+)\))?\sis\s(?P<active_status>[\w\s]+)')
+__doc__ = """os_service
+Collect linux services information using appropriate init service command.
+"""
+
+
+RE_SYSTEMD_SERVICE = re.compile('(?P<title>[@A-Za-z0-9\-\.]+)\.service\s\-\s'
+                                '(?P<description>.+)\s+'
+                                'Loaded:\s(?P<loaded_status>\w.+\))\s+'
+                                'Active:\s(?P<active_status>\w+\s\(\w+\)(\ssince.+ago)?)'
+                                '(.+Main\sPID:\s(?P<main_pid>\d+))?')
+RE_UPSTART_SERVICE = re.compile('(?P<title>[A-Za-z0-9\-\.]+)\s'
+                                '(?P<active_status>[\w/]+)'
+                                '(.\sprocess\s(?P<main_pid>\d+))?')
+RE_SYSTEMV_SERVICE = re.compile('(?P<title>[A-Za-z0-9_\-\.\s:]+)'
+                                '((\s|:)\(pid\s+(?P<main_pid>\d+)\))?'
+                                '\sis\s''(?P<active_status>[\w\s]+)')
 RE_PROCESS = re.compile('(?<=Process:\s)(\d+\s\w+=\S+\s([A-z\-=]+\s)*\(\S+\s\S+\))')
 
 
 def systemd_getServices(services):
     return ''.join(map(lambda x: x or '\n', services)).splitlines()
+
 
 def systemd_getProcesses(line):
     matches = RE_PROCESS.findall(line)
@@ -170,15 +179,19 @@ SERVICE_MAP = {
 
 class os_service(LinuxCommandPlugin):
 
-    command = ('export PATH=$PATH:/bin:/sbin:/usr/sbin;'
+    command = ('export PATH=$PATH:/bin:/sbin:/usr/sbin; '
                'if command -v systemctl >/dev/null 2>&1; then '
-                   'echo "SYSTEMD"; systemctl list-units -t service --all --no-page --no-legend | awk \'{ print $1 }\' | xargs -n 1 systemctl status -l -n 0; '
+                'echo "SYSTEMD"; '
+                'systemctl list-units -t service --all --no-page --no-legend | awk \'{ print $1 }\' | xargs -n 1 systemctl status -l -n 0; '
                'elif command -v initctl >/dev/null 2>&1; then '
-                   'echo "UPSTART"; initctl list; '
+                'echo "UPSTART"; '
+                'initctl list; '
                'elif command -v service >/dev/null 2>&1; then '
-                   'echo "SYSTEMV"; service --status-all; '
+                'echo "SYSTEMV"; '
+                'service --status-all; '
                'else '
-                   'echo "UNKNOWN"; exit 127; '
+                'echo "UNKNOWN"; '
+                'exit 127; '
                'fi')
 
     compname = ''
