@@ -111,7 +111,7 @@ def getOSModel(results):
     for line in results.split('\n'):
         fline = ''.join(line.split()).lower()
         if fline and any((d in fline for d in SUPPORTED_DISTROS)):
-            if 'pretty_name' in fline:
+            if any([f in fline for f in ('pretty_name', 'distrib_description')]):
                 return line.split('=')[1].strip('"')
             elif RE_DISTR.match(line):
                 return line.strip()
