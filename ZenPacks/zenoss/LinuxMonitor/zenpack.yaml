@@ -460,6 +460,156 @@ device_classes: !ZenPackSpec
                                 dpName: io_ssIORawSent
                                 format: "%7.2lf%s"
 
+            ethernetCsmacd:
+                description: "Ethernet (and default) network interface monitoring for Linux via SSH."
+                targetPythonClass: Products.ZenModel.IpInterface
+
+                datasources:
+                    intf:
+                        type: COMMAND
+                        usessh: true
+                        commandTemplate: "/bin/bash -c '[[ -x $$(which ifconfig) ]] && ifconfig -a || ip -s -o link'"
+                        parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.ifconfig
+                        component: "${here/id}"
+
+                        datapoints:
+                            ifInOctets:
+                                rrdtype: DERIVE
+                                rrdmin: 0
+                                aliases:
+                                    if_received__bytessec: ""
+
+                            ifOutOctets:
+                                rrdtype: DERIVE
+                                rrdmin: 0
+                                aliases:
+                                    if_sent__bytessec: ""
+
+                            ifInPackets:
+                                rrdtype: DERIVE
+                                rrdmin: 0
+                                aliases:
+                                    if_received_packets__persec: ""
+
+                            ifOutPackets:
+                                rrdtype: DERIVE
+                                rrdmin: 0
+                                aliases:
+                                    if_sent_packets__persec: ""
+
+                            ifInErrors:
+                                rrdtype: DERIVE
+                                rrdmin: 0
+                                aliases:
+                                    if_received_errors__persec: ""
+
+                            ifInDropped:
+                                rrdtype: DERIVE
+                                rrdmin: 0
+                                aliases:
+                                    if_received_dropped__persec: ""
+
+                            ifInOverruns:
+                                rrdtype: DERIVE
+                                rrdmin: 0
+                                aliases:
+                                    if_received_overruns__persec: ""
+
+                            ifOutErrors:
+                                rrdtype: DERIVE
+                                rrdmin: 0
+                                aliases:
+                                    if_sent_errors_persec: ""
+
+                            ifOutCarrier:
+                                rrdtype: DERIVE
+                                rrdmin: 0
+                                aliases:
+                                    if_sent_carrier__persec: ""
+
+                            ifOutCollisions:
+                                rrdtype: DERIVE
+                                rrdmin: 0
+                                aliases:
+                                    if_sent_collisions__persec: ""
+
+                            ifOutDropped:
+                                rrdtype: DERIVE
+                                rrdmin: 0
+                                aliases:
+                                    if_sent_dropped__persec: ""
+
+                thresholds:
+                    "75 percent utilization":
+                        type: MinMaxThreshold
+                        maxval: "(here.speed or 1e7) / 8 * .75"
+                        eventClass: /Perf/Interface
+                        dsnames:
+                            - intf_ifInOctets
+                            - intf_ifOutOctets
+
+                graphs:
+                    Data Throughput:
+                        units: bits/sec
+                        miny: 0
+
+                        graphpoints:
+                            Receive:
+                                dpName: intf_ifInOctets
+                                rpn: "8,*"
+                                format: "%7.2lf%s"
+
+                            Transmit:
+                                dpName: intf_ifOutOctets
+                                rpn: "8,*"
+                                format: "%7.2lf%s"
+
+                    Packet Throughput:
+                        units: packets/sec
+                        miny: 0
+
+                        graphpoints:
+                            Receive:
+                                dpName: intf_ifInPackets
+                                format: "%7.2lf%s"
+
+                            Transmit:
+                                dpName: intf_ifOutPackets
+                                format: "%7.2lf%s"
+
+                    Error Rate:
+                        units: errors/sec
+                        miny: 0
+
+                        graphpoints:
+                            Receive:
+                                dpName: intf_ifInErrors
+                                format: "%7.2lf%s"
+
+                            RX Dropped:
+                                dpName: intf_ifInDropped
+                                format: "%7.2lf%s"
+
+                            RX Overruns:
+                                dpName: intf_ifInOverruns
+                                format: "%7.2lf%s"
+
+                            Transmit:
+                                dpName: intf_ifOutErrors
+                                format: "%7.2lf%s"
+
+                            TX Carrier:
+                                dpName: intf_ifOutCarrier
+                                format: "%7.2lf%s"
+
+                            TX Collisions:
+                                dpName: intf_ifOutCollisions
+                                format: "%7.2lf%s"
+
+                            TX Dropped:
+                                dpName: intf_ifOutDropped
+                                format: "%7.2lf%s"
+
             PhysicalVolume:
                 description: Physical Volume Monitoring
                 targetPythonClass: ZenPacks.zenoss.LinuxMonitor.PhysicalVolume.PhysicalVolume
