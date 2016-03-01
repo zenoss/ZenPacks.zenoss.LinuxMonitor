@@ -145,7 +145,7 @@ RE_UPSTART_SERVICE = re.compile('(?P<title>[A-Za-z0-9\-\.]+)\s'
                                 '(.\sprocess\s(?P<main_pid>\d+))?')
 RE_SYSTEMV_SERVICE = re.compile('(?P<title>[A-Za-z0-9_\-\.\s:]+)'
                                 '((\s|:)\(pid\s+(?P<main_pid>\d+)\))?'
-                                '\sis\s''(?P<active_status>[\w\s]+)')
+                                '\sis\s(?P<active_status>[\w\s]+)')
 RE_PROCESS = re.compile('(?<=Process:\s)(\d+\s\w+=\S+\s([A-z\-=]+\s)*\(\S+\s\S+\))')
 
 
