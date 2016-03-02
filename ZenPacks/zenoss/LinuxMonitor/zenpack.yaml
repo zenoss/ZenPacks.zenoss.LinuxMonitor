@@ -848,6 +848,7 @@ device_classes: !ZenPackSpec
                                 lineType: AREA
                                 rpn: "size,-,size,/,-100,*"
                                 legend: Used
+                                format: "%7.2lf%%"
                 thresholds:
                     unallocatable:
                         dsnames: [status_allocatable]
@@ -902,6 +903,7 @@ device_classes: !ZenPackSpec
                                 dpName: group_free
                                 lineType: AREA
                                 rpn: "size,-,size,/,-100,*"
+                                format: "%7.2lf%%"
             LogicalVolume:
                 description: Logical Volume Monitoring
                 targetPythonClass: ZenPacks.zenoss.LinuxMonitor.LogicalVolume.LogicalVolume
@@ -1033,14 +1035,17 @@ device_classes: !ZenPackSpec
                                 dpName: diskstats_msReading
                                 lineType: LINE
                                 rpn: "10,/"
+                                format: "%7.2lf%%"
                             Writing:
                                 dpName: diskstats_msWriting
                                 lineType: LINE
                                 rpn: "10,/"
+                                format: "%7.2lf%%"
                             Doing IO:
                                 dpName: diskstats_msDoingIO
                                 lineType: LINE
                                 rpn: "10,/"
+                                format: "%7.2lf%%"
                     Weighted IO Utilization:
                         units: weighted percent
                         miny: 0
@@ -1049,3 +1054,4 @@ device_classes: !ZenPackSpec
                                 dpName: diskstats_msDoingIOWeighted
                                 lineType: LINE
                                 rpn: "10,/"
+                                format: "%7.2lf%%"
