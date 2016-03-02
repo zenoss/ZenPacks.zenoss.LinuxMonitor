@@ -43,7 +43,7 @@ The device overview page appears.
 The zCommandUsername property must be set. To use public key authentication you must verify that the public portion of the key referenced in zKeyPath is installed in the `~/.ssh/authorized_keys` file for the appropriate user on the linux server. If this key has a passphrase you should set it in the zCommandPassword property. If you'd rather use password authentication than setup keys, simply put the user's password in the zCommandPassword property.
 
 === Using a Root User ===
-This ZenPack requires the ability to run the ''pvs'', ''vgs'', and ''lvs'' commands, remotely on your linux server(s) using SSH. By default, these ommands are only allowed to be run locally. To remotely run these commands, the root use must not be required to use TTY.
+This ZenPack requires the ability to run the ''pvs'', ''vgs'', and ''lvs'' commands, remotely on your linux server(s) using SSH. By default, these ommands are only allowed to be run locally. To remotely run these commands, the root user must not be required to use TTY.
 
 # Install the '''sudo''' package on your server.
 # Allow root user to execute commands via ssh without a TTY.
@@ -55,19 +55,19 @@ This ZenPack requires the ability to run the ''pvs'', ''vgs'', and ''lvs'' comma
 
 
 === Using a Non-Root User ===
-This ZenPack requires the ability to run the ''pvs'', ''vgs'', and ''lvs'' commands, remotely on your linux server(s) using SSH. By default, these commands are only allowed to be run by the '''root''' user. Furthermore, this ZenPack expects these commands be in the user's path. Normally this is only true for the root user.
+This ZenPack requires the ability to run the ''pvs'', ''vgs'', ''lvs'', ''systemctl'', ''initctl'' and ''service'' commands, remotely on your linux server(s) using SSH. By default, most of these commands are only allowed to be run by the '''root''' user. The output of ''systemctl'', ''initctl'' and ''service'' commands depends on whether they are executed via '''sudo'''. Furthermore, this ZenPack expects these commands be in the user's path. Normally this is only true for the root user.
 
 Assuming that you've created a user named '''zenmonitor''' on your linux servers for monitoring purposes, you can follow these steps to allow the '''zenmonitor''' user to run ''pvs'', ''vgs'',  and the ''lvs'' commands.
 
 # Install the '''sudo''' package on your server.
-# Allow the *zenmonitor* user to run pvs,lvs,vgs.
+# Allow the *zenmonitor* user to run pvs, lvs, vgs, systemctl, initctl, service.
 ## Run ''visudo'' as root.
 ## Add the following line to the bottom of the file.
-##: zenmonitor ALL=(ALL) NOPASSWD: /usr/sbin/pvs, /usr/sbin/vgs, /usr/sbin/lvs
+##: zenmonitor ALL=(ALL) NOPASSWD: /usr/sbin/pvs, /usr/sbin/vgs, /usr/sbin/lvs, /bin/systemctl, /sbin/initctl, /sbin/service
 ## Type ''ESC'' then '':wq'' to save the sudo configuration.
 # Allow *zenmonitor* to execute commands via ssh without a TTY.
 ## Run ''visudo'' as root.
-## Find the line containing ''zenmonitor ALL=(ALL) NOPASSWD: /usr/sbin/pvs, /usr/sbin/vgs, /usr/sbin/lvs''.
+## Find the line containing ''zenmonitor ALL=(ALL) NOPASSWD: /usr/sbin/pvs, /usr/sbin/vgs, /usr/sbin/lvs, /bin/systemctl, /sbin/initctl, /sbin/service''.
 ## Add this line underneath it:
 ##: Defaults:zenmonitor        !requiretty
 ## Type ''ESC'' then '':wq'' to save the sudo configuration.

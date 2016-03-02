@@ -179,16 +179,16 @@ SERVICE_MAP = {
 
 class os_service(LinuxCommandPlugin):
 
-    command = ('export PATH=$PATH:/bin:/sbin:/usr/sbin; '
+    command = ('export PATH=$PATH:/bin:/sbin:/usr/bin:/usr/sbin; '
                'if command -v systemctl >/dev/null 2>&1; then '
                 'echo "SYSTEMD"; '
-                'systemctl list-units -t service --all --no-page --no-legend | awk \'{ print $1 }\' | xargs -n 1 systemctl status -l -n 0; '
+                'sudo systemctl list-units -t service --all --no-page --no-legend | awk \'{ print $1 }\' | xargs -n 1 sudo systemctl status -l -n 0; '
                'elif command -v initctl >/dev/null 2>&1; then '
                 'echo "UPSTART"; '
-                'initctl list; '
+                'sudo initctl list; '
                'elif command -v service >/dev/null 2>&1; then '
                 'echo "SYSTEMV"; '
-                'service --status-all; '
+                'sudo service --status-all; '
                'else '
                 'echo "UNKNOWN"; '
                 'exit 127; '
