@@ -15,7 +15,7 @@
                'compname': 'hw',
                'id': '0',
                'modname': 'Products.ZenModel.CPU',
-               'setProductKey': 'GenuineIntel Intel(R) Xeon(R) CPU E5-2643 0 @ 3.30GHz',
+               'setProductKey': ('GenuineIntel Intel(R) Xeon(R) CPU E5-2643 0 @ 3.30GHz', 'GenuineIntel'),
                'socket': '0'}, },
         {'1': {'cacheSizeL2': 10240,
                'classname': '',
@@ -23,6 +23,6 @@
                'compname': 'hw',
                'id': '1',
                'modname': 'Products.ZenModel.CPU',
-               'setProductKey': 'GenuineIntel Intel(R) Xeon(R) CPU E5-2643 0 @ 3.30GHz',
+               'setProductKey': ('GenuineIntel Intel(R) Xeon(R) CPU E5-2643 0 @ 3.30GHz', 'GenuineIntel'),
                'socket': '1'}, }
     ]}
