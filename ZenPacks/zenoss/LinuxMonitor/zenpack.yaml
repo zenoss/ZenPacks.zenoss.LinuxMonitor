@@ -747,7 +747,7 @@ device_classes: !ZenPackSpec
                         type: COMMAND
                         usessh: true
                         commandTemplate: "/bin/ps -eo pid,rss,cputime,args"
-                        parser: ps
+                        parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.ps
                         component: "${here/id}"
 
                         datapoints:
