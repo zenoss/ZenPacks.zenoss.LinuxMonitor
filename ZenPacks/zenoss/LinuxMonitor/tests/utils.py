@@ -175,21 +175,28 @@ def yuml_from_triples(triples, missing=None, extra=None, tag_map=None):
     missing = set() if missing is None else missing
     extra = set() if extra is None else extra
 
-    filtered = lambda t: {x for x in t if x[1] in tag_map}
-    filtered_triples = filtered(triples)
-    filtered_extra = filtered(extra)
+    def filter_triples(ts):
+        if tag_map:
+            return {t for t in ts if t[1] in tag_map}
+        else:
+            return ts
+
+    def symbol_for_triple(triple):
+        if triple in missing:
+            return "XXX"
+        elif triple in extra:
+            return "!!!"
+        else:
+            return ""
 
     lines = []
-    for triple in sorted(filtered_triples):
+    for triple in filter_triples(triples | extra):
         source, tag, target = triple
 
-        if triple in missing:
-            left = "XXX"
-        else:
-            left = ""
+        left = symbol_for_triple(triple)
 
         if tag in tag_map:
-            right = "XXX" if complement_triple(triple) in missing else ""
+            right = symbol_for_triple(complement_triple(triple))
         else:
             right = ""
 
@@ -199,12 +206,7 @@ def yuml_from_triples(triples, missing=None, extra=None, tag_map=None):
             "[{}]{}{}{}>[{}]".format(
                 source, left, middle, right, target))
 
-    if filtered_extra:
-        lines.append("// Extra")
-        for source, _, target in sorted(filtered_extra):
-            lines.append("[{}]!!!-.-!!!>[{}]".format(source, target))
-
-    return "\n".join(lines)
+    return "\n".join(sorted(lines))
 
 
 def impact_yuml_from_device(device):

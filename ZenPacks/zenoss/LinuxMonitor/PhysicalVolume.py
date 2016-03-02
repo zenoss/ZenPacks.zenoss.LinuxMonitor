@@ -30,26 +30,28 @@ class PhysicalVolume(schema.PhysicalVolume):
 
         return '{}%'.format(int(float(pvsize-pvfree)/pvsize*100))
 
-    def getBlockDevice(self):
+    def blockDevice(self):
         try:
             return self.device().hw.harddisks._getOb(self.harddisk_id)
         except Exception:
             pass
 
     def getDefaultGraphDefs(self, drange=None):
-        graphs = super(PhysicalVolume, self).getDefaultGraphDefs()
-        comp = self.getBlockDevice()
-        if comp:
-            for graph in comp.getDefaultGraphDefs(drange):
-                graphs.append(graph)
+        graphs = super(PhysicalVolume, self).getDefaultGraphDefs(drange)
+
+        bd = self.blockDevice()
+        if bd:
+            graphs.extend(bd.getDefaultGraphDefs(drange))
+
         return graphs
 
     def getGraphObjects(self):
         graphs = super(PhysicalVolume, self).getGraphObjects()
-        comp = self.getBlockDevice()
-        if comp:
-            for graph in comp.getGraphObjects():
-                graphs.append(graph)
+
+        bd = self.blockDevice()
+        if bd:
+            graphs.extend(bd.getGraphObjects())
+
         return graphs
 
     def getIconPath(self):

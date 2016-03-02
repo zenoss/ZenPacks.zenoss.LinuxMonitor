@@ -28,7 +28,7 @@ class VolumeGroup(schema.VolumeGroup):
         if vgsize == 0:
             return 'Unknown'
 
-        return '{}%'.format(int(float(vgsize-vgfree)/vgsize*100))
+        return '{}%'.format(int(float(vgsize - vgfree) / vgsize * 100))
 
     def snapshot_volumes(self):
         count = 0
@@ -42,3 +42,19 @@ class VolumeGroup(schema.VolumeGroup):
         Return the path to an icon for this component.
         '''
         return '/++resource++linux/img/volume-group.png'
+
+    def getDefaultGraphDefs(self, drange=None):
+        graphs = super(VolumeGroup, self).getDefaultGraphDefs(drange)
+
+        for pv in self.physicalVolumes():
+            graphs.extend(pv.getDefaultGraphDefs(drange))
+
+        return graphs
+
+    def getGraphObjects(self):
+        graphs = super(VolumeGroup, self).getGraphObjects()
+
+        for pv in self.physicalVolumes():
+            graphs.extend(pv.getGraphObjects())
+
+        return graphs

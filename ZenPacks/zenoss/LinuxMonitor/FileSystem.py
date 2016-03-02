@@ -18,8 +18,6 @@ from Products.Zuul.infos.component.filesystem import FileSystemInfo as BaseFileS
 from Products.Zuul.interfaces.component import IFileSystemInfo as IBaseFileSystemInfo
 from Products.Zuul.utils import ZuulMessageFactory as _t
 
-from . import zenpacklib
-
 
 class FileSystem(BaseFileSystem):
 
@@ -29,23 +27,18 @@ class FileSystem(BaseFileSystem):
 
     """
 
+    class_label = "File System"
+    plural_class_label = "File Systems"
+
     meta_type = 'LinuxFileSystem'
 
-    logicalvolume = None
-
-    _properties = BaseFileSystem._properties + (
-        {'id': 'logicalvolume', 'label': 'Logical Volume', 'type': 'string'},
-        )
-
-    def getLogicalVolume(self):
+    def logicalVolume(self):
+        """Return the underlying LogicalVolume."""
         if not self.mount:
             return
 
         results = itertools.chain.from_iterable(
-            zenpacklib.catalog_search(
-                self.device(),
-                name,
-                mountpoint=self.mount)
+            self.device().search(name, mountpoint=self.mount)
             for name in ('LogicalVolume', 'SnapshotVolume'))
 
         for result in results:
@@ -54,30 +47,55 @@ class FileSystem(BaseFileSystem):
             except Exception:
                 pass
 
-    def getBlockDevice(self):
+    def blockDevice(self):
+        """Return the underlying HardDisk."""
+        if not self.mount:
+            return
+
         device = self.device()
         results = device.componentSearch.search({'meta_type': 'LinuxHardDisk'})
         for brain in results:
-            obj = brain.getObject()
-            if obj.mount == self.mount:
-                return obj
+            try:
+                hd = brain.getObject()
+            except Exception:
+                continue
+            else:
+                if hd.mount == self.mount:
+                    return hd
+
+    def impacting_object(self):
+        """Return the impacting LogicalVolume, HardDisk, or Device.
+
+        A FileSystem can be impacted by only one of: it's underlying
+        LogicalVolume, HardDisk, or Device. In that order.
+
+        """
+        lv = self.logicalVolume()
+        if lv:
+            return lv
+
+        bd = self.blockDevice()
+        if bd:
+            return bd
+
+        return self.device()
 
     def getRRDTemplateName(self):
         return "FileSystem"
 
     def getDefaultGraphDefs(self, drange=None):
-        graphs = super(FileSystem, self).getDefaultGraphDefs()
-        comp = self.getBlockDevice()
-        if comp:
-            for graph in comp.getDefaultGraphDefs(drange):
+        graphs = super(FileSystem, self).getDefaultGraphDefs(drange)
+        underlying = self.logicalVolume() or self.blockDevice()
+        if underlying:
+            for graph in underlying.getDefaultGraphDefs(drange):
                 graphs.append(graph)
         return graphs
 
     def getGraphObjects(self):
         graphs = super(FileSystem, self).getGraphObjects()
-        comp = self.getBlockDevice()
-        if comp:
-            for graph in comp.getGraphObjects():
+        underlying = self.logicalVolume() or self.blockDevice()
+        if underlying:
+            for graph in underlying.getGraphObjects():
                 graphs.append(graph)
         return graphs
 
@@ -122,9 +140,9 @@ class FileSystemInfo(BaseFileSystemInfo):
     @property
     @info
     def logicalVolume(self):
-        return self._object.getLogicalVolume()
+        return self._object.logicalVolume()
 
     @property
     @info
     def blockDevice(self):
-        return self._object.getBlockDevice()
+        return self._object.blockDevice()
