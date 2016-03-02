@@ -247,6 +247,7 @@ device_classes: !ZenPackSpec
                 - zenoss.cmd.linux.rpm
                 - zenoss.cmd.linux.sudo_dmidecode
                 - zenoss.cmd.linux.os_release
+                - zenoss.cmd.linux.os_service
             zSshConcurrentSessions: 5
 
         templates:
