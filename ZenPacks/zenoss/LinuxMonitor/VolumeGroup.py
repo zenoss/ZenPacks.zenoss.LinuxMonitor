@@ -36,3 +36,9 @@ class VolumeGroup(schema.VolumeGroup):
             count += len(lv.snapshotVolumes())
 
         return '{}'.format(count)
+
+    def getIconPath(self):
+        '''
+        Return the path to an icon for this component.
+        '''
+        return '/++resource++linux/img/volume-group.png'

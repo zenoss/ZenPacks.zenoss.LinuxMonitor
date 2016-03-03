@@ -51,3 +51,9 @@ class PhysicalVolume(schema.PhysicalVolume):
             for graph in comp.getGraphObjects():
                 graphs.append(graph)
         return graphs
+
+    def getIconPath(self):
+        '''
+        Return the path to an icon for this component.
+        '''
+        return '/++resource++linux/img/physical-volume.png'

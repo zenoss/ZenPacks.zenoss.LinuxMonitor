@@ -81,6 +81,12 @@ class FileSystem(BaseFileSystem):
                 graphs.append(graph)
         return graphs
 
+    def getIconPath(self):
+        '''
+        Return the path to an icon for this component.
+        '''
+        return '/++resource++linux/img/file-system.png'
+
 
 class IFileSystemInfo(IBaseFileSystemInfo):
 
