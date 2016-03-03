@@ -42,7 +42,6 @@ Ext.apply(Zenoss.render, {
 
 });
 
-
 Ext.define("Zenoss.component.LinuxFileSystemPanel", {
     alias:['widget.LinuxFileSystemPanel'],
     extend:"Zenoss.component.ComponentGridPanel",
@@ -65,7 +64,8 @@ Ext.define("Zenoss.component.LinuxFileSystemPanel", {
                 {name: 'availableBytes'},
                 {name: 'usedBytes'},
                 {name: 'capacityBytes'},
-                {name: 'logicalvolume'}
+                {name: 'logicalVolume'},
+                {name: 'blockDevice'}
             ],
             columns: [{
                 id: 'severity',
@@ -78,14 +78,21 @@ Ext.define("Zenoss.component.LinuxFileSystemPanel", {
                 dataIndex: 'mount',
                 header: _t('Mount Point')
             },{
-                id: 'storageDevice',
+                id: 'backing',
                 dataIndex: 'storageDevice',
-                header: _t('Storage Device')
-            },{
-                id: 'logicalvolume',
-                dataIndex: 'logicalvolume',
-                header: _t('Logical Volume'),
-                renderer: Zenoss.render.linux_entityLinkFromGrid
+                header: _t('Storage Device'),
+                width: 120,
+                renderer: function(value, metaData, record) {
+                    if (record.data.logicalVolume) {
+                        return Zenoss.render.linux_entityLinkFromGrid(
+                            record.data.logicalVolume, metaData, record);
+                    } else if (record.data.blockDevice) {
+                        return Zenoss.render.linux_entityLinkFromGrid(
+                            record.data.blockDevice, metaData, record);
+                    } else {
+                        return value;
+                    }
+                }
             },{
                 id: 'totalBytes',
                 dataIndex: 'totalBytes',
@@ -119,7 +126,6 @@ Ext.define("Zenoss.component.LinuxFileSystemPanel", {
                         return n + '%';
                     }
                 }
-
             },{
                 id: 'monitored',
                 dataIndex: 'monitored',
@@ -136,7 +142,6 @@ Ext.define("Zenoss.component.LinuxFileSystemPanel", {
         ZC.LinuxFileSystemPanel.superclass.constructor.call(this, config);
     }
 });
-
 
 ZC.registerName('LinuxFileSystem', _t('File System'), _t('File Systems'));
 
@@ -156,14 +161,8 @@ Ext.define("Zenoss.component.LinuxHardDiskPanel", {
                 {name: 'monitor'},
                 {name: 'monitored'},
                 {name: 'locking'},
-                {name: 'mount'},
-                {name: 'storageDevice'},
-                {name: 'totalBytes'},
-                {name: 'availableBytes'},
-                {name: 'usedBytes'},
-                {name: 'capacityBytes'},
                 {name: 'size'},
-                {name: 'physicalvolumes_count'}
+                {name: 'physicalVolume'}
             ],
             columns: [{
                 id: 'severity',
@@ -181,9 +180,11 @@ Ext.define("Zenoss.component.LinuxHardDiskPanel", {
                 header: _t('Size'),
                 renderer: Zenoss.render.bytesString
             },{
-                id: 'physicalvolumes_count',
-                dataIndex: 'physicalvolumes_count',
-                header: _t('Physical Volumes')
+                id: 'physicalVolume',
+                dataIndex: 'physicalVolume',
+                header: _t('LVM PV'),
+                renderer: Zenoss.render.linux_entityLinkFromGrid,
+                width: 120
             },{
                 id: 'monitored',
                 dataIndex: 'monitored',
@@ -201,5 +202,4 @@ Ext.define("Zenoss.component.LinuxHardDiskPanel", {
     }
 });
 
-
-ZC.registerName('LinuxHardDisk', _t('HardDisk'), _t('HardDisks'));
+ZC.registerName('LinuxHardDisk', _t('Hard Disk'), _t('Hard Disks'));

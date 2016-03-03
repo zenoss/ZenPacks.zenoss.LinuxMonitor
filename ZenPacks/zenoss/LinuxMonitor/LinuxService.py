@@ -1,6 +1,6 @@
 ##############################################################################
 #
-# Copyright (C) Zenoss, Inc. 2015, all rights reserved.
+# Copyright (C) Zenoss, Inc. 2016, all rights reserved.
 #
 # This content is made available according to terms specified in
 # License.zenoss under the directory where your Zenoss product is installed.
@@ -8,15 +8,18 @@
 ##############################################################################
 
 
-from Products.ZenRRD.ComponentCommandParser import ComponentCommandParser
+"""LinuxService module.
+
+All custom behavior for Linux OS Service is defined here.
+
+"""
 
 
-class vgsstatus(ComponentCommandParser):
+from . import schema
 
-    componentSplit = '\n'
 
-    componentScanner = '(?P<component>\S+)'
+class LinuxService(schema.LinuxService):
 
-    scanners = [
-        r'\S+ *(?P<partial>\d+)'
-        ]
+    """Model class for Linux OS Service."""
+
+    pass

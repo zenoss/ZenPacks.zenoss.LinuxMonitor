@@ -7,9 +7,11 @@
 #
 ##############################################################################
 
-from . import schema
-
 from zope.interface import implements
+
+from Products.ZenUtils.Utils import prepId
+
+from . import schema
 
 try:
     from ZenPacks.zenoss.OpenStackInfrastructure.interfaces \
@@ -39,8 +41,11 @@ class SnapshotVolume(schema.SnapshotVolume):
         # will generate its own UUID for the snapshot and passes it on to LVM,
         # and the snapshot in LVM will have a UUID attached to it in its name
 
-        # self.name(): snapshot-366fc7b1-4c11-4ae6-9ec2-d096df0194e0
-        return ['cinder.lvm:snapshotvolume|%s' % (self.name())]
+        # self.name(): _snapshot-366fc7b1-4c11-4ae6-9ec2-d096df0194e0
+        snapshotname = self.name()
+        if self.name().startswith('_'):
+            snapshotname = self.name()[1:]
+        return ['cinder.lvm:snapshotvolume|%s' % (snapshotname)]
 
     def index_object(self, idxs=None):
         super(SnapshotVolume, self).index_object(idxs=idxs)
@@ -59,7 +64,41 @@ class SnapshotVolume(schema.SnapshotVolume):
         else:
             return []
 
-    def filesystem(self):
-        for filesystem in self.device().os.filesystems():
-            if filesystem.title == self.mountpoint:
-                return filesystem
+    def getFileSystem(self):
+        """Return filesystem mounting this logical volume."""
+        try:
+            # Assumes all FileSystem ids are prepId(mount). Currently they are.
+            return self.device().os.filesystems._getOb(prepId(self.mountpoint))
+        except Exception:
+            pass
+
+    def getBlockDevice(self):
+        if not self.major_minor:
+            return
+
+        device = self.device()
+        results = device.componentSearch.search({'meta_type': 'LinuxHardDisk'})
+        for brain in results:
+            try:
+                obj = brain.getObject()
+            except Exception:
+                pass
+            else:
+                if obj.major_minor == self.major_minor:
+                    return obj
+
+    def getDefaultGraphDefs(self, drange=None):
+        graphs = super(SnapshotVolume, self).getDefaultGraphDefs()
+        comp = self.getBlockDevice()
+        if comp:
+            for graph in comp.getDefaultGraphDefs(drange):
+                graphs.append(graph)
+        return graphs
+
+    def getGraphObjects(self):
+        graphs = super(SnapshotVolume, self).getGraphObjects()
+        comp = self.getBlockDevice()
+        if comp:
+            for graph in comp.getGraphObjects():
+                graphs.append(graph)
+        return graphs

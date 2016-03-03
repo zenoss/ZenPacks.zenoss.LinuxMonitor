@@ -6,24 +6,67 @@
     >
 
     <adapter
-        factory="ZenPacks.zenoss.LinuxMonitor.info.FileSystemInfo"
+        provides=".FileSystem.IFileSystemInfo"
         for=".FileSystem.FileSystem"
-        provides="ZenPacks.zenoss.LinuxMonitor.interfaces.IFileSystemInfo"
+        factory=".FileSystem.FileSystemInfo"
         />
 
     <adapter
-        factory="ZenPacks.zenoss.LinuxMonitor.info.HardDiskInfo"
+        provides=".HardDisk.IHardDiskInfo"
         for=".HardDisk.HardDisk"
-        provides="ZenPacks.zenoss.LinuxMonitor.interfaces.IHardDiskInfo"
+        factory=".HardDisk.HardDiskInfo"
         />
 
-<!-- DynamicView -->
+    <!-- DynamicView -->
     <configure zcml:condition="installed ZenPacks.zenoss.DynamicView">
+        <include package="ZenPacks.zenoss.DynamicView" file="meta.zcml"/>
+
+        <subscriber
+            provides="ZenPacks.zenoss.DynamicView.interfaces.IRelationsProvider"
+            for="Products.ZenModel.Device.Device"
+            factory=".dynamicview.DeviceRelationsProvider"
+            />
+
+        <dynamicViewToGroup
+            view="service_view"
+            group="File Systems"
+            />
+
+        <relatableGroup
+            name="File Systems"
+            weight="40"
+            groupType="linux"
+            />
+
+        <adapter
+            provides="ZenPacks.zenoss.DynamicView.interfaces.IRelatable"
+            for=".FileSystem.FileSystem"
+            factory=".dynamicview.FileSystemRelatable"
+            />
+
         <subscriber
             provides="ZenPacks.zenoss.DynamicView.interfaces.IRelationsProvider"
             for=".FileSystem.FileSystem"
             factory=".dynamicview.FileSystemRelationsProvider"
             />
+        
+        <dynamicViewToGroup
+            view="service_view"
+            group="Hard Disks"
+            />
+
+        <relatableGroup
+            name="Hard Disks"
+            weight="45"
+            groupType="linux"
+            />
+
+        <adapter
+            provides="ZenPacks.zenoss.DynamicView.interfaces.IRelatable"
+            for=".HardDisk.HardDisk"
+            factory=".dynamicview.HardDiskRelatable"
+            />
+
         <subscriber
             provides="ZenPacks.zenoss.DynamicView.interfaces.IRelationsProvider"
             for=".HardDisk.HardDisk"
@@ -37,7 +80,7 @@
       <configure zcml:condition="have openstack_cinder_integration">
           <utility
               name="cinder.lvm"
-              factory=".openstack_cinder.CephCinderImplementationPlugin"
+              factory=".openstack_cinder.LinuxCinderImplementationPlugin"
               provides="ZenPacks.zenoss.OpenStackInfrastructure.interfaces.ICinderImplementationPlugin"
               />
       </configure>
@@ -47,4 +90,3 @@
     <include package=".browser"/>
 
 </configure>
-

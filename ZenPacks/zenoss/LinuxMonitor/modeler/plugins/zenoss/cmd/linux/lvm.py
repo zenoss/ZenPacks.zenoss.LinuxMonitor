@@ -82,12 +82,10 @@ class lvm(CommandPlugin):
     MAJ:MIN can be used for diskstats
     """
 
-    command = ('/usr/bin/env echo "HD";sudo fdisk -l 2>&1 | grep \'^Disk\' | grep -v '
-               '\'mapper\|identifier\|label\' | awk \'{gsub(":","");print $2" "$5}\'; '
+    command = ('lsblk -rb 2>&1; '
                'sudo pvs --units b --nosuffix -o pv_name,pv_fmt,pv_attr,pv_size,pv_free,pv_uuid,vg_name 2>&1; '
                'sudo vgs --units b --nosuffix -o vg_name,vg_attr,vg_size,vg_free,vg_uuid 2>&1; '
-               'sudo lvs --units b --nosuffix -o lv_name,vg_name,lv_attr,lv_size,lv_uuid,origin 2>&1; '
-               'lsblk -rb 2>&1')
+               'sudo lvs --units b --nosuffix -o lv_name,vg_name,lv_attr,lv_size,lv_uuid,origin 2>&1 ')
 
     def process(self, device, results, log):
         hd_maps = []
@@ -98,8 +96,8 @@ class lvm(CommandPlugin):
         lsblk_dict = {}
         self.lvm_parser = LVMAttributeParser()
         section = ''
-        dev_blk_re = re.compile('(?P<device_block>.*) (?P<major_minor>\d+:\d+) \d+ \d+ \d+ \w+\s*(?P<mount>\S*)')
         hd_re = re.compile('(?P<disk>\S+) (?P<size>\d+)')
+        dev_blk_re = re.compile('(?P<device_block>.*)\s+(?P<major_minor>\d+:\d+)\s+\d+\s+(?P<size>\d+)\s+\d+\s+(?P<type>\w+)\s*(?P<mount>\S*)')
         pv_re = re.compile('\s*(?P<pv_name>\S+)\s*(?P<pv_fmt>\S+)\s*(?P<pv_attr>\S+)\s*(?P<pv_size>\S+)'
                            '\s*(?P<pv_free>\S+)\s*(?P<pv_uuid>\S+)\s*(?P<vg_name>\S*)')
         vg_re = re.compile('\s*(?P<vg_name>\S+)\s*(?P<vg_attr>\S+)\s*(?P<vg_size>\S+)\s*(?P<vg_free>\S+)\s*(?P<vg_uuid>\S+)')
@@ -118,13 +116,12 @@ class lvm(CommandPlugin):
                 columns = parse_re[section].match(line).groupdict()
             except (AttributeError, Exception):
                 continue
-            if section == 'HD':
-                hd_maps.append(self.makeHDMap(columns))
-            elif section == 'PV':
+
+            if section == 'PV':
                 pv_om = self.makePVMap(columns)
                 pv_maps.append(pv_om)
                 for hd_om in hd_maps:
-                    if hd_om.title in pv_om.title:
+                    if hd_om.title == pv_om.title.split('/')[-1]:
                         pv_om.harddisk_id = hd_om.id
             elif section == 'VG':
                 vg_maps.append(self.makeVGMap(columns))
@@ -137,10 +134,15 @@ class lvm(CommandPlugin):
             elif section == 'NAME':
                 # device block can be 'vg_name-lv_name' or 'vg_name-lv_name (DM-X)' format
                 # depending on linux flavor
+                columns = {col[0]: col[1].strip() for col in columns.items()}
                 device_block = columns['device_block'].split()[0]
                 lsblk_dict[device_block] = {}
                 lsblk_dict[device_block]['mount'] = columns['mount']
                 lsblk_dict[device_block]['major_minor'] = columns['major_minor']
+                if any(columns['device_block'] == om.title for om in hd_maps):
+                    continue
+                if columns['type'] in ('disk', 'lvm', 'part'):
+                    hd_maps.append(self.makeHDMap(columns))
 
         maps = []
         maps.append(RelationshipMap(
@@ -164,7 +166,13 @@ class lvm(CommandPlugin):
             compname = 'volumeGroups/' + vg_om.id
             for lv_om in lv_maps:
                 if lv_om.vgname == vg_om.title:
-                    device_block = lv_om.vgname+'-'+lv_om.title
+                    # LVM delimits VG-LV with a hyphen. To unambiguously handle
+                    # LVs and VGs with hyphens in their name, it doubles
+                    # hypens in the LV and VG names. We have to do the same.
+                    device_block = '{}-{}'.format(
+                        lv_om.vgname.replace('-', '--'),
+                        lv_om.title.replace('-', '--'))
+
                     try:
                         lv_om.mountpoint = lsblk_dict[device_block]['mount']
                         lv_om.major_minor = lsblk_dict[device_block]['major_minor']
@@ -184,6 +192,16 @@ class lvm(CommandPlugin):
                     lv_sv_oms = []
                     for sv_om in sv_maps:
                         if sv_om.origin == lv_om.title:
+                            device_block = '{}-{}'.format(
+                                sv_om.vgname.replace('-', '--'),
+                                sv_om.title.replace('-', '--'))
+                            try:
+                                sv_om.mountpoint = lsblk_dict[device_block]['mount']
+                                sv_om.major_minor = lsblk_dict[device_block]['major_minor']
+                            except KeyError:
+                                # device block not found
+                                log.debug('device block {} not found for snapshot volume {} in volume group {}'
+                                          .format(sv_om.vgname+'-'+sv_om.title, sv_om.title, sv_om.vgname))
                             lv_sv_oms.append(sv_om)
                     maps.append(RelationshipMap(
                         relname="snapshotVolumes",
@@ -194,8 +212,11 @@ class lvm(CommandPlugin):
 
     def makeHDMap(self, columns):
         hd_om = ObjectMap()
-        hd_om.title = columns['disk']
-        hd_om.id = 'disk-{}'.format(self.prepId(columns['disk']))
+        hd_om.title = columns['device_block']
+        hd_om.id = 'disk-{}'.format(self.prepId(
+            columns['device_block'].replace(' ', '_')))
+        hd_om.major_minor = columns['major_minor']
+        hd_om.mount = columns['mount']
         hd_om.size = int(columns['size'])
         hd_om.relname = 'harddisks'
         hd_om.modname = 'ZenPacks.zenoss.LinuxMonitor.HardDisk'
