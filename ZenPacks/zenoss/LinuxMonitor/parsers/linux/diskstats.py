@@ -96,14 +96,21 @@ def compileHDRegex(userDefindHDRegex):
         compiledHDRegex = re.compile(PARTITION)
     return compiledHDRegex
 
-
-class diskstats(ComponentCommandParser):
-
-    scanner = r''.join([COMPONENT, READS_COMPLETED, READS_MERGED,
+def createScanner(result):
+        if len(result.split('\n')[0].split()) > 7:
+            scanner = r''.join([COMPONENT, READS_COMPLETED, READS_MERGED,
                         SECTORS_READ, MS_READING,
                         WRITES_COMPLETED, WRITES_MERGED,
                         SECTORS_WRITTEN, MS_WRITING,
                         IO_IN_PROGESS, MS_DOING_IO, MS_DOING_IO_WEIGHTED])
+        else:
+            scanner = r''.join([COMPONENT, READS_COMPLETED, SECTORS_READ, 
+                        WRITES_COMPLETED, SECTORS_WRITTEN,])
+        return scanner
+
+
+class diskstats(ComponentCommandParser):
+
     splitter = '\n'
 
     def dataForParser(self, context, datapoint):
@@ -113,6 +120,7 @@ class diskstats(ComponentCommandParser):
         return ret
 
     def processResults(self, cmd, result):
+        self.scanner = createScanner(cmd.result.output)
         datapointMap = dict((dp.id, dp) for dp in cmd.points)
         if any((x in datapointMap for x in PARTITION_DATAPOINTS)):
             userDefindHDRegex = cmd.points[0].data.get('hdFilterRegex')
