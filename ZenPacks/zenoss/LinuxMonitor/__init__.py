@@ -17,3 +17,6 @@ if os.path.isdir(skinsDir):
 
 # CFG is necessary when using zenpacklib.TestCase.
 CFG = zenpacklib.load_yaml()
+
+# Patch last to avoid import recursion problems.
+from ZenPacks.zenoss.LinuxMonitor import patches  # NOQA
