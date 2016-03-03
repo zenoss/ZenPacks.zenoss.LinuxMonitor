@@ -88,6 +88,12 @@ class HardDisk(BaseHardDisk):
     def getRRDTemplateName(self):
         return "HardDisk"
 
+    def getIconPath(self):
+        '''
+        Return the path to an icon for this component.
+        '''
+        return '/++resource++linux/img/hard-disk.png'
+
 
 class IHardDiskInfo(IComponentInfo):
 
