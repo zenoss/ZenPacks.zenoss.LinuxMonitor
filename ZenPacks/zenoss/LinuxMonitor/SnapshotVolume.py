@@ -64,7 +64,7 @@ class SnapshotVolume(schema.SnapshotVolume):
         else:
             return []
 
-    def getFileSystem(self):
+    def filesystem(self):
         """Return filesystem mounting this logical volume."""
         try:
             # Assumes all FileSystem ids are prepId(mount). Currently they are.
@@ -72,7 +72,7 @@ class SnapshotVolume(schema.SnapshotVolume):
         except Exception:
             pass
 
-    def getBlockDevice(self):
+    def blockDevice(self):
         if not self.major_minor:
             return
 
@@ -88,19 +88,25 @@ class SnapshotVolume(schema.SnapshotVolume):
                     return obj
 
     def getDefaultGraphDefs(self, drange=None):
-        graphs = super(SnapshotVolume, self).getDefaultGraphDefs()
-        comp = self.getBlockDevice()
-        if comp:
-            for graph in comp.getDefaultGraphDefs(drange):
-                graphs.append(graph)
+        graphs = super(SnapshotVolume, self).getDefaultGraphDefs(drange)
+
+        graphs.extend(self.volumeGroup().getDefaultGraphDefs(drange))
+
+        bd = self.blockDevice()
+        if bd:
+            graphs.extend(bd.getDefaultGraphDefs(drange))
+
         return graphs
 
     def getGraphObjects(self):
         graphs = super(SnapshotVolume, self).getGraphObjects()
-        comp = self.getBlockDevice()
-        if comp:
-            for graph in comp.getGraphObjects():
-                graphs.append(graph)
+
+        graphs.extend(self.volumeGroup().getGraphObjects())
+
+        bd = self.blockDevice()
+        if bd:
+            graphs.extend(bd.getGraphObjects())
+
         return graphs
 
     def getIconPath(self):

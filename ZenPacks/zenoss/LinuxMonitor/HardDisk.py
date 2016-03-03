@@ -20,8 +20,6 @@ from Products.Zuul.infos.component import ComponentInfo
 from Products.Zuul.interfaces.component import IComponentInfo
 from Products.Zuul.utils import ZuulMessageFactory as _t
 
-from . import zenpacklib
-
 
 class HardDisk(BaseHardDisk):
 
@@ -30,6 +28,9 @@ class HardDisk(BaseHardDisk):
     Instances of this class get stored in ZODB.
 
     """
+
+    class_label = "Hard Disk"
+    class_plural_label = "Hard Disks"
 
     meta_type = 'LinuxHardDisk'
 
@@ -43,7 +44,7 @@ class HardDisk(BaseHardDisk):
         {'id': 'mount', 'label': 'Mount Point', 'type': 'string'},
         )
 
-    def getFileSystem(self):
+    def filesystem(self):
         """Return filesystem mounting this disk."""
         try:
             # Assumes all FileSystem ids are prepId(mount). Currently they are.
@@ -51,19 +52,15 @@ class HardDisk(BaseHardDisk):
         except Exception:
             pass
 
-    def getPhysicalVolume(self):
-        results = zenpacklib.catalog_search(
-            self.device(),
-            'PhysicalVolume',
-            harddisk_id=self.id)
-
+    def physicalVolume(self):
+        results = self.device().search('PhysicalVolume', harddisk_id=self.id)
         for result in results:
             try:
                 return result.getObject()
             except Exception:
                 pass
 
-    def getLogicalVolume(self):
+    def logicalVolume(self):
         """Return LogicalVolume associated with this disk.
 
         This only works when the disk is an lvm type, not a real disk.
@@ -73,10 +70,7 @@ class HardDisk(BaseHardDisk):
             return
 
         results = itertools.chain.from_iterable(
-            zenpacklib.catalog_search(
-                self.device(),
-                name,
-                major_minor=self.major_minor)
+            self.device().search(name, major_minor=self.major_minor)
             for name in ('LogicalVolume', 'SnapshotVolume'))
 
         for result in results:
@@ -84,6 +78,26 @@ class HardDisk(BaseHardDisk):
                 return result.getObject()
             except Exception:
                 pass
+
+    def impacted_object(self):
+        """Return impacted PhysicalVolume, LogicalVolume, or FileSystem.
+
+        A HardDisk can impact one of PhysicalVolume, LogicalVolume, or
+        FileSystem depending on what type of block device it is. This method
+        will return the proper object, or None.
+
+        """
+        fs = self.filesystem()
+        if fs:
+            return fs
+
+        pv = self.physicalVolume()
+        if pv:
+            return pv
+
+        lv = self.logicalVolume()
+        if lv:
+            return lv
 
     def getRRDTemplateName(self):
         return "HardDisk"
@@ -137,5 +151,15 @@ class HardDiskInfo(ComponentInfo):
 
     @property
     @info
+    def filesystem(self):
+        return self._object.filesystem()
+
+    @property
+    @info
     def physicalVolume(self):
-        return self._object.getPhysicalVolume()
+        return self._object.physicalVolume()
+
+    @property
+    @info
+    def logicalVolume(self):
+        return self._object.logicalVolume()

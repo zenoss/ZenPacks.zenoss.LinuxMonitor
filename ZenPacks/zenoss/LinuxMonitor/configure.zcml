@@ -21,12 +21,7 @@
     <configure zcml:condition="installed ZenPacks.zenoss.DynamicView">
         <include package="ZenPacks.zenoss.DynamicView" file="meta.zcml"/>
 
-        <subscriber
-            provides="ZenPacks.zenoss.DynamicView.interfaces.IRelationsProvider"
-            for="Products.ZenModel.Device.Device"
-            factory=".dynamicview.DeviceRelationsProvider"
-            />
-
+        <!-- FileSystem -->
         <dynamicViewToGroup
             view="service_view"
             group="File Systems"
@@ -50,6 +45,7 @@
             factory=".dynamicview.FileSystemRelationsProvider"
             />
         
+        <!-- HardDisk -->
         <dynamicViewToGroup
             view="service_view"
             group="Hard Disks"

@@ -16,6 +16,12 @@ from ZenPacks.zenoss.LinuxMonitor.tests import utils as tu
 # These are the DynamicView/Impact impactful relationships we'll test for.
 EXPECTED_IMPACTS = """
 // Device
+[test-linux1]->[docker]
+[test-linux1]->[memcached]
+[test-linux1]->[tcp_00022]
+[test-linux1]->[udp_00123]
+[test-linux1]->[lo]
+[test-linux1]->[eth0]
 [test-linux1]->[disk-sda]
 [test-linux1]->[disk-sda1]
 [test-linux1]->[disk-sda2]
@@ -47,8 +53,61 @@ EXPECTED_IMPACTS = """
 [lv-data_snapshot-deadbeef]->[snapshots_data_yesterday]
 """
 
+# It's OK if these are missing from DynamicView, but not from Impact.
+EXPECTED_MISSING_FROM_DV = """
+[test-linux1]->[docker]
+[test-linux1]->[memcached]
+[test-linux1]->[tcp_00022]
+[test-linux1]->[udp_00123]
+"""
+
 # This is the Linux device model that we'll be testing.
 DATAMAPS = [
+    RelationshipMap(
+        modname="Products.ZenModel.CPU",
+        compname="hw",
+        relname="cpus",
+        objmaps=[
+            ObjectMap({"id": "0"}),
+            ObjectMap({"id": "1"}),
+            ]),
+
+    RelationshipMap(
+        modname="Products.ZenModel.OSProcess",
+        compname="os",
+        relname="processes",
+        objmaps=[
+            ObjectMap({"id": "docker"}),
+            ObjectMap({"id": "memcached"}),
+            ]),
+
+    RelationshipMap(
+        modname="Products.ZenModel.IpService",
+        compname="os",
+        relname="ipservices",
+        objmaps=[
+            ObjectMap({"id": "udp_00123"}),
+            ObjectMap({"id": "tcp_00022"}),
+            ]),
+
+    RelationshipMap(
+        modname="Products.ZenModel.IpRouteEntry",
+        compname="os",
+        relname="routes",
+        objmaps=[
+            ObjectMap({"id": "0.0.0.0_0"}),
+            ObjectMap({"id": "192.168.1.0_24"}),
+            ]),
+
+    RelationshipMap(
+        modname="Products.ZenModel.IpInterface",
+        compname="os",
+        relname="interfaces",
+        objmaps=[
+            ObjectMap({"id": "lo"}),
+            ObjectMap({"id": "eth0"}),
+            ]),
+
     RelationshipMap(
         modname="ZenPacks.zenoss.LinuxMonitor.FileSystem",
         compname="os",
@@ -189,7 +248,11 @@ class TestDVI(zenpacklib.TestCase):
         self.dmd.Devices.createOrganizer("/OpenStack/Infrastructure")
 
         # Create a fully-modeled device.
-        self.device = tu.create_device(self.dmd, "", "test-linux1", DATAMAPS)
+        self.device = tu.create_device(
+            self.dmd,
+            "ZenPacks.zenoss.LinuxMonitor.LinuxDevice",
+            "test-linux1",
+            DATAMAPS)
 
     def test_DynamicView_Impacts(self):
         try:
@@ -199,11 +262,15 @@ class TestDVI(zenpacklib.TestCase):
 
         expected = tu.triples_from_yuml(EXPECTED_IMPACTS)
         all_expected = tu.complement_triples(expected)
+
+        expected_missing = tu.triples_from_yuml(EXPECTED_MISSING_FROM_DV)
+        all_expected_missing = tu.complement_triples(expected_missing)
+
         found = tu.dynamicview_triples_from_device(
             self.device, tags=(TAG_IMPACTS, TAG_IMPACTED_BY))
 
-        missing = all_expected - found
-        extra = found - all_expected
+        missing = all_expected - (found | all_expected_missing)
+        extra = (found | all_expected_missing) - all_expected
 
         self.assertFalse(
             missing or extra,

@@ -4,6 +4,17 @@ classes:
     DEFAULTS:
         base: [zenpacklib.Component]
 
+    LinuxDevice:
+        base: [zenpacklib.Device]
+        label: Device
+        dynamicview_views: [service_view]
+        dynamicview_relations:
+            impacts:
+                - all_harddisks
+                - all_processes
+                - all_ipservices
+                - impacted_filesystems
+
     LinuxService:
         label: OS Service
         properties:
@@ -33,7 +44,7 @@ classes:
             impacts:
                 - volumeGroup
             impacted_by:
-                - getBlockDevice
+                - blockDevice
         properties:
             pvsize:
                 label: Size
@@ -65,7 +76,7 @@ classes:
                 grid_display: False
                 details_display: False
                 index_type: field
-            getBlockDevice:
+            blockDevice:
                 label: Block Device
                 api_only: true
                 api_backendtype: method
@@ -116,11 +127,11 @@ classes:
         dynamicview_relations:
             impacts:
                 - snapshotVolumes
-                - getFileSystem
+                - filesystem
                 - openstack_core_components
             impacted_by:
                 - volumeGroup
-                - getBlockDevice
+                - blockDevice
         properties:
             attributes:
                 label: Attributes
@@ -146,12 +157,12 @@ classes:
                 grid_display: false
                 api_only: true
                 api_backendtype: method
-            getFileSystem:
+            filesystem:
                 label: File System
                 api_only: true
                 api_backendtype: method
                 type: entity
-            getBlockDevice:
+            blockDevice:
                 label: Block Device
                 api_only: true
                 api_backendtype: method
@@ -172,10 +183,10 @@ classes:
         dynamicview_relations:
             impacted_by:
                 - logicalVolume
-                - getBlockDevice
+                - blockDevice
             impacts:
                 - openstack_core_components
-                - getFileSystem
+                - filesystem
         properties:
             origin:
                 grid_display: False
@@ -203,12 +214,12 @@ classes:
                 grid_display: False
                 api_only: true
                 api_backendtype: method
-            getFileSystem:
+            filesystem:
                 label: File System
                 api_only: true
                 api_backendtype: method
                 type: entity
-            getBlockDevice:
+            blockDevice:
                 label: Block Device
                 api_only: true
                 api_backendtype: method
@@ -224,15 +235,19 @@ classes:
 
 
 class_relationships:
-    - Products.ZenModel.Device.Device 1:MC VolumeGroup
-    - Products.ZenModel.Device.Device 1:MC PhysicalVolume
+    - LinuxDevice 1:MC VolumeGroup
+    - LinuxDevice 1:MC PhysicalVolume
     - VolumeGroup 1:M PhysicalVolume
     - VolumeGroup 1:MC LogicalVolume
     - LogicalVolume 1:MC SnapshotVolume
 
-device_classes: !ZenPackSpec
+
+device_classes:
     /Server/SSH/Linux:
+        remove: true
+
         zProperties:
+            zPythonClass: ZenPacks.zenoss.LinuxMonitor.LinuxDevice
             zCollectorPlugins:
                 - zenoss.cmd.uname
                 - zenoss.cmd.linux.df
