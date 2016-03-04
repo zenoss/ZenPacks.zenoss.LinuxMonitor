@@ -7,6 +7,7 @@ classes:
     LinuxDevice:
         base: [zenpacklib.Device]
         label: Device
+        icon: LinuxDevice.png
         dynamicview_views: [service_view]
         dynamicview_relations:
             impacts:
