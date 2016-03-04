@@ -1,0 +1,6 @@
+/bin/df -PTk
+/dev/mapper/centos-root xfs         49746196 4035828  45710368       9% /
+devtmpfs                devtmpfs     1931008       0   1931008       0% /dev
+tmpfs                   tmpfs        1941228       4   1941224       1% /dev/shm
+tmpfs                   tmpfs        1941228  186816   1754412      10% /run
+tmpfs                   tmpfs        1941228       0   1941228       0% /sys/fs/cgroup
