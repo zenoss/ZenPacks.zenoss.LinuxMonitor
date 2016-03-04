@@ -53,9 +53,3 @@ class PhysicalVolume(schema.PhysicalVolume):
             graphs.extend(bd.getGraphObjects())
 
         return graphs
-
-    def getIconPath(self):
-        '''
-        Return the path to an icon for this component.
-        '''
-        return '/++resource++linux/img/physical-volume.png'
