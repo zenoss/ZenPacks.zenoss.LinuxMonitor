@@ -70,3 +70,9 @@ class LinuxDevice(schema.LinuxDevice):
             return 1
         except StopIteration:
             return 0
+
+    def getIconPath(self):
+        '''
+        Return the path to an icon for this component.
+        '''
+        return '/++resource++linux/img/host.png'
