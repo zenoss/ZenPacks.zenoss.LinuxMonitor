@@ -37,12 +37,6 @@ class VolumeGroup(schema.VolumeGroup):
 
         return '{}'.format(count)
 
-    def getIconPath(self):
-        '''
-        Return the path to an icon for this component.
-        '''
-        return '/++resource++linux/img/volume-group.png'
-
     def getDefaultGraphDefs(self, drange=None):
         graphs = super(VolumeGroup, self).getDefaultGraphDefs(drange)
 

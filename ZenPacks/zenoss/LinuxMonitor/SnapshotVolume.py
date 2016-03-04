@@ -108,9 +108,3 @@ class SnapshotVolume(schema.SnapshotVolume):
             graphs.extend(bd.getGraphObjects())
 
         return graphs
-
-    def getIconPath(self):
-        '''
-        Return the path to an icon for this component.
-        '''
-        return '/++resource++linux/img/snapshot-volume.png'
