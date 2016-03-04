@@ -22,6 +22,8 @@ from ZenPacks.zenoss.LinuxMonitor.modeler.plugins.zenoss.\
     cmd.linux.rpm import rpm
 from ZenPacks.zenoss.LinuxMonitor.modeler.plugins.zenoss.\
     cmd.linux.sudo_dmidecode import sudo_dmidecode
+from ZenPacks.zenoss.LinuxMonitor.modeler.plugins.zenoss.\
+    cmd.linux.df import df
 
 
 class testPlugins(BasePluginsTestCase):
@@ -31,7 +33,7 @@ class testPlugins(BasePluginsTestCase):
         Test all of the plugins that have test data files in the data
         directory.
         """
-        Plugins = [cpuinfo, alt_kernel_name, sudo_dmidecode, lvm]
+        Plugins = [cpuinfo, alt_kernel_name, sudo_dmidecode, lvm, df]
         datadir = "%s/plugindata/" % os.path.dirname(__file__)
         self._testDataFiles(datadir, Plugins)
 
