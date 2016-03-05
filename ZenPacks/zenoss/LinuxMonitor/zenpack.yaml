@@ -324,6 +324,7 @@ device_classes:
                                 rrdmin: 0
                                 aliases:
                                     sys_load_5min: ""
+                                    loadAverage5min: ""
 
                             laLoadInt1:
                                 rrdmin: 0
@@ -342,12 +343,14 @@ device_classes:
                                 aliases:
                                     mem_buffers__bytes: ""
                                     mem_buffers__pct: "${here/hw/totalMemory},/,*,100"
+                                    memoryBuffered__bytes: ""
 
                             Cached:
                                 rrdmin: 0
                                 aliases:
                                     mem_cached__bytes: ""
                                     mem_cached__pct: "${here/hw/totalMemory},/,*,100"
+                                    memoryCached__bytes: ""
 
                             MemFree:
                                 rrdmin: 0
@@ -356,6 +359,8 @@ device_classes:
                                     mem_free__pct: "${here/hw/totalMemory},/,*,100"
                                     mem_used__bytes: "${here/hw/totalMemory},EXC,-,0,MAX"
                                     mem_used__pct: "${here/hw/totalMemory},/,1,-,100,*,ABS"
+                                    memoryAvailable__bytes: ""
+                                    memoryUsed__pct: "${here/hw/totalMemory},/,1,-,100,*,ABS"
 
                             MemTotal:
                                 rrdmin: 0
@@ -516,12 +521,14 @@ device_classes:
                                 rrdmin: 0
                                 aliases:
                                     if_received__bytessec: ""
+                                    inputOctets__bytes: ""
 
                             ifOutOctets:
                                 rrdtype: DERIVE
                                 rrdmin: 0
                                 aliases:
                                     if_sent__bytessec: ""
+                                    outputOctets__bytes: ""
 
                             ifInPackets:
                                 rrdtype: DERIVE
@@ -664,13 +671,9 @@ device_classes:
                             usedBlocks:
                                 rrdmin: 0
                                 aliases:
+                                    fs_used__pct: "${here/getTotalBlocks},/,100,*"
                                     fs_used__bytes: "${here/blockSize},*"
-
-                            availBlocks:
-                                rrdmin: 0
-                                aliases:
-                                    fs_avail__bytes: ""
-                                    fs_used__pct: "${here/getTotalBlocks},/,1,-,-100,*"
+                                    usedFilesystemSpace__bytes: "${here/blockSize},*"
 
                     idisk:
                         type: COMMAND
@@ -703,10 +706,10 @@ device_classes:
                 thresholds:
                     "90 percent used":
                         type: MinMaxThreshold
-                        minval: "here.getTotalBlocks() * 0.10"
+                        maxval: "here.getTotalBlocks() * 0.90"
                         eventClass: /Perf/FileSystem
                         dsnames:
-                            - disk_availBlocks
+                            - disk_usedBlocks
 
                 graphs:
                     Utilization:
@@ -716,8 +719,8 @@ device_classes:
 
                         graphpoints:
                             Used:
-                                dpName: disk_availBlocks
-                                rpn: "${here/getTotalBlocks},/,1,-,-100,*"
+                                dpName: disk_usedBlocks
+                                rpn: "${here/getTotalBlocks},/,100,*"
                                 format: "%7.2lf%%"
 
                     Usage:
