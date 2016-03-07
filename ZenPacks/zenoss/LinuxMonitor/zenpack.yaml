@@ -470,20 +470,20 @@ device_classes:
                             Used:
                                 dpName: mem_MemFree
                                 rpn: "${here/hw/totalMemory},EXC,-,0,MAX"
-                                format: "%7.2lf%%"
+                                format: "%7.2lf%s"
 
                             Cached:
                                 dpName: mem_Cached
-                                format: "%7.2lf%%"
+                                format: "%7.2lf%s"
 
                             Buffers:
                                 dpName: mem_Buffers
-                                format: "%7.2lf%%"
+                                format: "%7.2lf%s"
 
                             Swap:
                                 dpName: mem_SwapFree
                                 rpn: "${here/os/totalSwap},EXC,-,0,MAX"
-                                format: "%7.2lf%%"
+                                format: "%7.2lf%s"
 
                     IO Throughput:
                         units: sectors/sec
@@ -729,6 +729,7 @@ device_classes:
                             Used:
                                 dpName: disk_usedBlocks
                                 rpn: "${here/blockSize},*"
+                                format: "%7.2lf%s"
 
                     Inode Utilization:
                         units: percent
