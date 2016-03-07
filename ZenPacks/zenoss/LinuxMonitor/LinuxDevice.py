@@ -8,6 +8,10 @@
 ##############################################################################
 
 from Products.Zuul import getFacade
+from zenoss.protocols.protobufs.zep_pb2 import (
+    SEVERITY_CRITICAL, SEVERITY_ERROR,
+    STATUS_NEW, STATUS_ACKNOWLEDGED, STATUS_SUPPRESSED,
+    )
 
 from . import schema
 
@@ -51,22 +55,28 @@ class LinuxDevice(schema.LinuxDevice):
                 if fs.impacting_object() == self:
                     yield fs
 
-    def getPingStatus(self):
-        """Returns 0 if up, 1 if down.
+    def status(self):
+        """Returns True if up, False if down.
 
-        Overridden to use both /Status/Ping and /Cmd/Fail event classes as a
-        basis for determining if the device is up or down.
+        The value returned by this method is used to determine the
+        "device status" shown in the top summary bar on the device screen.
+
+        What up and down means can be subjective. What we've decided for a
+        device monitored by default using SSH with periodic ping checks is that
+        it a device that is up has no critical events in the /Cmd/Fail or
+        /Status/Ping event classes.
 
         """
-        zep = getFacade('zep')
+        if not self.monitorDevice():
+            return None
+
+        zep = getFacade("zep")
         fltr = zep.createEventFilter(
             element_identifier=self.id,
-            event_class=('/Cmd/Fail', '/Status/Ping'),
-            severity=(4, 5), status=(0, 1, 2))
+            element_sub_identifier=("zencommand", ""),
+            event_class=("/Cmd/Fail", "/Status/Ping"),
+            severity=(SEVERITY_CRITICAL, SEVERITY_ERROR),
+            status=(STATUS_NEW, STATUS_ACKNOWLEDGED, STATUS_SUPPRESSED))
 
-        events = zep.getEventSummaries(0, filter=fltr)
-        try:
-            events['events'].next()
-            return 1
-        except StopIteration:
-            return 0
+        events = zep.getEventSummaries(0, limit=1, filter=fltr)
+        return events.get('total', 0) == 0

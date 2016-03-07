@@ -7,6 +7,14 @@ classes:
     LinuxDevice:
         base: [zenpacklib.Device]
         label: Device
+
+        properties:
+            status:
+                label: Status
+                type: boolean
+                api_only: true
+                api_backendtype: method
+
         dynamicview_views: [service_view]
         dynamicview_relations:
             impacts:
@@ -17,34 +25,33 @@ classes:
 
     LinuxService:
         label: OS Service
+
         properties:
             loaded_status:
                 label: Loaded Status
                 order: 1.1
+
             active_status:
                 label: Active Status
                 order: 1.2
+
             main_pid:
                 label: Main PID
                 type: int
                 order: 1.3
+
             processes:
                 label: Processes
                 type: lines
                 order: 1.4
+
             description:
                 label: Description
                 order: 1.5
 
-
     PhysicalVolume:
         label: Physical Volume
-        dynamicview_views: [service_view]
-        dynamicview_relations:
-            impacts:
-                - volumeGroup
-            impacted_by:
-                - blockDevice
+
         properties:
             pvsize:
                 label: Size
@@ -52,45 +59,53 @@ classes:
                 renderer: Zenoss.render.bytesString
                 datapoint: volume_size
                 order: 4.1
+
             free:
                 label: Free
                 type: int
                 renderer: Zenoss.render.bytesString
                 datapoint: volume_free
                 order: 4.2
+
             utilization:
                 label: '% Util'
                 order: 4.3
                 api_only: true
                 api_backendtype: method
+
             format:
                 label: Format
                 order: 4.0
+
             attributes:
                 label: Attributes
                 grid_display: False
                 type: lines
+
             uuid:
                 grid_display: False
+
             harddisk_id:
                 grid_display: False
                 details_display: False
                 index_type: field
+
             blockDevice:
                 label: Block Device
                 api_only: true
                 api_backendtype: method
                 type: entity
 
-
-    VolumeGroup:
-        label: Volume Group
         dynamicview_views: [service_view]
         dynamicview_relations:
             impacts:
-                - logicalVolumes
+                - volumeGroup
             impacted_by:
-                - physicalVolumes
+                - blockDevice
+
+    VolumeGroup:
+        label: Volume Group
+
         properties:
             vgsize:
                 label: Size
@@ -98,31 +113,97 @@ classes:
                 datapoint: group_size
                 renderer: Zenoss.render.bytesString
                 order: 4.1
+
             freesize:
                 label: Free
                 type: int
                 datapoint: group_free
                 renderer: Zenoss.render.bytesString
                 order: 4.2
+
             utilization:
                 label: '% Util'
                 order: 4.3
                 api_only: true
                 api_backendtype: method
+
             snapshot_volumes:
                 label: Snapshot Volumes
                 api_backendtype: method
                 api_only: true
+
             attributes:
                 label: Attributes
                 grid_display: False
                 type: lines
+
             uuid:
                 grid_display: False
+
+        dynamicview_views: [service_view]
+        dynamicview_relations:
+            impacts:
+                - logicalVolumes
+            impacted_by:
+                - physicalVolumes
 
     LogicalVolume:
         label: Logical Volume
         monitoring_templates: ['LogicalVolume']
+
+        properties:
+            attributes:
+                label: Attributes
+                grid_display: False
+                type: lines
+
+            lvsize:
+                label: Size
+                type: int
+                renderer: Zenoss.render.bytesString
+
+            active:
+                label: Active
+                datapoint: status_state
+                renderer: Zenoss.render.checkbox
+
+            vgname:
+                grid_display: False
+                details_display: False
+
+            uuid:
+                grid_display: False
+                details_display: False
+
+            openstack_core_components:
+                type: entity
+                label: Cinder Integration
+                grid_display: false
+                api_only: true
+                api_backendtype: method
+
+            filesystem:
+                label: File System
+                api_only: true
+                api_backendtype: method
+                type: entity
+
+            blockDevice:
+                label: Block Device
+                api_only: true
+                api_backendtype: method
+                type: entity
+
+            mountpoint:
+                grid_display: False
+                details_display: False
+                index_type: field
+
+            major_minor:
+                label: "Major:Minor"
+                grid_display: False
+                index_type: field
+
         dynamicview_views: [service_view]
         dynamicview_relations:
             impacts:
@@ -132,53 +213,66 @@ classes:
             impacted_by:
                 - volumeGroup
                 - blockDevice
+
+    SnapshotVolume:
+        label: Snapshot Volume
+
         properties:
+            origin:
+                grid_display: False
+
             attributes:
                 label: Attributes
                 grid_display: False
                 type: lines
+
             lvsize:
                 label: Size
                 type: int
                 renderer: Zenoss.render.bytesString
+
             active:
                 label: Active
                 datapoint: status_state
                 renderer: Zenoss.render.checkbox
+
             vgname:
                 grid_display: False
                 details_display: False
+
             uuid:
                 grid_display: False
                 details_display: False
+
             openstack_core_components:
                 type: entity
                 label: Cinder Integration
-                grid_display: false
+                grid_display: False
                 api_only: true
                 api_backendtype: method
+
             filesystem:
                 label: File System
                 api_only: true
                 api_backendtype: method
                 type: entity
+
             blockDevice:
                 label: Block Device
                 api_only: true
                 api_backendtype: method
                 type: entity
+
             mountpoint:
                 grid_display: False
                 details_display: False
                 index_type: field
+
             major_minor:
                 label: "Major:Minor"
                 grid_display: False
                 index_type: field
 
-
-    SnapshotVolume:
-        label: Snapshot Volume
         dynamicview_views: [service_view]
         dynamicview_relations:
             impacted_by:
@@ -187,51 +281,6 @@ classes:
             impacts:
                 - openstack_core_components
                 - filesystem
-        properties:
-            origin:
-                grid_display: False
-            attributes:
-                label: Attributes
-                grid_display: False
-                type: lines
-            lvsize:
-                label: Size
-                type: int
-                renderer: Zenoss.render.bytesString
-            active:
-                label: Active
-                datapoint: status_state
-                renderer: Zenoss.render.checkbox
-            vgname:
-                grid_display: False
-                details_display: False
-            uuid:
-                grid_display: False
-                details_display: False
-            openstack_core_components:
-                type: entity
-                label: Cinder Integration
-                grid_display: False
-                api_only: true
-                api_backendtype: method
-            filesystem:
-                label: File System
-                api_only: true
-                api_backendtype: method
-                type: entity
-            blockDevice:
-                label: Block Device
-                api_only: true
-                api_backendtype: method
-                type: entity
-            mountpoint:
-                grid_display: False
-                details_display: False
-                index_type: field
-            major_minor:
-                label: "Major:Minor"
-                grid_display: False
-                index_type: field
 
 
 class_relationships:
@@ -248,6 +297,7 @@ device_classes:
 
         zProperties:
             zPythonClass: ZenPacks.zenoss.LinuxMonitor.LinuxDevice
+            zSshConcurrentSessions: 5
             zCollectorPlugins:
                 - zenoss.cmd.uname
                 - zenoss.cmd.linux.df
@@ -263,19 +313,30 @@ device_classes:
                 - zenoss.cmd.linux.sudo_dmidecode
                 - zenoss.cmd.linux.os_release
                 - zenoss.cmd.linux.os_service
-            zSshConcurrentSessions: 5
 
         templates:
             Device:
-                description: Template for gathering performance data via SSH commands.
+                description: "Linux device monitoring via SSH."
                 targetPythonClass: Products.ZenModel.Device
 
                 datasources:
+                    ssh:
+                        type: COMMAND
+                        usessh: true
+                        # Update HANDLERS in Standard parser if changing.
+                        commandTemplate: "/usr/bin/env echo TEST"
+                        parser: ZenPacks.zenoss.LinuxMonitor.parsers.Standard
+                        cycletime: 60
+                        eventClass: /Ignore
+                        severity: Clear
+
                     cpu:
                         type: COMMAND
                         usessh: true
                         commandTemplate: "/usr/bin/env cat /proc/stat"
                         parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.cpu
+                        eventClass: /Ignore
+                        severity: Clear
 
                         datapoints:
                             ssCpuIdlePerCpu:
@@ -308,6 +369,8 @@ device_classes:
                         usessh: true
                         commandTemplate: "/usr/bin/env uptime"
                         parser: uptime
+                        eventClass: /Ignore
+                        severity: Clear
 
                         datapoints:
                             sysUpTime:
@@ -336,6 +399,8 @@ device_classes:
                         usessh: true
                         commandTemplate: "/usr/bin/env cat /proc/meminfo"
                         parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.mem
+                        eventClass: /Ignore
+                        severity: Clear
 
                         datapoints:
                             Buffers:
@@ -385,6 +450,8 @@ device_classes:
                         usessh: true
                         commandTemplate: "/usr/bin/env cat /proc/diskstats"
                         parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.diskstats
+                        eventClass: /Ignore
+                        severity: Clear
 
                         datapoints:
                             ssIORawReceived:
@@ -514,6 +581,8 @@ device_classes:
                         commandTemplate: "/bin/bash -c '[[ -x $$(which ifconfig) ]] && ifconfig -a || ip -s -o link'"
                         parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.ifconfig
                         component: "${here/id}"
+                        eventClass: /Ignore
+                        severity: Clear
 
                         datapoints:
                             ifInOctets:
@@ -656,16 +725,18 @@ device_classes:
                                 format: "%7.2lf%s"
 
             FileSystem:
-                description: "File system monitoring for Linux via SSH."
+                description: "Linux file system monitoring via SSH."
                 targetPythonClass: Products.ZenModel.FileSystem
 
                 datasources:
                     disk:
                         type: COMMAND
                         usessh: true
-                        commandTemplate: "/bin/df -kP"
+                        commandTemplate: "/usr/bin/env df -kP"
                         parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.df
                         component: "${here/id}"
+                        eventClass: /Ignore
+                        severity: Clear
 
                         datapoints:
                             usedBlocks:
@@ -678,9 +749,11 @@ device_classes:
                     idisk:
                         type: COMMAND
                         usessh: true
-                        commandTemplate: "/bin/df -ikP"
+                        commandTemplate: "/usr/bin/env df -ikP"
                         parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.dfi
                         component: "${here/id}"
+                        eventClass: /Ignore
+                        severity: Clear
 
                         datapoints:
                             percentInodesUsed:
@@ -758,7 +831,7 @@ device_classes:
                                 format: "%7.2lf%s"
 
             OSProcess:
-                description: "Process monitoring for Linux via SSH."
+                description: "Linux process monitoring via SSH."
                 targetPythonClass: Products.ZenModel.OSProcess
 
                 datasources:
@@ -768,6 +841,8 @@ device_classes:
                         commandTemplate: "/bin/ps -eo pid,rss,cputime,args"
                         parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.ps
                         component: "${here/id}"
+                        eventClass: /Ignore
+                        severity: Clear
 
                         datapoints:
                             count:
@@ -827,105 +902,142 @@ device_classes:
                                 format: "%7.2lf%s"
 
             PhysicalVolume:
-                description: Physical Volume Monitoring
-                targetPythonClass: ZenPacks.zenoss.LinuxMonitor.PhysicalVolume.PhysicalVolume
+                description: "Linux LVM physical volume monitoring via SSH."
+                targetPythonClass: ZenPacks.zenoss.LinuxMonitor.PhysicalVolume
+
                 datasources:
                     volume:
                         type: COMMAND
-                        commandTemplate: '/usr/bin/env sudo pvs --noheadings --units b --nosuffix -o pv_name,pv_size,pv_free'
                         usessh: true
+                        commandTemplate: '/usr/bin/env sudo pvs --noheadings --units b --nosuffix -o pv_name,pv_size,pv_free'
                         parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.pvvgstats
+                        component: "${here/id}"
+                        eventClass: /Ignore
+                        severity: Clear
+
                         datapoints:
                             size:
                                 rrdmin: 0
+
                             free:
                                 rrdmin: 0
+
                     status:
                         type: COMMAND
-                        commandTemplate: "/usr/bin/sudo /usr/sbin/pvs --noheadings -o pv_name,pv_attr | awk '{split($$2, chars, \"\"); printf(\"%s \", $$1); for (i=1;i<=3;i++) printf(\"%d \", chars[i]==\"-\" ? 0 : 1); printf(\"\\n\")}'"
                         usessh: true
+                        commandTemplate: "/usr/bin/env sudo pvs --noheadings -o pv_name,pv_attr | awk '{split($$2, chars, \"\"); printf(\"%s \", $$1); for (i=1;i<=3;i++) printf(\"%d \", chars[i]==\"-\" ? 0 : 1); printf(\"\\n\")}'"
                         parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.pvsstatus
+                        component: "${here/id}"
+                        eventClass: /Ignore
+                        severity: Clear
+
                         datapoints:
                             allocatable:
                                 rrdmin: 0
+
                             exported:
                                 rrdmin: 0
+
                             missing:
                                 rrdmin: 0
+
                 graphs:
                     Utilization:
                         units: percent
                         miny: 0
                         maxy: 100
+
                         graphpoints:
                             size:
                                 dpName: volume_size
                                 lineType: DONTDRAW
                                 legend: Total
+
                             free:
                                 dpName: volume_free
                                 lineType: AREA
                                 rpn: "size,-,size,/,-100,*"
                                 legend: Used
                                 format: "%7.2lf%%"
+
                 thresholds:
                     unallocatable:
                         dsnames: [status_allocatable]
                         minval: 1
                         eventClass: /Status
+
                     exported:
                         dsnames: [status_exported]
                         maxval: 0
                         severity: 2
                         eventClass: /Status
+
                     missing:
                         dsnames: [status_missing]
                         maxval: 0
                         eventClass: /Status
+
             VolumeGroup:
-                description: Volume Group Monitoring
-                targetPythonClass: ZenPacks.zenoss.LinuxMonitor.VolumeGroup.VolumeGroup
+                description: "Linux LVM volume group monitoring via SSH."
+                targetPythonClass: ZenPacks.zenoss.LinuxMonitor.VolumeGroup
+
                 datasources:
                     group:
                         type: COMMAND
-                        commandTemplate: '/usr/bin/env sudo vgs --noheadings --units b --nosuffix -o vg_name,vg_size,vg_free'
                         usessh: true
+                        commandTemplate: "/usr/bin/env sudo vgs --noheadings --units b --nosuffix -o vg_name,vg_size,vg_free"
                         parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.pvvgstats
+                        component: "${here/id}"
+                        eventClass: /Ignore
+                        severity: Clear
+
                         datapoints:
                             size:
                                 rrdmin: 0
+
                             free:
                                 rrdmin: 0
+
                     status:
                         type: COMMAND
-                        commandTemplate: "/usr/bin/sudo /usr/sbin/vgs --noheadings -o vg_name,vg_attr | awk '{split($$2, chars, \"\"); printf(\"%s \", $$1); for (i=1;i<=3;i++) printf(\"%d \", chars[i]==\"-\" ? 0 : 1); printf(\"\\n\")}'"
                         usessh: true
+                        commandTemplate: "/usr/bin/env sudo vgs --noheadings -o vg_name,vg_attr | awk '{split($$2, chars, \"\"); printf(\"%s \", $$1); for (i=1;i<=3;i++) printf(\"%d \", chars[i]==\"-\" ? 0 : 1); printf(\"\\n\")}'"
                         parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.vgsstatus
+                        component: "${here/id}"
+                        eventClass: /Ignore
+                        severity: Clear
+
                         datapoints:
                             partial:
                                 rrdmin: 0
+
                 thresholds:
                     partial:
                         dsnames: [status_partial]
                         minval: 1
                         eventClass: /Status
+
                 graphs:
                     Volume Group Utilization:
                         units: percent
                         miny: 0
                         maxy: 100
+
                         graphpoints:
                             size:
                                 dpName: group_size
                                 lineType: DONTDRAW
+
                             free:
                                 dpName: group_free
                                 lineType: AREA
                                 rpn: "size,-,size,/,-100,*"
                                 format: "%7.2lf%%"
+
             LogicalVolume:
-                description: Logical Volume Monitoring
-                targetPythonClass: ZenPacks.zenoss.LinuxMonitor.LogicalVolume.LogicalVolume
+                description: "Linux LVM logical volume monitoring via SSH."
+                targetPythonClass: ZenPacks.zenoss.LinuxMonitor.LogicalVolume
+
                 datasources:
                     status:
                         type: COMMAND
@@ -934,14 +1046,21 @@ device_classes:
                         parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.lvsstatus
                         component: "${here/id}"
                         eventClass: /Status
+                        component: "${here/id}"
+                        eventClass: /Ignore
+                        severity: Clear
+
                         datapoints:
                             state:
                                 rrdmin: 0
+
                             health:
                                 rrdmin: 0
+
             SnapshotVolume:
-                description: Snapshot Volume Monitoring
-                targetPythonClass: ZenPacks.zenoss.LinuxMonitor.SnapshotVolume.SnapshotVolume
+                description: "Linux LVM snapshot volume monitoring via SSH."
+                targetPythonClass: ZenPacks.zenoss.LinuxMonitor.SnapshotVolume
+
                 datasources:
                     status:
                         type: COMMAND
@@ -950,129 +1069,163 @@ device_classes:
                         parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.lvsstatus
                         component: "${here/id}"
                         eventClass: /Status
+                        component: "${here/id}"
+                        eventClass: /Ignore
+                        severity: Clear
+
                         datapoints:
                             state:
                                 rrdmin: 0
+
                             health:
                                 rrdmin: 0
+
             HardDisk:
-                description: Hard Disk Monitoring
-                targetPythonClass: ZenPacks.zenoss.LinuxMonitor.HardDisk.HardDisk
+                description: "Linux hard disk (block device) monitoring via SSH."
+                targetPythonClass: ZenPacks.zenoss.LinuxMonitor.HardDisk
+
                 datasources:
                     diskstats:
                         type: COMMAND
-                        commandTemplate: '/bin/cat /proc/diskstats'
                         usessh: true
+                        commandTemplate: "/usr/bin/env cat /proc/diskstats"
                         parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.diskstats
+                        component: "${here/id}"
+                        eventClass: /Ignore
+                        severity: Clear
+
                         datapoints:
                             readsCompleted:
+                                description: "The number of read requests that were issued to the device per second."
                                 rrdtype: DERIVE
                                 rrdmin: 0
-                                description: The number of read requests that were issued to the device per second.
+
                             readsMerged:
+                                description: "The number of read requests merged per second that were queued to the device."
                                 rrdtype: DERIVE
                                 rrdmin: 0
-                                description: The number of read requests merged per second that were queued to the device.
+
                             sectorsRead:
+                                description: "The number of sectors read from the device per second."
                                 rrdtype: DERIVE
                                 rrdmin: 0
-                                description: The number of sectors read from the device per second.
+
                             msReading:
+                                description: "Milliseconds spent by all reads in concrete moment of time."
                                 rrdtype: DERIVE
                                 rrdmin: 0
-                                description: Milliseconds spent by all reads in concrete moment of time.
+
                             writesCompleted:
+                                description: "The number of write requests that were issued to the device per second."
                                 rrdtype: DERIVE
                                 rrdmin: 0
-                                description: The number of write requests that were issued to the device per second.
+
                             writesMerged:
+                                description: "The number of write requests merged per second that were queued to the device."
                                 rrdtype: DERIVE
                                 rrdmin: 0
-                                description: The number of write requests merged per second that were queued to the device.
+
                             sectorsWritten:
+                                description: "The number of sectors written to the device per second."
                                 rrdtype: DERIVE
                                 rrdmin: 0
-                                description: The number of sectors written to the device per second.
+
                             msWriting:
+                                description: "Milliseconds spent by all writes in concrete moment of time."
                                 rrdtype: DERIVE
                                 rrdmin: 0
-                                description: Milliseconds spent by all writes in concrete moment of time.
+
                             ioInProgress:
+                                description: "I/Os currently in progress."
                                 rrdtype: GAUGE
                                 rrdmin: 0
-                                description: I/Os currently in progress.
+
                             msDoingIO:
+                                description: "Milliseconds spent doing I/Os in concrete moment of time."
                                 rrdtype: DERIVE
                                 rrdmin: 0
-                                description: Milliseconds spent doing I/Os in concrete moment of time.
+
                             msDoingIOWeighted:
+                                description: "This field is incremented at each I/O start, I/O completion, I/O merge, or read of these stats by the number of I/Os in progress times the number of milliseconds spent doing I/O since the last update of this field."
                                 rrdtype: DERIVE
                                 rrdmin: 0
-                                description: This field is incremented at each I/O start, I/O completion, I/O merge, or read of these stats by the number of I/Os in progress times the number of milliseconds spent doing I/O since the last update of this field.
+
                 graphs:
                     Operation Throughput:
                         units: operations/sec
                         miny: 0
+
                         graphpoints:
                             Reads:
                                 dpName: diskstats_readsCompleted
-                                lineType: LINE
+                                format: "%7.2lf%s"
+
                             Writes:
                                 dpName: diskstats_writesCompleted
-                                lineType: LINE
+                                format: "%7.2lf%s"
+
                     Merge Rate:
                         units: operations merged/sec
                         miny: 0
+
                         graphpoints:
                             Reads:
                                 dpName: diskstats_readsMerged
-                                lineType: LINE
+                                format: "%7.2lf%s"
+
                             Writes:
                                 dpName: diskstats_writesMerged
-                                lineType: LINE
+                                format: "%7.2lf%s"
+
                     Sector Throughput:
                         units: sectors/sec
                         miny: 0
+
                         graphpoints:
                             Read:
                                 dpName: diskstats_sectorsRead
-                                lineType: LINE
+                                format: "%7.2lf%s"
+
                             Written:
                                 dpName: diskstats_sectorsWritten
-                                lineType: LINE
+                                format: "%7.2lf%s"
+
                     IO Operations in Progress:
                         units: operations
                         miny: 0
+
                         graphpoints:
                             IO:
                                 dpName: diskstats_ioInProgress
-                                lineType: LINE
+                                format: "%7.2lf%s"
+
                     IO Utilization:
                         units: percent
                         miny: 0
                         maxy: 100
+
                         graphpoints:
                             Reading:
                                 dpName: diskstats_msReading
-                                lineType: LINE
                                 rpn: "10,/"
                                 format: "%7.2lf%%"
+
                             Writing:
                                 dpName: diskstats_msWriting
-                                lineType: LINE
                                 rpn: "10,/"
                                 format: "%7.2lf%%"
+
                             Doing IO:
                                 dpName: diskstats_msDoingIO
-                                lineType: LINE
                                 rpn: "10,/"
                                 format: "%7.2lf%%"
+
                     Weighted IO Utilization:
                         units: weighted percent
                         miny: 0
+
                         graphpoints:
                             Weighted IO:
                                 dpName: diskstats_msDoingIOWeighted
-                                lineType: LINE
                                 rpn: "10,/"
                                 format: "%7.2lf%%"
