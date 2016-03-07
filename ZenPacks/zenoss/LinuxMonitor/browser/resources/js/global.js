@@ -203,3 +203,19 @@ Ext.define("Zenoss.component.LinuxHardDiskPanel", {
 });
 
 ZC.registerName('LinuxHardDisk', _t('Hard Disk'), _t('Hard Disks'));
+
+
+Ext.onReady(function(){
+    Ext.ComponentMgr.onAvailable('deviceoverviewpanel_customsummary', function(){
+        // remove snmpsummary for /Server/SSH/Linux devices
+        if (window.location.pathname.indexOf('/Server/SSH/Linux/devices/') != -1){
+            try{
+                this.remove('deviceoverviewpanel_snmpsummary', false);
+            }
+            catch(err){
+                console.log(err);
+            }
+        }
+    });
+});
+
