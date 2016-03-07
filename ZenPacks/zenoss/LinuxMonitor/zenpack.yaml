@@ -926,9 +926,10 @@ device_classes:
                 datasources:
                     status:
                         type: COMMAND
-                        commandTemplate: "/usr/bin/sudo /usr/sbin/lvs --noheadings -o vg_name,lv_name,lv_attr | /usr/bin/awk '{print $$1\"_\"$$2\" \"$$3}'"
                         usessh: true
+                        commandTemplate: "/usr/bin/env sudo lvs --noheadings -o vg_name,lv_name,lv_attr"
                         parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.lvsstatus
+                        component: "${here/id}"
                         eventClass: /Status
                         datapoints:
                             state:
@@ -941,9 +942,10 @@ device_classes:
                 datasources:
                     status:
                         type: COMMAND
-                        commandTemplate: "/usr/bin/sudo /usr/sbin/lvs --noheadings -o vg_name,lv_name,lv_attr | /usr/bin/awk '{print $$1\"_\"$$2\" \"$$3}'"
                         usessh: true
+                        commandTemplate: "/usr/bin/env sudo lvs --noheadings -o vg_name,lv_name,lv_attr"
                         parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.lvsstatus
+                        component: "${here/id}"
                         eventClass: /Status
                         datapoints:
                             state:
