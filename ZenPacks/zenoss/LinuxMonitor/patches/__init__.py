@@ -27,4 +27,5 @@ def optional_import(module_name, patch_module_name):
             LOG.exception("failed to apply %s patches", patch_module_name)
 
 
+optional_import('twisted.conch', 'twistedConch')
 optional_import('Products.ZenModel', 'platform')
