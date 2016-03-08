@@ -29,6 +29,13 @@ Ubuntu 14.04 sample output:
   data regularLV1 -wi-ao---
   data serviced   twi-i-tz-
 
+CentOS 5 sample output:
+
+  VolGroup00 LogVol00 -wi-ao
+  VolGroup00 LogVol01 -wi-ao
+  lvmserver  data     -wi-ao
+  lvmserver  share    -wi-ao
+
 """
 
 from Products.ZenRRD.CommandParser import CommandParser
@@ -81,7 +88,11 @@ class lvsstatus(CommandParser):
                     continue
 
                 # Extract specific attribute value from lv_attr string.
-                av = lv_attr[lv_atts[dp.id]]
+                try:
+                    av = lv_attr[lv_atts[dp.id]]
+                except IndexError:
+                    # Not all attributes are available on all Linux versions.
+                    continue
 
                 if dp.id == 'state':
                     event, value = self.handleState(cmd, dp.component, av)
