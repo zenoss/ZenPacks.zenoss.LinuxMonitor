@@ -919,9 +919,16 @@ device_classes:
                         datapoints:
                             size:
                                 rrdmin: 0
+                                aliases:
+                                    lvm_pv_size__bytes: ""
 
                             free:
                                 rrdmin: 0
+                                aliases:
+                                    lvm_pv_free__bytes: ""
+                                    lvm_pv_free__pct: "${here/pvsize},/,*,100"
+                                    lvm_pv_used__bytes: "${here/pvsize},EXC,-,0,MAX"
+                                    lvm_pv_used__pct: "${here/pvsize},/,1,-,100,*,ABS"
 
                     status:
                         type: COMMAND
@@ -935,12 +942,18 @@ device_classes:
                         datapoints:
                             allocatable:
                                 rrdmin: 0
+                                aliases:
+                                    lvm_pv_allocatable__bool: ""
 
                             exported:
                                 rrdmin: 0
+                                aliases:
+                                    lvm_pv_exported__bool: ""
 
                             missing:
                                 rrdmin: 0
+                                aliases:
+                                    lvm_pv_missing__bool: ""
 
                 graphs:
                     Utilization:
@@ -995,9 +1008,16 @@ device_classes:
                         datapoints:
                             size:
                                 rrdmin: 0
+                                aliases:
+                                    lvm_vg_size__bytes: ""
 
                             free:
                                 rrdmin: 0
+                                aliases:
+                                    lvm_vg_free__bytes: ""
+                                    lvm_vg_free__pct: "${here/vgsize},/,*,100"
+                                    lvm_vg_used__bytes: "${here/vgsize},EXC,-,0,MAX"
+                                    lvm_vg_used__pct: "${here/vgsize},/,1,-,100,*,ABS"
 
                     status:
                         type: COMMAND
@@ -1011,6 +1031,8 @@ device_classes:
                         datapoints:
                             partial:
                                 rrdmin: 0
+                                aliases:
+                                    lvm_vg_partial__bool: ""
 
                 thresholds:
                     partial:
@@ -1054,9 +1076,13 @@ device_classes:
                         datapoints:
                             state:
                                 rrdmin: 0
+                                aliases:
+                                    lvm_lv_state__bool: ""
 
                             health:
                                 rrdmin: 0
+                                aliases:
+                                    lvm_lv_health__bool: ""
 
             SnapshotVolume:
                 description: "Linux LVM snapshot volume monitoring via SSH."
@@ -1077,9 +1103,13 @@ device_classes:
                         datapoints:
                             state:
                                 rrdmin: 0
+                                aliases:
+                                    lvm_snapshot_state__bool: ""
 
                             health:
                                 rrdmin: 0
+                                aliases:
+                                    lvm_snapshot_health__bool: ""
 
             HardDisk:
                 description: "Linux hard disk (block device) monitoring via SSH."
