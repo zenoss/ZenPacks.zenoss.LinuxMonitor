@@ -7,6 +7,9 @@
 #
 ##############################################################################
 
+import logging
+LOG = logging.getLogger("zen.LinuxMonitor")
+
 from . import zenpacklib
 import os.path
 from Products.CMFCore.DirectoryView import registerDirectory
@@ -17,6 +20,35 @@ if os.path.isdir(skinsDir):
 
 # CFG is necessary when using zenpacklib.TestCase.
 CFG = zenpacklib.load_yaml()
+
+from . import schema
+
+
+class ZenPack(schema.ZenPack):
+
+    def install(self, app):
+        super(ZenPack, self).install(app)
+
+        self.register_devtype(
+            app.zport.dmd,
+            deviceclass="/Server/SSH/Linux",
+            description="Linux Server",
+            protocol="SSH")
+
+    def register_devtype(self, dmd, deviceclass, description, protocol):
+        try:
+            deviceclass = dmd.Devices.getOrganizer(deviceclass)
+
+            if (description, protocol) not in deviceclass.devtypes:
+                LOG.info(
+                    "registering %s (%s) device type",
+                    description,
+                    protocol)
+
+                deviceclass.register_devtype(description, protocol)
+        except Exception:
+            pass
+
 
 # Patch last to avoid import recursion problems.
 from ZenPacks.zenoss.LinuxMonitor import patches  # NOQA
