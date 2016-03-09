@@ -376,7 +376,7 @@ device_classes:
                             sysUpTime:
                                 rrdmin: 0
                                 aliases:
-                                    uptime__seconds: "100,/"
+                                    sys_uptime__secs: "100,/"
 
                             laLoadInt15:
                                 rrdmin: 0
@@ -424,6 +424,7 @@ device_classes:
                                     mem_free__pct: "${here/hw/totalMemory},/,*,100"
                                     mem_used__bytes: "${here/hw/totalMemory},EXC,-,0,MAX"
                                     mem_used__pct: "${here/hw/totalMemory},/,1,-,100,*,ABS"
+                                    mem__pct: "${here/hw/totalMemory},/,1,-,100,*,ABS"
                                     memoryAvailable__bytes: ""
                                     memoryUsed__pct: "${here/hw/totalMemory},/,1,-,100,*,ABS"
 
@@ -474,7 +475,7 @@ device_classes:
 
                         graphpoints:
                             Busy:
-                                dpName: cpu_ssCpuIdlePerCpu
+                                dpName: pu_ssCpuIdlePerCpu
                                 rpn: "100,EXC,-,0,MAX"
                                 format: "%7.2lf%%"
 
@@ -918,9 +919,16 @@ device_classes:
                         datapoints:
                             size:
                                 rrdmin: 0
+                                aliases:
+                                    lvm_pv_size__bytes: ""
 
                             free:
                                 rrdmin: 0
+                                aliases:
+                                    lvm_pv_free__bytes: ""
+                                    lvm_pv_free__pct: "${here/pvsize},/,*,100"
+                                    lvm_pv_used__bytes: "${here/pvsize},EXC,-,0,MAX"
+                                    lvm_pv_used__pct: "${here/pvsize},/,1,-,100,*,ABS"
 
                     status:
                         type: COMMAND
@@ -934,12 +942,18 @@ device_classes:
                         datapoints:
                             allocatable:
                                 rrdmin: 0
+                                aliases:
+                                    lvm_pv_allocatable__bool: ""
 
                             exported:
                                 rrdmin: 0
+                                aliases:
+                                    lvm_pv_exported__bool: ""
 
                             missing:
                                 rrdmin: 0
+                                aliases:
+                                    lvm_pv_missing__bool: ""
 
                 graphs:
                     Utilization:
@@ -994,9 +1008,16 @@ device_classes:
                         datapoints:
                             size:
                                 rrdmin: 0
+                                aliases:
+                                    lvm_vg_size__bytes: ""
 
                             free:
                                 rrdmin: 0
+                                aliases:
+                                    lvm_vg_free__bytes: ""
+                                    lvm_vg_free__pct: "${here/vgsize},/,*,100"
+                                    lvm_vg_used__bytes: "${here/vgsize},EXC,-,0,MAX"
+                                    lvm_vg_used__pct: "${here/vgsize},/,1,-,100,*,ABS"
 
                     status:
                         type: COMMAND
@@ -1010,6 +1031,8 @@ device_classes:
                         datapoints:
                             partial:
                                 rrdmin: 0
+                                aliases:
+                                    lvm_vg_partial__bool: ""
 
                 thresholds:
                     partial:
@@ -1053,9 +1076,13 @@ device_classes:
                         datapoints:
                             state:
                                 rrdmin: 0
+                                aliases:
+                                    lvm_lv_state__bool: ""
 
                             health:
                                 rrdmin: 0
+                                aliases:
+                                    lvm_lv_health__bool: ""
 
             SnapshotVolume:
                 description: "Linux LVM snapshot volume monitoring via SSH."
@@ -1076,9 +1103,13 @@ device_classes:
                         datapoints:
                             state:
                                 rrdmin: 0
+                                aliases:
+                                    lvm_snapshot_state__bool: ""
 
                             health:
                                 rrdmin: 0
+                                aliases:
+                                    lvm_snapshot_health__bool: ""
 
             HardDisk:
                 description: "Linux hard disk (block device) monitoring via SSH."
@@ -1099,56 +1130,78 @@ device_classes:
                                 description: "The number of read requests that were issued to the device per second."
                                 rrdtype: DERIVE
                                 rrdmin: 0
+                                aliases:
+                                    disk_reads__persec: ""
 
                             readsMerged:
                                 description: "The number of read requests merged per second that were queued to the device."
                                 rrdtype: DERIVE
                                 rrdmin: 0
+                                aliases:
+                                    disk_readsmerged__persec: ""
 
                             sectorsRead:
                                 description: "The number of sectors read from the device per second."
                                 rrdtype: DERIVE
                                 rrdmin: 0
+                                aliases:
+                                    disk_reads__sectorssec: ""
 
                             msReading:
                                 description: "Milliseconds spent by all reads in concrete moment of time."
                                 rrdtype: DERIVE
                                 rrdmin: 0
+                                aliases:
+                                    disk_read_time__pct: "10,/"
 
                             writesCompleted:
                                 description: "The number of write requests that were issued to the device per second."
                                 rrdtype: DERIVE
                                 rrdmin: 0
+                                aliases:
+                                    disk_writes__persec: ""
 
                             writesMerged:
                                 description: "The number of write requests merged per second that were queued to the device."
                                 rrdtype: DERIVE
                                 rrdmin: 0
+                                aliases:
+                                    disk_writesmerged__persec: ""
 
                             sectorsWritten:
                                 description: "The number of sectors written to the device per second."
                                 rrdtype: DERIVE
                                 rrdmin: 0
+                                aliases:
+                                    disk_writes__sectorssec: ""
 
                             msWriting:
                                 description: "Milliseconds spent by all writes in concrete moment of time."
                                 rrdtype: DERIVE
                                 rrdmin: 0
+                                aliases:
+                                    disk_write_time__pct: "10,/"
 
                             ioInProgress:
                                 description: "I/Os currently in progress."
                                 rrdtype: GAUGE
                                 rrdmin: 0
+                                aliases:
+                                    disk_operations_in_progress: ""
 
                             msDoingIO:
                                 description: "Milliseconds spent doing I/Os in concrete moment of time."
                                 rrdtype: DERIVE
                                 rrdmin: 0
+                                aliases:
+                                    disk_busy__pct: "10,/"
 
                             msDoingIOWeighted:
                                 description: "This field is incremented at each I/O start, I/O completion, I/O merge, or read of these stats by the number of I/Os in progress times the number of milliseconds spent doing I/O since the last update of this field."
                                 rrdtype: DERIVE
                                 rrdmin: 0
+                                aliases:
+                                    disk_weighted_busy__pct: "10,/"
 
                 graphs:
                     Operation Throughput:
