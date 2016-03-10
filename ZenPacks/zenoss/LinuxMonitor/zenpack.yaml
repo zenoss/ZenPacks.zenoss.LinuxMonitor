@@ -962,16 +962,10 @@ device_classes:
                         maxy: 100
 
                         graphpoints:
-                            size:
-                                dpName: volume_size
-                                lineType: DONTDRAW
-                                legend: Total
-
-                            free:
+                            Used:
                                 dpName: volume_free
                                 lineType: AREA
-                                rpn: "size,-,size,/,-100,*"
-                                legend: Used
+                                rpn: "${here/pvsize},-,${here/pvsize},/,-100,*"
                                 format: "%7.2lf%%"
 
                 thresholds:
@@ -1041,20 +1035,16 @@ device_classes:
                         eventClass: /Status
 
                 graphs:
-                    Volume Group Utilization:
+                    Utilization:
                         units: percent
                         miny: 0
                         maxy: 100
 
                         graphpoints:
-                            size:
-                                dpName: group_size
-                                lineType: DONTDRAW
-
-                            free:
+                            Used:
                                 dpName: group_free
                                 lineType: AREA
-                                rpn: "size,-,size,/,-100,*"
+                                rpn: "${here/vgsize},-,${here/vgsize},/,-100,*"
                                 format: "%7.2lf%%"
 
             LogicalVolume:
