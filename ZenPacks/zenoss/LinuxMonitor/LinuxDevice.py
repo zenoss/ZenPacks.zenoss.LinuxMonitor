@@ -54,29 +54,3 @@ class LinuxDevice(schema.LinuxDevice):
             if isinstance(fs, FileSystem):
                 if fs.impacting_object() == self:
                     yield fs
-
-    def status(self):
-        """Returns True if up, False if down.
-
-        The value returned by this method is used to determine the
-        "device status" shown in the top summary bar on the device screen.
-
-        What up and down means can be subjective. What we've decided for a
-        device monitored by default using SSH with periodic ping checks is that
-        it a device that is up has no critical events in the /Cmd/Fail or
-        /Status/Ping event classes.
-
-        """
-        if not self.monitorDevice():
-            return None
-
-        zep = getFacade("zep")
-        fltr = zep.createEventFilter(
-            element_identifier=self.id,
-            element_sub_identifier=("zencommand", ""),
-            event_class=("/Cmd/Fail", "/Status/Ping"),
-            severity=(SEVERITY_CRITICAL, SEVERITY_ERROR),
-            status=(STATUS_NEW, STATUS_ACKNOWLEDGED, STATUS_SUPPRESSED))
-
-        events = zep.getEventSummaries(0, limit=1, filter=fltr)
-        return events.get('total', 0) == 0
