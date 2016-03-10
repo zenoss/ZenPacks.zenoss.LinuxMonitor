@@ -34,6 +34,8 @@ class ZenPack(schema.ZenPack):
             deviceclass="/Server/SSH/Linux",
             description="Linux Server",
             protocol="SSH")
+        LOG.info(' '.join(["EnterpriseLinux ZenPack is not needed after",
+                           "installation LinuxMonitor ZenPack"]))
 
     def register_devtype(self, dmd, deviceclass, description, protocol):
         try:
