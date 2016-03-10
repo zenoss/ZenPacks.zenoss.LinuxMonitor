@@ -8,13 +8,6 @@ classes:
         base: [zenpacklib.Device]
         label: Device
 
-        properties:
-            status:
-                label: Status
-                type: boolean
-                api_only: true
-                api_backendtype: method
-
         dynamicview_views: [service_view]
         dynamicview_relations:
             impacts:
