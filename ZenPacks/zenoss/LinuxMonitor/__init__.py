@@ -34,6 +34,13 @@ class ZenPack(schema.ZenPack):
             deviceclass="/Server/SSH/Linux",
             description="Linux Server",
             protocol="SSH")
+        try:
+            self.dmd.ZenPackManager.packs._getOb(
+                'ZenPacks.zenoss.EnterpriseLinux')
+            LOG.info(' '.join(["EnterpriseLinux ZenPack is not required",
+                               "for the LinuxMonitor ZenPack"]))
+        except AttributeError:
+            pass
 
     def register_devtype(self, dmd, deviceclass, description, protocol):
         try:
