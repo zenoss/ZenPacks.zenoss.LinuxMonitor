@@ -19,6 +19,45 @@ This ZenPack demonstrates the Secure Shell (SSH) features, and enables modeling 
 |}
 
 
+=== Discovery ===
+The following entities will be automatically discovered. The attributes and collections will be updated on Zenoss normal remodeling interval which defaults to every 12 hours.
+;Hard Disks
+: Attributes: Name, Size, LVM PV,
+
+;Processors
+: Attributes: Socket, Manufacturer, Model, Speed, Ext Speed, L1, L2, Voltage
+
+;IP Services
+: Attributes: Name, Protocol, Port, IPs, Description
+
+;File Systems
+: Attributes: Mount Point, Storage Device, Total Bytes, Used Bytes, Free Bytes, % Util
+
+;Interfaces
+: Attributes: IP Interface, IP Addresses, Description, MAC Address, Operational Status, Admin Status
+
+;Network Routes
+: Attributes: Destination, Next Hop, Interface, Protocol, Type
+
+;Snapshot Volumes
+: Attributes: Name, Volume Group, Logical Volume, Size, Block Device, File System, Active
+: Relations: Logical Volumes
+
+;Physical Volumes
+: Attributes: Name, Format, Size, Free, % Util, Block Device, Volume Group
+: Relations: Volume Groups
+
+;Volume Groups
+: Attributes: Name, Size, Free, % Util, Snapshot Volumes, Logical Volumes, Physical Volumes
+
+;Logical Volumes
+: Attributes: Name, Volume Group, Size, Block Device, File System, Active, Snapshot Volumes
+: Relations: Volume Groups
+
+;OS Processes
+: Attributes: Process Class, Process Set, Restart Alert?, Fail Severity
+
+
 == Set Linux Server Monitoring Credentials ==
 
 
@@ -133,6 +172,188 @@ The Add a Single Device dialog appears.
 </li></ol>
 
 
+== Installed Items ==
+Installing this ZenPack will add the following items to your Zenoss system.
+
+;Device Classes
+* /Server/SSH/Linux
+
+;Modeler Plugins
+* zenoss.cmd.uname
+* zenoss.cmd.linux.df
+* zenoss.cmd.linux.alt_kernel_name
+* zenoss.cmd.linux.cpuinfo
+* zenoss.cmd.linux.ifconfig
+* zenoss.cmd.linux.lvm
+* zenoss.cmd.linux.memory
+* zenoss.cmd.linux.netstat_an
+* zenoss.cmd.linux.netstat_rn
+* zenoss.cmd.linux.process
+* zenoss.cmd.linux.rpm
+* zenoss.cmd.linux.sudo_dmidecode
+* zenoss.cmd.linux.os_release
+* zenoss.cmd.linux.os_service
+
+;Monitoring Templates
+* Device (in /Devices/Server/SSH/Linux)
+* HardDisk (in /Devices/Server/SSH/Linux)
+* IpService (in /Devices)
+* FileSystem (in /Devices/Server/SSH/Linux)
+* ethernetCsmacd (in /Devices/Server/SSH/Linux)
+* SnapshotVolume (in /Devices/Server/SSH/Linux)
+* PhysicalVolume (in /Devices/Server/SSH/Linux)
+* VolumeGroup (in /Devices/Server/SSH/Linux)
+* LogicalVolume (in /Devices/Server/SSH/Linux)
+* OSProcess (in /Devices/Server/SSH/Linux)
+
+== Monitoring Templates ==
+;Device (in /Devices/Server/SSH/Linux)
+* Data Points
+** ssCpuIdlePerCpu
+** ssCpuUserPerCpu
+** ssCpuSystemPerCpu
+** ssCpuWaitPerCpu
+** sysUpTime
+** laLoadInt15
+** laLoadInt5
+** laLoadInt1
+** Buffers
+** Cached
+** MemFree
+** MemTotal
+** SwapFree
+** SwapTotal
+** ssIORawReceived
+** ssIORawSent
+* Thresholds
+** ''None''
+* Graphs
+** CPU Utilization
+** Load Average
+** Memory Utilization
+** Memory Usage
+** IO Throughput
+
+;HardDisk (in /Devices/Server/SSH/Linux)
+* Data Points
+** readsCompleted
+** readsMerged
+** sectorsRead
+** msReading
+** writesCompleted
+** writesMerged
+** sectorsWritten
+** msWriting
+** ioInProgress
+** msDoingIO
+** msDoingIOWeighted
+* Thresholds
+** ''None''
+* Graphs
+** Operation Throughtput
+** Merge Rate
+** Sector Throughtput
+** IO Operation in Progress
+** IO Utilization
+** Weighted IO Utilization
+
+;IpService (in /Devices)
+* Data Points
+** ''None''
+* Thresholds
+** ''None''
+* Graphs
+** ''None''
+
+;FileSystem (in /Devices/Server/SSH/Linux)
+* Data Points
+** usedBlocks
+** percentInodesUsed
+** totalInodes
+** usedInodes
+** availableInodes
+* Thresholds
+** 90 percent used
+* Graphs
+** Utilization
+** Usage
+** Inode Utilization
+** Inode Usage
+
+;ethernetCsmacd (in /Devices/Server/SSH/Linux)
+* Data Points
+** ifInOctets
+** ifOutOctets
+** ifInPackets
+** ifOutPackets
+** ifInErrors
+** ifInDropped
+** ifInOverruns
+** ifOutErrors
+** ifOutCarrier
+** ifOutCollisions
+** ifOutDropped
+* Thresholds
+** 75 percent utilization
+* Graphs
+** Data Throughput
+** Packet Throughput
+** Error Rate
+
+;SnaphotVolume (in /Devices/Server/SSH/Linux)
+* Data Points
+** state
+** health
+* Thresholds
+** ''None''
+* Graphs
+** ''None''
+
+;PhysicalVolume (in /Devices/Server/SSH/Linux)
+* Data Points
+** size
+** free
+** allocatable
+** exported
+** missing
+* Thresholds
+** unallocatable
+** exported
+** missing
+* Graphs
+** Utilization
+
+;VolumeGroup (in /Devices/Server/SSH/Linux)
+* Data Points
+** size
+** free
+** partial
+* Thresholds
+** partial
+* Graphs
+** Utilization
+
+;LogicalVolume (in /Devices/Server/SSH/Linux)
+* Data Points
+** state
+** health
+* Thresholds
+** ''None''
+* Graphs
+** ''None''
+
+;OSProcess (in /Devices/Server/SSH/Linux)
+* Data Points
+** count
+** cpu
+** mem
+* Thresholds
+** count
+* Graphs
+** Process Count
+** CPU Utilization
+** Memory Usage
+
 == Daemons ==
 
 
@@ -146,3 +367,7 @@ The Add a Single Device dialog appears.
 |Performance Collector
 |<span class="keyword cmdname">zencommand</span>
 |}
+== Installation =={{#vardefine:restart|{{#show: {{FULLPAGENAME}} | ?Restart}}}}
+{{ZenPackEggInstallationCli|restart={{#var:restart|zenoss restart}}}}
+{{#ifeq:{{#show: {{FULLPAGENAME}} | ?flavor}}|commercial||{{ZenPackDevelopmentInstallationCli|restart={{#var:restart|zenoss restart}}}}}}
+{{ Note }} EnterpriseLinux ZP is not required with new LinuxMonitor ZP
