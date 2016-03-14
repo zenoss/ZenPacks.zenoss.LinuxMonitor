@@ -367,3 +367,7 @@ Installing this ZenPack will add the following items to your Zenoss system.
 |Performance Collector
 |<span class="keyword cmdname">zencommand</span>
 |}
+== Installation =={{#vardefine:restart|{{#show: {{FULLPAGENAME}} | ?Restart}}}}
+{{ZenPackEggInstallationCli|restart={{#var:restart|zenoss restart}}}}
+{{#ifeq:{{#show: {{FULLPAGENAME}} | ?flavor}}|commercial||{{ZenPackDevelopmentInstallationCli|restart={{#var:restart|zenoss restart}}}}}}
+{{ Note }} EnterpriseLinux ZP is not required with new LinuxMonitor ZP
