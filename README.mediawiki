@@ -22,7 +22,7 @@ This ZenPack demonstrates the Secure Shell (SSH) features, and enables modeling 
 === Discovery ===
 The following entities will be automatically discovered. The attributes and collections will be updated on Zenoss normal remodeling interval which defaults to every 12 hours.
 ;Hard Disks
-: Attributes: Name, Size, LVM PV,
+: Attributes: Name, Size, LVM PV
 
 ;Processors
 : Attributes: Socket, Manufacturer, Model, Speed, Ext Speed, L1, L2, Voltage
@@ -355,6 +355,20 @@ Installing this ZenPack will add the following items to your Zenoss system.
 ** Process Count
 ** CPU Utilization
 ** Memory Usage
+
+
+== Service Impact ==
+
+When combined with the Zenoss Service Dynamics product, this ZenPack adds built-in service impact capability for services running on Linux. The following service impact relationships are automatically added. These will be included in any services that contain one or more of the explicitly mentioned entities.
+
+;Service Impact Relationships
+* HardDisk, IpInterface, IpService, OSProcess are impacted by LinuxDevice;
+* PhysicalVolume is impacted by HardDisk;
+* VolumeGroup is impacted by PhysicalVolume;
+* LogicalVolume is impacted by VolumeGroup or HardDisk;
+* SnapshotVolume is impacted by LogicalVolume or HardDisk;
+* FileSystem is impacted by SnapshotVolume or LogicalVolume or HardDisk or LinuxDevice
+
 
 == Daemons ==
 
