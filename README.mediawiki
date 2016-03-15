@@ -257,6 +257,7 @@ Installing this ZenPack will add the following items to your Zenoss system.
 ** IO Operation in Progress
 ** IO Utilization
 ** Weighted IO Utilization
+{{ Note }} In standart Linux distribution file /proc/diskstats has 11 columns with metrics. If distribution provides only 4 columns with metrics, few datapoints will be missed
 
 ;IpService (in /Devices)
 * Data Points
