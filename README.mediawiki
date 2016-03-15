@@ -127,6 +127,7 @@ Assuming that you've created a user named '''zenmonitor''' on your linux servers
 
 
 </li></ol>
+{{ Note }} zSshConcurrentSessions property by default equals to 5. In case of increasing this value user has change sshd daemon configuration on target device by increasing allowed session number and restart sshd daemon.
 
 
 == Add a Linux Server ==
