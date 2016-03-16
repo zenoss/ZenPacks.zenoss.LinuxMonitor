@@ -282,6 +282,7 @@ class_relationships:
     - VolumeGroup 1:M PhysicalVolume
     - VolumeGroup 1:MC LogicalVolume
     - LogicalVolume 1:MC SnapshotVolume
+    - LinuxDevice 1:MC LinuxService
 
 
 device_classes:
