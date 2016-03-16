@@ -150,7 +150,12 @@ RE_PROCESS = re.compile('(?<=Process:\s)(\d+\s\w+=\S+\s([A-z\-=]+\s)*\(\S+\s\S+\
 
 
 def systemd_getServices(services):
-    return ''.join(map(lambda x: x or '\n', services)).splitlines()
+    """
+    Build a list of services.
+    The delimiter of a new service line is BLACK CIRCLE unicode char.
+    """
+    uServices = unicode(''.join(services), 'utf-8')
+    return re.sub(ur'\u25cf', '\n', uServices).splitlines()
 
 
 def systemd_getProcesses(line):
@@ -200,6 +205,7 @@ class os_service(LinuxCommandPlugin):
 
     def populateRelMap(self, rm, services, regex, getProcesses):
         for line in services:
+            line = line.strip()
             match = regex.match(line)
             if match:
                 groupdict = match.groupdict()
