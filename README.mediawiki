@@ -57,6 +57,9 @@ The following entities will be automatically discovered. The attributes and coll
 ;OS Processes
 : Attributes: Process Class, Process Set, Restart Alert?, Fail Severity
 
+;OS Services
+: Attributes: Name, Loaded Status, Active Status, Main PID, Processes, Description
+
 
 == Set Linux Server Monitoring Credentials ==
 
@@ -172,6 +175,18 @@ The Add a Single Device dialog appears.
 <li>Click '''Add'''.
 </li></ol>
 
+Alternatively you can use zenbatchload to add Linux servers from the command line. To do this, you must create a text file with hostname, username and password of all the servers you want to add. Multiple endpoints can be added under the same /Devices/Server/Linux section. Here is an example...
+
+<syntaxhighlight lang="text">
+/Devices/Server/Linux
+LinuxDevice zCommandUsername="user", zCommandPassword="password"
+</syntaxhighlight>
+
+You can then load the Windows servers into Zenoss Core or Resource Manager as devices with the following command.
+
+<syntaxhighlight lang="bash">
+zenbatchload <filename>
+</syntaxhighlight>
 
 == Installed Items ==
 Installing this ZenPack will add the following items to your Zenoss system.
@@ -257,7 +272,8 @@ Installing this ZenPack will add the following items to your Zenoss system.
 ** IO Operation in Progress
 ** IO Utilization
 ** Weighted IO Utilization
-{{ Note }} In standart Linux distribution file /proc/diskstats has 11 columns with metrics. If distribution provides only 4 columns with metrics, few datapoints will be missed
+{{ Note }} There were significant changes between 2.4 and 2.6 in the I/O subsystem. As a result, some statistic information disappeared. The translation from a disk address relative to a partition to the disk address relative to the host disk happens much earlier.  All merges and timings now happen at the disk level rather than at both the disk and partition level as in 2.4. There are only *four* fields available
+for partitions on 2.6 machines and in this case few datapoints will be missed.
 
 ;IpService (in /Devices)
 * Data Points
@@ -362,7 +378,7 @@ Installing this ZenPack will add the following items to your Zenoss system.
 When combined with the Zenoss Service Dynamics product, this ZenPack adds built-in service impact capability for services running on Linux. The following service impact relationships are automatically added. These will be included in any services that contain one or more of the explicitly mentioned entities.
 
 ;Service Impact Relationships
-* HardDisk, IpInterface, IpService, OSProcess are impacted by LinuxDevice;
+* HardDisk, IpInterface, IpService, OSProcess, CPU, OSService are impacted by LinuxDevice;
 * PhysicalVolume is impacted by HardDisk;
 * VolumeGroup is impacted by PhysicalVolume;
 * LogicalVolume is impacted by VolumeGroup or HardDisk;
@@ -386,4 +402,4 @@ When combined with the Zenoss Service Dynamics product, this ZenPack adds built-
 == Installation =={{#vardefine:restart|{{#show: {{FULLPAGENAME}} | ?Restart}}}}
 {{ZenPackEggInstallationCli|restart={{#var:restart|zenoss restart}}}}
 {{#ifeq:{{#show: {{FULLPAGENAME}} | ?flavor}}|commercial||{{ZenPackDevelopmentInstallationCli|restart={{#var:restart|zenoss restart}}}}}}
-{{ Note }} EnterpriseLinux ZP is not required with new LinuxMonitor ZP
+{{ Note }} EnterpriseLinux ZP should be removed after installation new LinuxMonitor ZP 
