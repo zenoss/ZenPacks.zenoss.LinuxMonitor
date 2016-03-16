@@ -474,7 +474,7 @@ device_classes:
 
                         graphpoints:
                             Busy:
-                                dpName: pu_ssCpuIdlePerCpu
+                                dpName: cpu_ssCpuIdlePerCpu
                                 rpn: "100,EXC,-,0,MAX"
                                 format: "%7.2lf%%"
 
