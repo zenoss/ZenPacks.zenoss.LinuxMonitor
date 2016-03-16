@@ -46,6 +46,11 @@ class LinuxDevice(schema.LinuxDevice):
         for cpu in self.hw.cpus():
             yield cpu
 
+    def all_linuxservices(self):
+        """Generate all LinuxService components."""
+        for linuxservice in self.linuxServices():
+            yield linuxservice
+
     def impacted_filesystems(self):
         """Generate filesystems impacted by this device.
 
