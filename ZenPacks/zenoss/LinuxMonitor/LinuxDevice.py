@@ -41,6 +41,11 @@ class LinuxDevice(schema.LinuxDevice):
         for ipservice in self.os.ipservices():
             yield ipservice
 
+    def all_cpus(self):
+        """Generate all CPU components."""
+        for cpu in self.hw.cpus():
+            yield cpu
+
     def impacted_filesystems(self):
         """Generate filesystems impacted by this device.
 
