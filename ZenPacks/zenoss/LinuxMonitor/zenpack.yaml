@@ -16,6 +16,7 @@ classes:
                 - all_ipservices
                 - all_cpus
                 - impacted_filesystems
+                - all_linuxservices
 
     LinuxService:
         label: OS Service
@@ -42,6 +43,9 @@ classes:
             description:
                 label: Description
                 order: 1.5
+
+        impacted_by:
+            - linuxDevice
 
     PhysicalVolume:
         label: Physical Volume
