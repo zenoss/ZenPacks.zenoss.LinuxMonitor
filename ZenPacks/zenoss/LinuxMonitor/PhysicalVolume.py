@@ -14,6 +14,7 @@ PhysicalVolume class override
 '''
 
 from . import schema
+from ZenPacks.zenoss.LinuxMonitor.util import override_graph_labels
 
 
 class PhysicalVolume(schema.PhysicalVolume):
@@ -37,11 +38,13 @@ class PhysicalVolume(schema.PhysicalVolume):
             pass
 
     def getDefaultGraphDefs(self, drange=None):
+        # Add and re-label graphs displayed in other components
         graphs = super(PhysicalVolume, self).getDefaultGraphDefs(drange)
 
         bd = self.blockDevice()
         if bd:
-            graphs.extend(bd.getDefaultGraphDefs(drange))
+            bdGraphs = override_graph_labels(bd, drange)
+            graphs.extend(bdGraphs)
 
         return graphs
 

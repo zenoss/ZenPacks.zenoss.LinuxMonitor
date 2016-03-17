@@ -17,6 +17,7 @@ from Products.Zuul.form import schema
 from Products.Zuul.infos.component.filesystem import FileSystemInfo as BaseFileSystemInfo
 from Products.Zuul.interfaces.component import IFileSystemInfo as IBaseFileSystemInfo
 from Products.Zuul.utils import ZuulMessageFactory as _t
+from ZenPacks.zenoss.LinuxMonitor.util import override_graph_labels
 
 
 class FileSystem(BaseFileSystem):
@@ -84,11 +85,14 @@ class FileSystem(BaseFileSystem):
         return "FileSystem"
 
     def getDefaultGraphDefs(self, drange=None):
+        # Add and re-label graphs displayed in other components
         graphs = super(FileSystem, self).getDefaultGraphDefs(drange)
-        underlying = self.logicalVolume() or self.blockDevice()
-        if underlying:
-            for graph in underlying.getDefaultGraphDefs(drange):
-                graphs.append(graph)
+
+        bd = self.logicalVolume() or self.blockDevice()
+        if bd:
+            bdGraphs = override_graph_labels(bd, drange)
+            graphs.extend(bdGraphs)
+
         return graphs
 
     def getGraphObjects(self):
