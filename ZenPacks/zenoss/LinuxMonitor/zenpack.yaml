@@ -1244,7 +1244,6 @@ device_classes:
                     IO Utilization:
                         units: percent
                         miny: 0
-                        maxy: 100
 
                         graphpoints:
                             Reading:
