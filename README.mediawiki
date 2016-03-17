@@ -166,7 +166,7 @@ The Add a Single Device dialog appears.
 |-
 |Model Device
 
-|Select this option unless adding a device with a user name and password different than found in the device class. If you do not select this option, then you must add the credentials (see ) and then manually model the device.
+|Select this option unless adding a device with a user name and password different than found in the device class. If you do not select this option, then you must add the credentials (see) and then manually model the device.
 
 |}
 
@@ -182,7 +182,7 @@ Alternatively you can use zenbatchload to add Linux servers from the command lin
 LinuxDevice zCommandUsername="user", zCommandPassword="password"
 </syntaxhighlight>
 
-You can then load the Windows servers into Zenoss Core or Resource Manager as devices with the following command.
+You can then load the Linux servers into Zenoss Core or Resource Manager as devices with the following command.
 
 <syntaxhighlight lang="bash">
 zenbatchload <filename>
@@ -402,4 +402,4 @@ When combined with the Zenoss Service Dynamics product, this ZenPack adds built-
 == Installation =={{#vardefine:restart|{{#show: {{FULLPAGENAME}} | ?Restart}}}}
 {{ZenPackEggInstallationCli|restart={{#var:restart|zenoss restart}}}}
 {{#ifeq:{{#show: {{FULLPAGENAME}} | ?flavor}}|commercial||{{ZenPackDevelopmentInstallationCli|restart={{#var:restart|zenoss restart}}}}}}
-{{ Note }} EnterpriseLinux ZP should be removed after installation new LinuxMonitor ZP 
+{{ Note }} There might be errors in zenhub logs related to EnterpriseLinux. To avoid it EnterpriseLinux ZP should be removed.
