@@ -578,7 +578,7 @@ device_classes:
                     intf:
                         type: COMMAND
                         usessh: true
-                        commandTemplate: "/bin/bash -c '[[ -x $$(which ifconfig) ]] && ifconfig -a || ip -s -o link'"
+                        commandTemplate: "/bin/sh -c 'export PATH=/bin:/sbin:/usr/bin:/usr/sbin; [ -x $$(which ifconfig) ] && ifconfig -a || ip -s -o link'"
                         parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.ifconfig
                         component: "${here/id}"
                         eventClass: /Ignore
