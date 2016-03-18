@@ -37,7 +37,7 @@ def create_device(dmd, zPythonClass, device_id, datamaps):
     if device:
         return device
 
-    deviceclass = dmd.Devices.createOrganizer("/Test")
+    deviceclass = dmd.Devices.createOrganizer("/Server/SSH/Linux")
     deviceclass.setZenProperty("zPythonClass", zPythonClass)
     device = deviceclass.createInstance(device_id)
 

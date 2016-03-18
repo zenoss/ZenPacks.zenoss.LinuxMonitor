@@ -22,6 +22,8 @@ EXPECTED_IMPACTS = """
 [test-linux1]->[udp_00123]
 [test-linux1]->[lo]
 [test-linux1]->[eth0]
+[test-linux1]->[0]
+[test-linux1]->[1]
 [test-linux1]->[disk-sda]
 [test-linux1]->[disk-sda1]
 [test-linux1]->[disk-sda2]
@@ -52,6 +54,11 @@ EXPECTED_IMPACTS = """
 // SnapshotVolume
 [lv-data_snapshot-deadbeef]->[snapshots_data_yesterday]
 """
+DYNAMIC_VIEW_EXPECTED = """
+//Dynamic View Interface
+[eth0]->[test-linux1]
+[lo]->[test-linux1]
+"""
 
 # It's OK if these are missing from DynamicView, but not from Impact.
 EXPECTED_MISSING_FROM_DV = """
@@ -59,6 +66,8 @@ EXPECTED_MISSING_FROM_DV = """
 [test-linux1]->[memcached]
 [test-linux1]->[tcp_00022]
 [test-linux1]->[udp_00123]
+[test-linux1]->[0]
+[test-linux1]->[1]
 """
 
 # This is the Linux device model that we'll be testing.
@@ -260,7 +269,8 @@ class TestDVI(zenpacklib.TestCase):
         except ImportError:
             self.fail("DynamicView must be installed to run this test")
 
-        expected = tu.triples_from_yuml(EXPECTED_IMPACTS)
+        expected = tu.triples_from_yuml(
+            EXPECTED_IMPACTS) | tu.triples_from_yuml(DYNAMIC_VIEW_EXPECTED)
         all_expected = tu.complement_triples(expected)
 
         expected_missing = tu.triples_from_yuml(EXPECTED_MISSING_FROM_DV)
