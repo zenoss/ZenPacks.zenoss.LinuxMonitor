@@ -10,6 +10,7 @@
 from zope.interface import implements
 
 from Products.ZenUtils.Utils import prepId
+from ZenPacks.zenoss.LinuxMonitor.util import override_graph_labels
 
 from . import schema
 
@@ -85,13 +86,18 @@ class LogicalVolume(schema.LogicalVolume):
                     return obj
 
     def getDefaultGraphDefs(self, drange=None):
+        # Add and re-label graphs displayed in other components
         graphs = super(LogicalVolume, self).getDefaultGraphDefs(drange)
 
-        graphs.extend(self.volumeGroup().getDefaultGraphDefs(drange))
+        vg = self.volumeGroup()
+        if vg:
+            vgGraphs = override_graph_labels(vg, drange)
+            graphs.extend(vgGraphs)
 
         bd = self.blockDevice()
         if bd:
-            graphs.extend(bd.getDefaultGraphDefs(drange))
+            bdGraphs = override_graph_labels(bd, drange)
+            graphs.extend(bdGraphs)
 
         return graphs
 

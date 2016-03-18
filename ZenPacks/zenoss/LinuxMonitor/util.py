@@ -173,3 +173,33 @@ class LVMAttributeParser(object):
                 'm': 'mismatches exist',
                 'w': 'writemostly',
                 'X': 'unknown'}.get(att, None)
+
+
+# -----------------------------------------------------------------------------
+# Global Utility Functions
+# -----------------------------------------------------------------------------
+def override_graph_labels(component, drange):
+    # Return a list of modified graphs, given component and drange
+    # Don't modify titles if graphs are already overidden
+
+    graphs = []
+    if not component:
+        return graphs
+
+    for g in component.getDefaultGraphDefs(drange):
+        if not g.get('title_override'):
+
+            title = "{} ({}: {})".format(
+                g["title"],
+                component.class_label,
+                component.titleOrId())
+
+            g = {
+                "title": title,
+                "url": g["url"],
+                "title_override": True,
+                }
+
+        graphs.append(g)
+
+    return graphs

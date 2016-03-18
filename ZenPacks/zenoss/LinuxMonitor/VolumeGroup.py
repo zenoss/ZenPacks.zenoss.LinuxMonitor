@@ -14,6 +14,7 @@ VolumeGroup class override
 '''
 
 from . import schema
+from ZenPacks.zenoss.LinuxMonitor.util import override_graph_labels
 
 
 class VolumeGroup(schema.VolumeGroup):
@@ -38,10 +39,12 @@ class VolumeGroup(schema.VolumeGroup):
         return '{}'.format(count)
 
     def getDefaultGraphDefs(self, drange=None):
+        # Add and re-label graphs displayed in other components
         graphs = super(VolumeGroup, self).getDefaultGraphDefs(drange)
 
         for pv in self.physicalVolumes():
-            graphs.extend(pv.getDefaultGraphDefs(drange))
+            pvGraphs = override_graph_labels(pv, drange)
+            graphs.extend(pvGraphs)
 
         return graphs
 
