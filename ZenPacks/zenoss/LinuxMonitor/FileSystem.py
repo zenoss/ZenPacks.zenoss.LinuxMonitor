@@ -146,3 +146,15 @@ class FileSystemInfo(BaseFileSystemInfo):
     @info
     def blockDevice(self):
         return self._object.blockDevice()
+
+    @property
+    @info
+    def storageDevice(self):
+        if self._object.logicalVolume():
+            storagedevice = self._object.logicalVolume()
+        elif self._object.blockDevice():
+            storagedevice = self._object.blockDevice()
+        else:
+            return self._object.storageDevice
+        return"<a class='z-entity' href='{0}'>{1}</a>".format(
+            storagedevice.getPrimaryUrlPath(), storagedevice.title)
