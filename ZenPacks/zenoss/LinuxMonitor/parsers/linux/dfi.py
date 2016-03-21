@@ -18,7 +18,7 @@ class dfi(ComponentCommandParser):
 
     scanners = [
         r' (?P<totalInodes>\d+) +(?P<usedInodes>\d+) +'
-        r'(?P<availableInodes>\d+) +(?P<percentInodesUsed>\d+)%'
+        r'(?P<availableInodes>\d+) +(?P<percentInodesUsed>[\d\-]+)[%\s]'
         ]
     
     componentScanValue = 'mount'
