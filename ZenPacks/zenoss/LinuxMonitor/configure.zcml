@@ -81,6 +81,24 @@
             factory=".impact.CPURelationsProvider"
             />
 
+        <subscriber
+            provides="ZenPacks.zenoss.Impact.impactd.interfaces.IRelationshipDataProvider"
+            for="Products.ZenModel.OSProcess.OSProcess"
+            factory=".impact.OSProcessRelationsProvider"
+            />
+
+        <subscriber
+            provides="ZenPacks.zenoss.Impact.impactd.interfaces.IRelationshipDataProvider"
+            for="Products.ZenModel.IpService.IpService"
+            factory=".impact.IpServiceRelationsProvider"
+            />
+
+        <subscriber
+                provides="ZenPacks.zenoss.Impact.impactd.interfaces.IRelationshipDataProvider"
+                for="ZenPacks.zenoss.LinuxMonitor.LinuxDevice.LinuxDevice"
+                factory=".impact.DeviceRelationsProvider"
+            />
+
     </configure>
 
     <!-- OpenStack Cinder integration -->
