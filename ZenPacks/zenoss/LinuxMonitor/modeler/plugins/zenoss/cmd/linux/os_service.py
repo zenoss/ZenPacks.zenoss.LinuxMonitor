@@ -235,7 +235,7 @@ class os_service(LinuxCommandPlugin):
                 services = functions.get('services')(services)
                 processesFunc = functions.get('processes')
             self.populateRelMap(rm, services, regex, processesFunc)
-            log.debug("Init service: %s, results: %s", initService, rm)
+            log.debug("Init service: %s, Relationship: %s", initService, rm.relname)
         else:
             log.info("Can not parse OS services, init service is unknown!")
 
