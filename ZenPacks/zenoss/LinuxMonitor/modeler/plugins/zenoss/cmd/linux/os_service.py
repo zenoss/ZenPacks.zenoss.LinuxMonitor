@@ -155,7 +155,11 @@ def systemd_getServices(services):
     The delimiter of a new service line is BLACK CIRCLE unicode char.
     """
     uServices = unicode(''.join(services), 'utf-8')
-    return re.sub(ur'\u25cf', '\n', uServices).splitlines()
+    if re.match(ur'\u25cf', uServices):
+        return re.sub(ur'\u25cf', '\n', uServices).splitlines()
+    else:
+        uServices = unicode('\n'.join(services), 'utf-8')
+        return re.sub(r'\n([\s\w])', '\\1',uServices).splitlines()
 
 
 def systemd_getProcesses(line):
