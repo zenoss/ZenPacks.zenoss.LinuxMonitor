@@ -1207,7 +1207,7 @@ device_classes:
                                 format: "%7.2lf%s"
 
                     Merge Rate:
-                        units: operations merged/sec
+                        units: merged/sec
                         miny: 0
 
                         graphpoints:
