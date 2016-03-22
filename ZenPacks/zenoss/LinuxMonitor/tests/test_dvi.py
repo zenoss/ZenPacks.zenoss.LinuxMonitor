@@ -54,7 +54,8 @@ EXPECTED_IMPACTS = """
 // SnapshotVolume
 [lv-data_snapshot-deadbeef]->[snapshots_data_yesterday]
 """
-DYNAMIC_VIEW_EXPECTED = """
+
+DYNAMIC_VIEW_EXPECTING_MISSING = """
 //Dynamic View Interface
 [eth0]->[test-linux1]
 [lo]->[test-linux1]
@@ -269,18 +270,19 @@ class TestDVI(zenpacklib.TestCase):
         except ImportError:
             self.fail("DynamicView must be installed to run this test")
 
-        expected = tu.triples_from_yuml(
-            EXPECTED_IMPACTS) | tu.triples_from_yuml(DYNAMIC_VIEW_EXPECTED)
+        expected = tu.triples_from_yuml(EXPECTED_IMPACTS)
         all_expected = tu.complement_triples(expected)
 
         expected_missing = tu.triples_from_yuml(EXPECTED_MISSING_FROM_DV)
         all_expected_missing = tu.complement_triples(expected_missing)
+        dynamic_view = tu.triples_from_yuml(DYNAMIC_VIEW_EXPECTING_MISSING)
+        missing_dynamic_view = tu.complement_triples(dynamic_view)
 
         found = tu.dynamicview_triples_from_device(
             self.device, tags=(TAG_IMPACTS, TAG_IMPACTED_BY))
 
         missing = all_expected - (found | all_expected_missing)
-        extra = (found | all_expected_missing) - all_expected
+        extra = (found | all_expected_missing) - (all_expected | missing_dynamic_view)
 
         self.assertFalse(
             missing or extra,
