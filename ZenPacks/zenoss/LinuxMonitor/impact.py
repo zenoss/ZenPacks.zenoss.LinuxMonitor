@@ -39,7 +39,7 @@ class CPURelationsProvider(BaseRelationsProvider):
     def getEdges(self):
         cpu = self._object
         device = cpu.device()
-        if device.getDeviceClassName() == '/Server/SSH/Linux':
+        if isinstance(device, LinuxDevice):
             yield ImpactEdge(
                 IGlobalIdentifier(device).getGUID(),
                 IGlobalIdentifier(cpu).getGUID(),
@@ -53,7 +53,7 @@ class OSProcessRelationsProvider(BaseRelationsProvider):
     def getEdges(self):
         os_process = self._object
         device = os_process.device()
-        if device.getDeviceClassName() == '/Server/SSH/Linux':
+        if isinstance(device, LinuxDevice):
             yield ImpactEdge(
                 IGlobalIdentifier(device).getGUID(),
                 IGlobalIdentifier(os_process).getGUID(),
@@ -67,7 +67,7 @@ class IpServiceRelationsProvider(BaseRelationsProvider):
     def getEdges(self):
         ip_service = self._object
         device = ip_service.device()
-        if device.getDeviceClassName() == '/Server/SSH/Linux':
+        if isinstance(device, LinuxDevice):
             yield ImpactEdge(
                 IGlobalIdentifier(device).getGUID(),
                 IGlobalIdentifier(ip_service).getGUID(),
@@ -80,19 +80,17 @@ class DeviceRelationsProvider(BaseRelationsProvider):
 
     def getEdges(self):
         device = self._object
-        if device.getDeviceClassName() == '/Server/SSH/Linux':
+        for process in device.os.processes():
+            yield ImpactEdge(IGlobalIdentifier(device).getGUID(),
+                             IGlobalIdentifier(process).getGUID(),
+                             self.relationship_provider)
 
-            for process in device.os.processes():
-                yield ImpactEdge(IGlobalIdentifier(device).getGUID(),
-                                 IGlobalIdentifier(process).getGUID(),
-                                 self.relationship_provider)
+        for ipservice in device.os.ipservices():
+            yield ImpactEdge(IGlobalIdentifier(device).getGUID(),
+                             IGlobalIdentifier(ipservice).getGUID(),
+                             self.relationship_provider)
 
-            for ipservice in device.os.ipservices():
-                yield ImpactEdge(IGlobalIdentifier(device).getGUID(),
-                                 IGlobalIdentifier(ipservice).getGUID(),
-                                 self.relationship_provider)
-
-            for cpu in device.hw.cpus():
-                yield ImpactEdge(IGlobalIdentifier(device).getGUID(),
-                                 IGlobalIdentifier(cpu).getGUID(),
-                                 self.relationship_provider)
+        for cpu in device.hw.cpus():
+            yield ImpactEdge(IGlobalIdentifier(device).getGUID(),
+                             IGlobalIdentifier(cpu).getGUID(),
+                             self.relationship_provider)
