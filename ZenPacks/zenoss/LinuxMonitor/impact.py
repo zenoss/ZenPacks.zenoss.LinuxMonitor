@@ -80,19 +80,17 @@ class DeviceRelationsProvider(BaseRelationsProvider):
 
     def getEdges(self):
         device = self._object
-        if isinstance(device, LinuxDevice):
+        for process in device.os.processes():
+            yield ImpactEdge(IGlobalIdentifier(device).getGUID(),
+                             IGlobalIdentifier(process).getGUID(),
+                             self.relationship_provider)
 
-            for process in device.os.processes():
-                yield ImpactEdge(IGlobalIdentifier(device).getGUID(),
-                                 IGlobalIdentifier(process).getGUID(),
-                                 self.relationship_provider)
+        for ipservice in device.os.ipservices():
+            yield ImpactEdge(IGlobalIdentifier(device).getGUID(),
+                             IGlobalIdentifier(ipservice).getGUID(),
+                             self.relationship_provider)
 
-            for ipservice in device.os.ipservices():
-                yield ImpactEdge(IGlobalIdentifier(device).getGUID(),
-                                 IGlobalIdentifier(ipservice).getGUID(),
-                                 self.relationship_provider)
-
-            for cpu in device.hw.cpus():
-                yield ImpactEdge(IGlobalIdentifier(device).getGUID(),
-                                 IGlobalIdentifier(cpu).getGUID(),
-                                 self.relationship_provider)
+        for cpu in device.hw.cpus():
+            yield ImpactEdge(IGlobalIdentifier(device).getGUID(),
+                             IGlobalIdentifier(cpu).getGUID(),
+                             self.relationship_provider)
