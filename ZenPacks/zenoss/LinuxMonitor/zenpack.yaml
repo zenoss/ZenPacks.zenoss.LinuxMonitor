@@ -20,7 +20,7 @@ classes:
 
     LinuxService:
         label: OS Service
-
+        dynamicview_views: []
         properties:
             loaded_status:
                 label: Loaded Status
