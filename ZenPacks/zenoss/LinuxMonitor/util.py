@@ -192,7 +192,8 @@ def override_graph_labels(component, drange):
             title = "{} ({}: {})".format(
                 g["title"],
                 component.class_label,
-                component.titleOrId())
+                component.titleOrId()[:34]
+                )
 
             g = {
                 "title": title,
