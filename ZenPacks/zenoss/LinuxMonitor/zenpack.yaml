@@ -1232,7 +1232,7 @@ device_classes:
                                 dpName: diskstats_sectorsWritten
                                 format: "%7.2lf%s"
 
-                    IO Operations in Progress:
+                    IO Operations:
                         units: operations
                         miny: 0
 
