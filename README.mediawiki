@@ -13,9 +13,6 @@ This ZenPack demonstrates the Secure Shell (SSH) features, and enables modeling 
 |-
 |Product
 |<span class="ph">Zenoss platform</span> 4.x, Zenoss 2.4 or higher
-|-
-|Required ZenPacks
-|ZenPacks.zenoss.LinuxMonitor
 |}
 
 
@@ -23,7 +20,7 @@ This ZenPack demonstrates the Secure Shell (SSH) features, and enables modeling 
 The following entities will be automatically discovered. The attributes and collections will be updated on Zenoss normal remodeling interval which defaults to every 12 hours.
 ;Hard Disks
 : Attributes: Name, Size, LVM PV
-{{ Note }} On some specific CentOS5,RHEL5 lsblk command is not available. In this case these components will be missed
+{{ Note }} On some specific Linux flavors (CentOS5,RHEL5) lsblk command is not available. In this case these components will be missed
 
 ;Processors
 : Attributes: Socket, Manufacturer, Model, Speed, Ext Speed, L1, L2, Voltage
@@ -60,7 +57,7 @@ The following entities will be automatically discovered. The attributes and coll
 
 ;OS Services
 : Attributes: Name, Loaded Status, Active Status, Main PID, Processes, Description
-{{ Note }} On some specific Linux flavors some fields could be empty
+{{ Note }} On some specific Linux flavors some fields (Loaded Status,Processes, Description) could be empty
 
 
 == Set Linux Server Monitoring Credentials ==
