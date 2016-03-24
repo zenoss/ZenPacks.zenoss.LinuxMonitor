@@ -12,6 +12,7 @@ utility module for linux monitor
 
 LVMAttributes is a class for parsing attributes from pvs,vgs,lvs
 '''
+import re
 
 
 class LVMAttributeParser(object):
@@ -192,8 +193,13 @@ def override_graph_labels(component, drange):
             title = "{} ({}: {})".format(
                 g["title"],
                 component.class_label,
-                component.titleOrId()[:34]
+                component.titleOrId()
                 )
+
+            # Reduce size of title so it fits on graph without pushing buttons
+            uid_pattern_re = re.compile('([\w]{8})(--\w{4}){3}--\w{12}')
+            title = uid_pattern_re.sub(r'\1', title)
+            title = title.replace('cinder--volumes-_snapshot-', 'cinder-snap')
 
             g = {
                 "title": title,
