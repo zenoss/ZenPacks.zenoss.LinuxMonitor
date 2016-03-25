@@ -1,26 +1,33 @@
-The <span class="zenpack">ZenPacks.zenoss.LinuxMonitor</span> ZenPack demonstrates how to develop new plugins that collect performance data using Secure Shell.
+This ZenPack provided monitoring support for Linux, leveraging OpenSSH for data
+access. In addition to system health, disks, LVM, services, and processes are
+monitored. 
 
+== Features ==
 
-This ZenPack demonstrates the Secure Shell (SSH) features, and enables modeling and monitoring several types of device components for devices placed in the <span class="ph filepath">/Server/SSH/Linux</span> device class by running commands and parsing the output. Parsing of command output is performed on the <span class="ph">Zenoss platform</span> server or on a distributed collector. The account used to monitor the device does not require root access or special privileges.
+* Monitors multiple Linux flavors and versions
+* OpenStack LVM volume integration
+* Monitors LVM Physical Volumes, Volume Groups, and Logical Volumes
+* Block Device monitoring
+* Service Monitoring via Sysvinit, Systemd, Upstart
+* Root Cause Analysis with Impact Support
+* Dynamic View support
 
-
-== Prerequisites ==
-
-
-{| class="wikitable"
-!width="50%"|Prerequisite
-!width="50%"|Restriction
-|-
-|Product
-|<span class="ph">Zenoss platform</span> 4.x, Zenoss 2.4 or higher
-|}
-
+{{ Note }} This version of LinuxMonitor fully replaces EnterpriseLinux.
+To avoid related errors in zenhub logs, EnterpriseLinux ZP should be removed.
 
 === Discovery ===
-The following entities will be automatically discovered. The attributes and collections will be updated on Zenoss normal remodeling interval which defaults to every 12 hours.
+
+The following entities will be automatically discovered. The attributes and
+collections will be updated on Zenoss normal remodeling interval which defaults
+to every 12 hours.
+
 ;Hard Disks
 : Attributes: Name, Size, LVM PV
-{{ Note }} On some specific Linux flavors (CentOS5,RHEL5) lsblk command is not available. In this case these components will be missed
+
+<div style="margin-left: 2em;">
+{{ Note }} On CentOS5, RHEL5 (and possibly others), the '''lsblk''' command is
+not available, in which case this component will be missing.
+</div>
 
 ;Processors
 : Attributes: Socket, Manufacturer, Model, Speed, Ext Speed, L1, L2, Voltage
@@ -57,17 +64,21 @@ The following entities will be automatically discovered. The attributes and coll
 
 ;OS Services
 : Attributes: Name, Loaded Status, Active Status, Main PID, Processes, Description
-{{ Note }} On some specific Linux flavors some fields (Loaded Status,Processes, Description) could be empty
+
+<div style="margin-left: 2em;">
+{{ Note }} On some Linux flavors some fields (Loaded Status, Processes,
+Description) could be empty.
+</div>
 
 
 == Set Linux Server Monitoring Credentials ==
 
 
-All Linux servers must have a device entry in an organizer below the <span class="ph filepath">/Devices/Server/SSH/Linux</span> device class.
+All Linux servers must have a device entry in an organizer below the
+<tt>/Devices/Server/SSH/Linux</tt> device class.
 
 
-<span class="tiptitle">Tip:</span>
-The SSH monitoring feature will attempt to use key-based authentication before using a configuration properties password value.
+{{#info:info}} Tip: The SSH monitoring feature will attempt to use key-based authentication before using a configuration properties password value.
 
 <ol>
 <li>Select Infrastructure from the navigation bar.
@@ -117,7 +128,7 @@ servers for monitoring purposes, you can follow these steps to allow the
 <source lang=bash>
 Defaults:zenmonitor        !requiretty
 Cmnd_Alias ZENOSS_LVM_CMDS = /sbin/pvs, /sbin/vgs, /sbin/lvs, \
-                             /usr/sbin/pvs, /usr/sbin/vgs, /usr/sbin/lvs 
+                             /usr/sbin/pvs, /usr/sbin/vgs, /usr/sbin/lvs
 Cmnd_Alias ZENOSS_SVC_CMDS = /bin/systemctl list-units *, \
       /bin/systemctl status *, /sbin/initctl list, /sbin/service --status-all, \
       /usr/sbin/dmidecode
@@ -133,9 +144,9 @@ zenmonitor ALL=(ALL) NOPASSWD: ZENOSS_LVM_CMDS, ZENOSS_SVC_CMDS
 updated to your distro's current version. This is especially true for older
 versions of RHEL, CentOS, Ubuntu, and Suse Linux.
 
-{{ Note }} For Suse Linux the paths for (pvs, vgs, lvs) are located at
-/sbin/pvs, /sbin/vgs, and /sbin/lvs respectively. Please ensure that each
-command can be manually executed remotely.
+{{ Note }} For Suse Linux the paths for ('''pvs, vgs, lvs''') are located at
+'''/sbin/pvs''', '''/sbin/vgs''', and '''/sbin/lvs''' respectively. Please
+ensure that each command can be manually executed remotely.
 
 {| class="wikitable"
 |+ <span class="tablecap"><span class="tablecap">Linux Configuration Properties</span></span>
@@ -297,8 +308,15 @@ Installing this ZenPack will add the following items to your Zenoss system.
 ** IO Operation in Progress
 ** IO Utilization
 ** Weighted IO Utilization
-{{ Note }} There were significant changes between 2.4 and 2.6 in the I/O subsystem. As a result, some statistic information disappeared. The translation from a disk address relative to a partition to the disk address relative to the host disk happens much earlier.  All merges and timings now happen at the disk level rather than at both the disk and partition level as in 2.4. There are only *four* fields available
-for partitions on 2.6 machines and in this case few datapoints will be missed.
+<div style="margin-left: 3em;">
+{{ Note }} There were significant changes between 2.4 and 2.6 in the I/O
+subsystem. As a result, some statistic information disappeared. The translation
+from a disk address relative to a partition to the disk address relative to the
+host disk happens much earlier.  All merges and timings now happen at the disk
+level rather than at both the disk and partition level as in 2.4. There are
+only *four* fields available for partitions on 2.6 machines and in this case
+few datapoints will be missed.
+</div>
 
 ;IpService (in /Devices)
 * Data Points
@@ -490,8 +508,17 @@ The following flavors of Linux are supported
 |Oct 2027
 |}
 
+== Changes ==
 
-== Installation =={{#vardefine:restart|{{#show: {{FULLPAGENAME}} | ?Restart}}}}
-{{ZenPackEggInstallationCli|restart={{#var:restart|zenoss restart}}}}
-{{#ifeq:{{#show: {{FULLPAGENAME}} | ?flavor}}|commercial||{{ZenPackDevelopmentInstallationCli|restart={{#var:restart|zenoss restart}}}}}}
-{{ Note }} There might be errors in zenhub logs related to EnterpriseLinux. To avoid it EnterpriseLinux ZP should be removed.
+=== 2.0.0 ===
+
+* Added support for LVM Physical Volumes, Volume Groups, and Logical Volumes
+* Added support for OpenStack-LVM Integration
+* Added disk (block device) monitoring.
+* Added service monitoring (sysvinit, systemd, upstart).
+* Combined EnterpriseLinux and LinuxMonitor capabilities.
+* Enhanced Impact Support
+* Added Dynamic View Support
+* Completely replaces EnterpriseLinux ZenPack
+* Many other smaller improvements.
+
