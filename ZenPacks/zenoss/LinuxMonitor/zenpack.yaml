@@ -1,0 +1,1274 @@
+name: ZenPacks.zenoss.LinuxMonitor
+
+classes:
+    DEFAULTS:
+        base: [zenpacklib.Component]
+
+    LinuxDevice:
+        base: [zenpacklib.Device]
+        label: Device
+
+        dynamicview_views: [service_view]
+        dynamicview_relations:
+            impacts:
+                - all_harddisks
+                - all_processes
+                - all_ipservices
+                - all_cpus
+                - impacted_filesystems
+                - all_linuxservices
+
+    LinuxService:
+        label: OS Service
+        dynamicview_views: []
+        properties:
+            loaded_status:
+                label: Loaded Status
+                order: 1.1
+
+            active_status:
+                label: Active Status
+                order: 1.2
+
+            main_pid:
+                label: Main PID
+                type: int
+                order: 1.3
+
+            processes:
+                label: Processes
+                type: lines
+                order: 1.4
+
+            description:
+                label: Description
+                order: 1.5
+
+        impacted_by:
+            - linuxDevice
+
+    PhysicalVolume:
+        label: Physical Volume
+
+        properties:
+            pvsize:
+                label: Size
+                type: int
+                renderer: Zenoss.render.bytesString
+                datapoint: volume_size
+                datapoint_default: 0
+                order: 4.1
+
+            free:
+                label: Free
+                type: int
+                renderer: Zenoss.render.bytesString
+                datapoint: volume_free
+                order: 4.2
+
+            utilization:
+                label: '% Util'
+                order: 4.3
+                api_only: true
+                api_backendtype: method
+
+            format:
+                label: Format
+                order: 4.0
+
+            attributes:
+                label: Attributes
+                grid_display: False
+                type: lines
+
+            uuid:
+                grid_display: False
+
+            harddisk_id:
+                grid_display: False
+                details_display: False
+                index_type: field
+
+            blockDevice:
+                label: Block Device
+                api_only: true
+                api_backendtype: method
+                type: entity
+
+        dynamicview_views: [service_view]
+        dynamicview_relations:
+            impacts:
+                - volumeGroup
+            impacted_by:
+                - blockDevice
+
+    VolumeGroup:
+        label: Volume Group
+
+        properties:
+            vgsize:
+                label: Size
+                type: int
+                datapoint: group_size
+                datapoint_default: 0
+                renderer: Zenoss.render.bytesString
+                order: 4.1
+
+            freesize:
+                label: Free
+                type: int
+                datapoint: group_free
+                renderer: Zenoss.render.bytesString
+                order: 4.2
+
+            utilization:
+                label: '% Util'
+                order: 4.3
+                api_only: true
+                api_backendtype: method
+
+            snapshot_volumes:
+                label: Snapshot Volumes
+                api_backendtype: method
+                api_only: true
+
+            attributes:
+                label: Attributes
+                grid_display: False
+                type: lines
+
+            uuid:
+                grid_display: False
+
+        dynamicview_views: [service_view]
+        dynamicview_relations:
+            impacts:
+                - logicalVolumes
+            impacted_by:
+                - physicalVolumes
+
+    LogicalVolume:
+        label: Logical Volume
+        monitoring_templates: ['LogicalVolume']
+
+        properties:
+            attributes:
+                label: Attributes
+                grid_display: False
+                type: lines
+
+            lvsize:
+                label: Size
+                type: int
+                renderer: Zenoss.render.bytesString
+
+            active:
+                label: Active
+                datapoint: status_state
+                renderer: Zenoss.render.checkbox
+
+            vgname:
+                grid_display: False
+                details_display: False
+
+            uuid:
+                grid_display: False
+                details_display: False
+
+            openstack_core_components:
+                type: entity
+                label: Cinder Integration
+                grid_display: false
+                api_only: true
+                api_backendtype: method
+
+            filesystem:
+                label: File System
+                api_only: true
+                api_backendtype: method
+                type: entity
+
+            blockDevice:
+                label: Block Device
+                api_only: true
+                api_backendtype: method
+                type: entity
+
+            mountpoint:
+                grid_display: False
+                details_display: False
+                index_type: field
+
+            major_minor:
+                label: "Major:Minor"
+                grid_display: False
+                index_type: field
+
+        dynamicview_views: [service_view]
+        dynamicview_relations:
+            impacts:
+                - snapshotVolumes
+                - filesystem
+                - openstack_core_components
+            impacted_by:
+                - volumeGroup
+                - blockDevice
+
+    SnapshotVolume:
+        label: Snapshot Volume
+
+        properties:
+            origin:
+                grid_display: False
+
+            attributes:
+                label: Attributes
+                grid_display: False
+                type: lines
+
+            lvsize:
+                label: Size
+                type: int
+                renderer: Zenoss.render.bytesString
+
+            active:
+                label: Active
+                datapoint: status_state
+                renderer: Zenoss.render.checkbox
+
+            vgname:
+                grid_display: False
+                details_display: False
+
+            uuid:
+                grid_display: False
+                details_display: False
+
+            openstack_core_components:
+                type: entity
+                label: Cinder Integration
+                grid_display: False
+                api_only: true
+                api_backendtype: method
+
+            filesystem:
+                label: File System
+                api_only: true
+                api_backendtype: method
+                type: entity
+
+            blockDevice:
+                label: Block Device
+                api_only: true
+                api_backendtype: method
+                type: entity
+
+            mountpoint:
+                grid_display: False
+                details_display: False
+                index_type: field
+
+            major_minor:
+                label: "Major:Minor"
+                grid_display: False
+                index_type: field
+
+        dynamicview_views: [service_view]
+        dynamicview_relations:
+            impacted_by:
+                - logicalVolume
+                - blockDevice
+            impacts:
+                - openstack_core_components
+                - filesystem
+
+
+class_relationships:
+    - LinuxDevice 1:MC VolumeGroup
+    - LinuxDevice 1:MC PhysicalVolume
+    - VolumeGroup 1:M PhysicalVolume
+    - VolumeGroup 1:MC LogicalVolume
+    - LogicalVolume 1:MC SnapshotVolume
+    - LinuxDevice 1:MC LinuxService
+
+
+device_classes:
+    /Server/SSH/Linux:
+        remove: true
+
+        zProperties:
+            zPythonClass: ZenPacks.zenoss.LinuxMonitor.LinuxDevice
+            zSshConcurrentSessions: 5
+            zCollectorPlugins:
+                - zenoss.cmd.uname
+                - zenoss.cmd.linux.df
+                - zenoss.cmd.linux.alt_kernel_name
+                - zenoss.cmd.linux.cpuinfo
+                - zenoss.cmd.linux.ifconfig
+                - zenoss.cmd.linux.lvm
+                - zenoss.cmd.linux.memory
+                - zenoss.cmd.linux.netstat_an
+                - zenoss.cmd.linux.netstat_rn
+                - zenoss.cmd.linux.process
+                - zenoss.cmd.linux.rpm
+                - zenoss.cmd.linux.sudo_dmidecode
+                - zenoss.cmd.linux.os_release
+                - zenoss.cmd.linux.os_service
+
+        templates:
+            Device:
+                description: "Linux device monitoring via SSH."
+                targetPythonClass: Products.ZenModel.Device
+
+                datasources:
+                    ssh:
+                        type: COMMAND
+                        usessh: true
+                        # Update HANDLERS in Standard parser if changing.
+                        commandTemplate: "/usr/bin/env echo TEST"
+                        parser: ZenPacks.zenoss.LinuxMonitor.parsers.Standard
+                        cycletime: 60
+                        eventClass: /Ignore
+                        severity: Clear
+
+                    cpu:
+                        type: COMMAND
+                        usessh: true
+                        commandTemplate: "/usr/bin/env cat /proc/stat"
+                        parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.cpu
+                        eventClass: /Ignore
+                        severity: Clear
+
+                        datapoints:
+                            ssCpuIdlePerCpu:
+                                rrdtype: DERIVE
+                                rrdmin: 0
+                                aliases:
+                                    cpu_idle__pct: ""
+                                    cpu__pct: "100,EXC,-,0,MAX"
+
+                            ssCpuUserPerCpu:
+                                rrdtype: DERIVE
+                                rrdmin: 0
+                                aliases:
+                                    cpu_user__pct: ""
+
+                            ssCpuSystemPerCpu:
+                                rrdtype: DERIVE
+                                rrdmin: 0
+                                aliases:
+                                    cpu_system__pct: ""
+
+                            ssCpuWaitPerCpu:
+                                rrdtype: DERIVE
+                                rrdmin: 0
+                                aliases:
+                                    cpu_wait__pct: ""
+
+                    uptime:
+                        type: COMMAND
+                        usessh: true
+                        commandTemplate: "/usr/bin/env uptime"
+                        parser: uptime
+                        eventClass: /Ignore
+                        severity: Clear
+
+                        datapoints:
+                            sysUpTime:
+                                rrdmin: 0
+                                aliases:
+                                    sys_uptime__secs: "100,/"
+
+                            laLoadInt15:
+                                rrdmin: 0
+                                aliases:
+                                    sys_load_15min: ""
+
+                            laLoadInt5:
+                                rrdmin: 0
+                                aliases:
+                                    sys_load_5min: ""
+                                    loadAverage5min: ""
+
+                            laLoadInt1:
+                                rrdmin: 0
+                                aliases:
+                                    sys_load_1min: ""
+
+                    mem:
+                        type: COMMAND
+                        usessh: true
+                        commandTemplate: "/usr/bin/env cat /proc/meminfo"
+                        parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.mem
+                        eventClass: /Ignore
+                        severity: Clear
+
+                        datapoints:
+                            Buffers:
+                                rrdmin: 0
+                                aliases:
+                                    mem_buffers__bytes: ""
+                                    mem_buffers__pct: "${here/hw/totalMemory},/,*,100"
+                                    memoryBuffered__bytes: ""
+
+                            Cached:
+                                rrdmin: 0
+                                aliases:
+                                    mem_cached__bytes: ""
+                                    mem_cached__pct: "${here/hw/totalMemory},/,*,100"
+                                    memoryCached__bytes: ""
+
+                            MemFree:
+                                rrdmin: 0
+                                aliases:
+                                    mem_free__bytes: ""
+                                    mem_free__pct: "${here/hw/totalMemory},/,*,100"
+                                    mem_used__bytes: "${here/hw/totalMemory},EXC,-,0,MAX"
+                                    mem_used__pct: "${here/hw/totalMemory},/,1,-,100,*,ABS"
+                                    mem__pct: "${here/hw/totalMemory},/,1,-,100,*,ABS"
+                                    memoryAvailable__bytes: ""
+                                    memoryUsed__pct: "${here/hw/totalMemory},/,1,-,100,*,ABS"
+
+                            MemTotal:
+                                rrdmin: 0
+                                aliases:
+                                    mem_total__bytes: ""
+
+                            SwapFree:
+                                rrdmin: 0
+                                aliases:
+                                    mem_swap_free__bytes: ""
+                                    mem_swap_free__pct: "${here/os/totalSwap},/,*,100"
+                                    mem_swap_used__bytes: "${here/os/totalSwap},EXC,-,0,MAX"
+                                    mem_swap_used__pct: "${here/os/totalSwap},/,1,-,100,*,ABS"
+
+                            SwapTotal:
+                                rrdmin: 0
+                                aliases:
+                                    mem_swap_total__bytes: ""
+
+                    io:
+                        type: COMMAND
+                        usessh: true
+                        commandTemplate: "/usr/bin/env cat /proc/diskstats"
+                        parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.diskstats
+                        eventClass: /Ignore
+                        severity: Clear
+
+                        datapoints:
+                            ssIORawReceived:
+                                rrdtype: DERIVE
+                                rrdmin: 0
+                                aliases:
+                                    sys_io_received__sectorssec: ""
+
+                            ssIORawSent:
+                                rrdtype: DERIVE
+                                rrdmin: 0
+                                aliases:
+                                    sys_io_sent__sectorssec: ""
+
+                graphs:
+                    CPU Utilization:
+                        units: percent
+                        miny: 0
+                        maxy: 100
+
+                        graphpoints:
+                            Busy:
+                                dpName: cpu_ssCpuIdlePerCpu
+                                rpn: "100,EXC,-,0,MAX"
+                                format: "%7.2lf%%"
+
+                            User:
+                                dpName: cpu_ssCpuUserPerCpu
+                                format: "%7.2lf%%"
+
+                            System:
+                                dpName: cpu_ssCpuSystemPerCpu
+                                format: "%7.2lf%%"
+
+                            Wait:
+                                dpName: cpu_ssCpuWaitPerCpu
+                                format: "%7.2lf%%"
+
+                    Load Average:
+                        units: processes
+                        miny: 0
+
+                        graphpoints:
+                            15 Minute:
+                                dpName: uptime_laLoadInt15
+                                format: "%7.2lf"
+
+                            5 Minute:
+                                dpName: uptime_laLoadInt5
+                                format: "%7.2lf"
+
+                            1 Minute:
+                                dpName: uptime_laLoadInt1
+                                format: "%7.2lf"
+
+                    Memory Utilization:
+                        units: percent
+                        miny: 0
+                        maxy: 100
+
+                        graphpoints:
+                            Used:
+                                dpName: mem_MemFree
+                                rpn: "${here/hw/totalMemory},/,1,-,100,*,ABS"
+                                format: "%7.2lf%%"
+
+                            Cached:
+                                dpName: mem_Cached
+                                rpn: "${here/hw/totalMemory},/,100,*"
+                                format: "%7.2lf%%"
+
+                            Buffers:
+                                dpName: mem_Buffers
+                                rpn: "${here/hw/totalMemory},/,100,*"
+                                format: "%7.2lf%%"
+
+                            Swap:
+                                dpName: mem_SwapFree
+                                rpn: "${here/os/totalSwap},/,1,-,100,*,ABS"
+                                format: "%7.2lf%%"
+
+                    Memory Usage:
+                        units: bytes
+                        base: true
+                        miny: 0
+
+                        graphpoints:
+                            Used:
+                                dpName: mem_MemFree
+                                rpn: "${here/hw/totalMemory},EXC,-,0,MAX"
+                                format: "%7.2lf%s"
+
+                            Cached:
+                                dpName: mem_Cached
+                                format: "%7.2lf%s"
+
+                            Buffers:
+                                dpName: mem_Buffers
+                                format: "%7.2lf%s"
+
+                            Swap:
+                                dpName: mem_SwapFree
+                                rpn: "${here/os/totalSwap},EXC,-,0,MAX"
+                                format: "%7.2lf%s"
+
+                    IO Throughput:
+                        units: sectors/sec
+                        miny: 0
+
+                        graphpoints:
+                            Read:
+                                dpName: io_ssIORawReceived
+                                format: "%7.2lf%s"
+
+                            Written:
+                                dpName: io_ssIORawSent
+                                format: "%7.2lf%s"
+
+            ethernetCsmacd:
+                description: "Ethernet (and default) network interface monitoring for Linux via SSH."
+                targetPythonClass: Products.ZenModel.IpInterface
+
+                datasources:
+                    intf:
+                        type: COMMAND
+                        usessh: true
+                        commandTemplate: "/bin/sh -c 'export PATH=/bin:/sbin:/usr/bin:/usr/sbin; [ -x $$(which ifconfig) ] && ifconfig -a || ip -s -o link'"
+                        parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.ifconfig
+                        component: "${here/id}"
+                        eventClass: /Ignore
+                        severity: Clear
+
+                        datapoints:
+                            ifInOctets:
+                                rrdtype: DERIVE
+                                rrdmin: 0
+                                aliases:
+                                    if_received__bytessec: ""
+                                    inputOctets__bytes: ""
+
+                            ifOutOctets:
+                                rrdtype: DERIVE
+                                rrdmin: 0
+                                aliases:
+                                    if_sent__bytessec: ""
+                                    outputOctets__bytes: ""
+
+                            ifInPackets:
+                                rrdtype: DERIVE
+                                rrdmin: 0
+                                aliases:
+                                    if_received_packets__persec: ""
+
+                            ifOutPackets:
+                                rrdtype: DERIVE
+                                rrdmin: 0
+                                aliases:
+                                    if_sent_packets__persec: ""
+
+                            ifInErrors:
+                                rrdtype: DERIVE
+                                rrdmin: 0
+                                aliases:
+                                    if_received_errors__persec: ""
+
+                            ifInDropped:
+                                rrdtype: DERIVE
+                                rrdmin: 0
+                                aliases:
+                                    if_received_dropped__persec: ""
+
+                            ifInOverruns:
+                                rrdtype: DERIVE
+                                rrdmin: 0
+                                aliases:
+                                    if_received_overruns__persec: ""
+
+                            ifOutErrors:
+                                rrdtype: DERIVE
+                                rrdmin: 0
+                                aliases:
+                                    if_sent_errors_persec: ""
+
+                            ifOutCarrier:
+                                rrdtype: DERIVE
+                                rrdmin: 0
+                                aliases:
+                                    if_sent_carrier__persec: ""
+
+                            ifOutCollisions:
+                                rrdtype: DERIVE
+                                rrdmin: 0
+                                aliases:
+                                    if_sent_collisions__persec: ""
+
+                            ifOutDropped:
+                                rrdtype: DERIVE
+                                rrdmin: 0
+                                aliases:
+                                    if_sent_dropped__persec: ""
+
+                thresholds:
+                    "75 percent utilization":
+                        type: MinMaxThreshold
+                        maxval: "(here.speed or 1e7) / 8 * .75"
+                        eventClass: /Perf/Interface
+                        dsnames:
+                            - intf_ifInOctets
+                            - intf_ifOutOctets
+
+                graphs:
+                    Data Throughput:
+                        units: bits/sec
+                        miny: 0
+
+                        graphpoints:
+                            Receive:
+                                dpName: intf_ifInOctets
+                                rpn: "8,*"
+                                format: "%7.2lf%s"
+
+                            Transmit:
+                                dpName: intf_ifOutOctets
+                                rpn: "8,*"
+                                format: "%7.2lf%s"
+
+                    Packet Throughput:
+                        units: packets/sec
+                        miny: 0
+
+                        graphpoints:
+                            Receive:
+                                dpName: intf_ifInPackets
+                                format: "%7.2lf%s"
+
+                            Transmit:
+                                dpName: intf_ifOutPackets
+                                format: "%7.2lf%s"
+
+                    Error Rate:
+                        units: errors/sec
+                        miny: 0
+
+                        graphpoints:
+                            Receive:
+                                dpName: intf_ifInErrors
+                                format: "%7.2lf%s"
+
+                            RX Dropped:
+                                dpName: intf_ifInDropped
+                                format: "%7.2lf%s"
+
+                            RX Overruns:
+                                dpName: intf_ifInOverruns
+                                format: "%7.2lf%s"
+
+                            Transmit:
+                                dpName: intf_ifOutErrors
+                                format: "%7.2lf%s"
+
+                            TX Carrier:
+                                dpName: intf_ifOutCarrier
+                                format: "%7.2lf%s"
+
+                            TX Collisions:
+                                dpName: intf_ifOutCollisions
+                                format: "%7.2lf%s"
+
+                            TX Dropped:
+                                dpName: intf_ifOutDropped
+                                format: "%7.2lf%s"
+
+            FileSystem:
+                description: "Linux file system monitoring via SSH."
+                targetPythonClass: Products.ZenModel.FileSystem
+
+                datasources:
+                    disk:
+                        type: COMMAND
+                        usessh: true
+                        commandTemplate: "/usr/bin/env df -kP"
+                        parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.df
+                        component: "${here/id}"
+                        eventClass: /Ignore
+                        severity: Clear
+
+                        datapoints:
+                            usedBlocks:
+                                rrdmin: 0
+                                aliases:
+                                    fs_used__pct: "${here/getTotalBlocks},/,100,*"
+                                    fs_used__bytes: "${here/blockSize},*"
+                                    usedFilesystemSpace__bytes: "${here/blockSize},*"
+
+                    idisk:
+                        type: COMMAND
+                        usessh: true
+                        commandTemplate: "/usr/bin/env df -ikP"
+                        parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.dfi
+                        component: "${here/id}"
+                        eventClass: /Ignore
+                        severity: Clear
+
+                        datapoints:
+                            percentInodesUsed:
+                                rrdmin: 0
+                                aliases:
+                                    fs_inodes__pct: ""
+
+                            totalInodes:
+                                rrdmin: 0
+                                aliases:
+                                    fs_inodes_total: ""
+
+                            usedInodes:
+                                rrdmin: 0
+                                aliases:
+                                    fs_inodes_used: ""
+
+                            availableInodes:
+                                rrdmin: 0
+                                aliases:
+                                    fs_inodes_avail: ""
+
+                thresholds:
+                    "90 percent used":
+                        type: MinMaxThreshold
+                        maxval: "here.getTotalBlocks() * 0.90"
+                        eventClass: /Perf/FileSystem
+                        dsnames:
+                            - disk_usedBlocks
+
+                graphs:
+                    Utilization:
+                        units: percent
+                        miny: 0
+                        maxy: 100
+
+                        graphpoints:
+                            Used:
+                                dpName: disk_usedBlocks
+                                rpn: "${here/getTotalBlocks},/,100,*"
+                                format: "%7.2lf%%"
+
+                    Usage:
+                        units: bytes
+                        miny: 0
+                        base: true
+
+                        graphpoints:
+                            Used:
+                                dpName: disk_usedBlocks
+                                rpn: "${here/blockSize},*"
+                                format: "%7.2lf%s"
+
+                    Inode Utilization:
+                        units: percent
+                        miny: 0
+                        maxy: 100
+
+                        graphpoints:
+                            Used:
+                                dpName: idisk_percentInodesUsed
+                                format: "%7.2lf%%"
+
+                    Inode Usage:
+                        units: inodes
+                        miny: 0
+
+                        graphpoints:
+                            Total:
+                                dpName: idisk_totalInodes
+                                format: "%7.2lf%s"
+
+                            Used:
+                                dpName: idisk_usedInodes
+                                format: "%7.2lf%s"
+
+            OSProcess:
+                description: "Linux process monitoring via SSH."
+                targetPythonClass: Products.ZenModel.OSProcess
+
+                datasources:
+                    ps:
+                        type: COMMAND
+                        usessh: true
+                        commandTemplate: "/bin/ps -eo pid,rss,cputime,args"
+                        parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.ps
+                        component: "${here/id}"
+                        eventClass: /Ignore
+                        severity: Clear
+
+                        datapoints:
+                            count:
+                                rrdmin: 0
+                                aliases:
+                                    ps_count: ""
+
+                            cpu:
+                                rrdtype: DERIVE
+                                rrdmin: 0
+                                aliases:
+                                    ps_cpu: ""
+                                    ps_cpu__pct: "100,*"
+
+                            mem:
+                                rrdmin: 0
+                                aliases:
+                                    ps_mem__bytes: ""
+
+                thresholds:
+                    count:
+                        type: MinMaxThreshold
+                        minval: "here.getMinProcessCount()"
+                        maxval: "here.getMaxProcessCount()"
+                        eventClass: /Status
+                        severity: Warning
+                        dsnames: [ps_count]
+
+                graphs:
+                    Process Count:
+                        units: processes
+                        miny: 0
+
+                        graphpoints:
+                            Running:
+                                dpName: ps_count
+                                format: "%7.0lf"
+
+                    CPU Utilization:
+                        units: percent
+                        miny: 0
+
+                        graphpoints:
+                            Used:
+                                dpName: ps_cpu
+                                rpn: "100,*"
+                                format: "%7.2lf%%"
+
+                    Memory Usage:
+                        units: bytes
+                        miny: 0
+                        base: true
+
+                        graphpoints:
+                            Used:
+                                dpName: ps_mem
+                                format: "%7.2lf%s"
+
+            PhysicalVolume:
+                description: "Linux LVM physical volume monitoring via SSH."
+                targetPythonClass: ZenPacks.zenoss.LinuxMonitor.PhysicalVolume
+
+                datasources:
+                    volume:
+                        type: COMMAND
+                        usessh: true
+                        commandTemplate: '/usr/bin/env sudo pvs --noheadings --units b --nosuffix -o pv_name,pv_size,pv_free'
+                        parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.pvvgstats
+                        component: "${here/id}"
+                        eventClass: /Ignore
+                        severity: Clear
+
+                        datapoints:
+                            size:
+                                rrdmin: 0
+                                aliases:
+                                    lvm_pv_size__bytes: ""
+
+                            free:
+                                rrdmin: 0
+                                aliases:
+                                    lvm_pv_free__bytes: ""
+                                    lvm_pv_free__pct: "${here/pvsize},/,*,100"
+                                    lvm_pv_used__bytes: "${here/pvsize},EXC,-,0,MAX"
+                                    lvm_pv_used__pct: "${here/pvsize},/,1,-,100,*,ABS"
+
+                    status:
+                        type: COMMAND
+                        usessh: true
+                        commandTemplate: "/usr/bin/env sudo pvs --noheadings -o pv_name,pv_attr | awk '{split($$2, chars, \"\"); printf(\"%s \", $$1); for (i=1;i<=3;i++) printf(\"%d \", chars[i]==\"-\" ? 0 : 1); printf(\"\\n\")}'"
+                        parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.pvsstatus
+                        component: "${here/id}"
+                        eventClass: /Ignore
+                        severity: Clear
+
+                        datapoints:
+                            allocatable:
+                                rrdmin: 0
+                                aliases:
+                                    lvm_pv_allocatable__bool: ""
+
+                            exported:
+                                rrdmin: 0
+                                aliases:
+                                    lvm_pv_exported__bool: ""
+
+                            missing:
+                                rrdmin: 0
+                                aliases:
+                                    lvm_pv_missing__bool: ""
+
+                graphs:
+                    Utilization:
+                        units: percent
+                        miny: 0
+                        maxy: 100
+
+                        graphpoints:
+                            Used:
+                                dpName: volume_free
+                                lineType: AREA
+                                rpn: "${here/pvsize},-,${here/pvsize},/,-100,*"
+                                format: "%7.2lf%%"
+
+                thresholds:
+                    unallocatable:
+                        dsnames: [status_allocatable]
+                        minval: 1
+                        eventClass: /Status
+
+                    exported:
+                        dsnames: [status_exported]
+                        maxval: 0
+                        severity: 2
+                        eventClass: /Status
+
+                    missing:
+                        dsnames: [status_missing]
+                        maxval: 0
+                        eventClass: /Status
+
+            VolumeGroup:
+                description: "Linux LVM volume group monitoring via SSH."
+                targetPythonClass: ZenPacks.zenoss.LinuxMonitor.VolumeGroup
+
+                datasources:
+                    group:
+                        type: COMMAND
+                        usessh: true
+                        commandTemplate: "/usr/bin/env sudo vgs --noheadings --units b --nosuffix -o vg_name,vg_size,vg_free"
+                        parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.pvvgstats
+                        component: "${here/id}"
+                        eventClass: /Ignore
+                        severity: Clear
+
+                        datapoints:
+                            size:
+                                rrdmin: 0
+                                aliases:
+                                    lvm_vg_size__bytes: ""
+
+                            free:
+                                rrdmin: 0
+                                aliases:
+                                    lvm_vg_free__bytes: ""
+                                    lvm_vg_free__pct: "${here/vgsize},/,*,100"
+                                    lvm_vg_used__bytes: "${here/vgsize},EXC,-,0,MAX"
+                                    lvm_vg_used__pct: "${here/vgsize},/,1,-,100,*,ABS"
+
+                    status:
+                        type: COMMAND
+                        usessh: true
+                        commandTemplate: "/usr/bin/env sudo vgs --noheadings -o vg_name,vg_attr | awk '{split($$2, chars, \"\"); printf(\"%s \", $$1); for (i=1;i<=3;i++) printf(\"%d \", chars[i]==\"-\" ? 0 : 1); printf(\"\\n\")}'"
+                        parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.vgsstatus
+                        component: "${here/id}"
+                        eventClass: /Ignore
+                        severity: Clear
+
+                        datapoints:
+                            partial:
+                                rrdmin: 0
+                                aliases:
+                                    lvm_vg_partial__bool: ""
+
+                thresholds:
+                    partial:
+                        dsnames: [status_partial]
+                        minval: 1
+                        eventClass: /Status
+
+                graphs:
+                    Utilization:
+                        units: percent
+                        miny: 0
+                        maxy: 100
+
+                        graphpoints:
+                            Used:
+                                dpName: group_free
+                                lineType: AREA
+                                rpn: "${here/vgsize},-,${here/vgsize},/,-100,*"
+                                format: "%7.2lf%%"
+
+            LogicalVolume:
+                description: "Linux LVM logical volume monitoring via SSH."
+                targetPythonClass: ZenPacks.zenoss.LinuxMonitor.LogicalVolume
+
+                datasources:
+                    status:
+                        type: COMMAND
+                        usessh: true
+                        commandTemplate: "/usr/bin/env sudo lvs --noheadings -o vg_name,lv_name,lv_attr"
+                        parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.lvsstatus
+                        component: "${here/id}"
+                        eventClass: /Status
+                        component: "${here/id}"
+                        eventClass: /Ignore
+                        severity: Clear
+
+                        datapoints:
+                            state:
+                                rrdmin: 0
+                                aliases:
+                                    lvm_lv_state__bool: ""
+
+                            health:
+                                rrdmin: 0
+                                aliases:
+                                    lvm_lv_health__bool: ""
+
+            SnapshotVolume:
+                description: "Linux LVM snapshot volume monitoring via SSH."
+                targetPythonClass: ZenPacks.zenoss.LinuxMonitor.SnapshotVolume
+
+                datasources:
+                    status:
+                        type: COMMAND
+                        usessh: true
+                        commandTemplate: "/usr/bin/env sudo lvs --noheadings -o vg_name,lv_name,lv_attr"
+                        parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.lvsstatus
+                        component: "${here/id}"
+                        eventClass: /Status
+                        component: "${here/id}"
+                        eventClass: /Ignore
+                        severity: Clear
+
+                        datapoints:
+                            state:
+                                rrdmin: 0
+                                aliases:
+                                    lvm_snapshot_state__bool: ""
+
+                            health:
+                                rrdmin: 0
+                                aliases:
+                                    lvm_snapshot_health__bool: ""
+
+            HardDisk:
+                description: "Linux hard disk (block device) monitoring via SSH."
+                targetPythonClass: ZenPacks.zenoss.LinuxMonitor.HardDisk
+
+                datasources:
+                    diskstats:
+                        type: COMMAND
+                        usessh: true
+                        commandTemplate: "/usr/bin/env cat /proc/diskstats"
+                        parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.diskstats
+                        component: "${here/id}"
+                        eventClass: /Ignore
+                        severity: Clear
+
+                        datapoints:
+                            readsCompleted:
+                                description: "The number of read requests that were issued to the device per second."
+                                rrdtype: DERIVE
+                                rrdmin: 0
+                                aliases:
+                                    disk_reads__persec: ""
+
+                            readsMerged:
+                                description: "The number of read requests merged per second that were queued to the device."
+                                rrdtype: DERIVE
+                                rrdmin: 0
+                                aliases:
+                                    disk_readsmerged__persec: ""
+
+                            sectorsRead:
+                                description: "The number of sectors read from the device per second."
+                                rrdtype: DERIVE
+                                rrdmin: 0
+                                aliases:
+                                    disk_reads__sectorssec: ""
+
+                            msReading:
+                                description: "Milliseconds spent by all reads in concrete moment of time."
+                                rrdtype: DERIVE
+                                rrdmin: 0
+                                aliases:
+                                    disk_read_time__pct: "10,/"
+
+                            writesCompleted:
+                                description: "The number of write requests that were issued to the device per second."
+                                rrdtype: DERIVE
+                                rrdmin: 0
+                                aliases:
+                                    disk_writes__persec: ""
+
+                            writesMerged:
+                                description: "The number of write requests merged per second that were queued to the device."
+                                rrdtype: DERIVE
+                                rrdmin: 0
+                                aliases:
+                                    disk_writesmerged__persec: ""
+
+                            sectorsWritten:
+                                description: "The number of sectors written to the device per second."
+                                rrdtype: DERIVE
+                                rrdmin: 0
+                                aliases:
+                                    disk_writes__sectorssec: ""
+
+                            msWriting:
+                                description: "Milliseconds spent by all writes in concrete moment of time."
+                                rrdtype: DERIVE
+                                rrdmin: 0
+                                aliases:
+                                    disk_write_time__pct: "10,/"
+
+                            ioInProgress:
+                                description: "I/Os currently in progress."
+                                rrdtype: GAUGE
+                                rrdmin: 0
+                                aliases:
+                                    disk_operations_in_progress: ""
+
+                            msDoingIO:
+                                description: "Milliseconds spent doing I/Os in concrete moment of time."
+                                rrdtype: DERIVE
+                                rrdmin: 0
+                                aliases:
+                                    disk_busy__pct: "10,/"
+
+                            msDoingIOWeighted:
+                                description: "This field is incremented at each I/O start, I/O completion, I/O merge, or read of these stats by the number of I/Os in progress times the number of milliseconds spent doing I/O since the last update of this field."
+                                rrdtype: DERIVE
+                                rrdmin: 0
+                                aliases:
+                                    disk_weighted_busy__pct: "10,/"
+
+                graphs:
+                    Operation Throughput:
+                        units: operations/sec
+                        miny: 0
+
+                        graphpoints:
+                            Reads:
+                                dpName: diskstats_readsCompleted
+                                format: "%7.2lf%s"
+
+                            Writes:
+                                dpName: diskstats_writesCompleted
+                                format: "%7.2lf%s"
+
+                    Merge Rate:
+                        units: merged/sec
+                        miny: 0
+
+                        graphpoints:
+                            Reads:
+                                dpName: diskstats_readsMerged
+                                format: "%7.2lf%s"
+
+                            Writes:
+                                dpName: diskstats_writesMerged
+                                format: "%7.2lf%s"
+
+                    Sector Throughput:
+                        units: sectors/sec
+                        miny: 0
+
+                        graphpoints:
+                            Read:
+                                dpName: diskstats_sectorsRead
+                                format: "%7.2lf%s"
+
+                            Written:
+                                dpName: diskstats_sectorsWritten
+                                format: "%7.2lf%s"
+
+                    IO Operations:
+                        units: operations
+                        miny: 0
+
+                        graphpoints:
+                            IO:
+                                dpName: diskstats_ioInProgress
+                                format: "%7.2lf%s"
+
+                    IO Utilization:
+                        units: percent
+                        miny: 0
+
+                        graphpoints:
+                            Reading:
+                                dpName: diskstats_msReading
+                                rpn: "10,/"
+                                format: "%7.2lf%%"
+
+                            Writing:
+                                dpName: diskstats_msWriting
+                                rpn: "10,/"
+                                format: "%7.2lf%%"
+
+                            Doing IO:
+                                dpName: diskstats_msDoingIO
+                                rpn: "10,/"
+                                format: "%7.2lf%%"
+
+                    Weighted IO Utilization:
+                        units: weighted percent
+                        miny: 0
+
+                        graphpoints:
+                            Weighted IO:
+                                dpName: diskstats_msDoingIOWeighted
+                                rpn: "10,/"
+                                format: "%7.2lf%%"

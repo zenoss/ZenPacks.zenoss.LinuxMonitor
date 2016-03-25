@@ -1,57 +1,61 @@
 ##############################################################################
-# 
-# Copyright (C) Zenoss, Inc. 2009, all rights reserved.
-# 
+#
+# Copyright (C) Zenoss, Inc. 2015, all rights reserved.
+#
 # This content is made available according to terms specified in
 # License.zenoss under the directory where your Zenoss product is installed.
-# 
+#
 ##############################################################################
 
-
 import logging
-import Globals
-import os.path
-from Products.ZenModel.ZenPack import ZenPackBase
+LOG = logging.getLogger("zen.LinuxMonitor")
 
-log = logging.getLogger('zen.LinuxMonitor')
+from . import zenpacklib
+import os.path
+from Products.CMFCore.DirectoryView import registerDirectory
 
 skinsDir = os.path.join(os.path.dirname(__file__), 'skins')
-from Products.CMFCore.DirectoryView import registerDirectory
 if os.path.isdir(skinsDir):
     registerDirectory(skinsDir, globals())
 
-class ZenPack(ZenPackBase):
-    
+# CFG is necessary when using zenpacklib.TestCase.
+CFG = zenpacklib.load_yaml()
+
+from . import schema
+
+
+class ZenPack(schema.ZenPack):
+
     def install(self, app):
-        """
-        Set the collector plugins for Server/SSH/Linux.
-        """
-        linux = app.dmd.Devices.createOrganizer('/Server/SSH/Linux')
-        linux.setZenProperty( 'zCollectorPlugins', 
-                              ['zenoss.cmd.uname',
-                               'zenoss.cmd.uname_a',
-                               'zenoss.cmd.df',
-                               'zenoss.cmd.linux.cpuinfo', 
-                               'zenoss.cmd.linux.memory', 
-                               'zenoss.cmd.linux.ifconfig', 
-                               'zenoss.cmd.linux.netstat_an', 
-                               'zenoss.cmd.linux.netstat_rn', 
-                               'zenoss.cmd.linux.process' ] ) 
-        
-        linux.register_devtype('Linux Server', 'SSH')
-        ZenPackBase.install(self, app)
-                                   
-    def remove(self, app, leaveObjects=False):
-        """
-        Remove the collector plugins.
-        """
-        ZenPackBase.remove(self, app, leaveObjects)
-        if not leaveObjects:
-            try:
-                # Using findChild here to avoid finding /Server/Linux
-                # accidentally via acquisition.
-                linux = app.dmd.findChild('Devices/Server/SSH/Linux')
-                linux.zCollectorPlugins = []
-            except AttributeError:
-                # No /Server/SSH/Linux device class to remove.
-                pass
+        super(ZenPack, self).install(app)
+
+        self.register_devtype(
+            app.zport.dmd,
+            deviceclass="/Server/SSH/Linux",
+            description="Linux Server",
+            protocol="SSH")
+        try:
+            self.dmd.ZenPackManager.packs._getOb(
+                'ZenPacks.zenoss.EnterpriseLinux')
+            LOG.info(' '.join(["EnterpriseLinux ZenPack is not required",
+                               "for the LinuxMonitor ZenPack"]))
+        except AttributeError:
+            pass
+
+    def register_devtype(self, dmd, deviceclass, description, protocol):
+        try:
+            deviceclass = dmd.Devices.getOrganizer(deviceclass)
+
+            if (description, protocol) not in deviceclass.devtypes:
+                LOG.info(
+                    "registering %s (%s) device type",
+                    description,
+                    protocol)
+
+                deviceclass.register_devtype(description, protocol)
+        except Exception:
+            pass
+
+
+# Patch last to avoid import recursion problems.
+from ZenPacks.zenoss.LinuxMonitor import patches  # NOQA

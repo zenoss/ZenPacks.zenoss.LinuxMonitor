@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<configure
+    xmlns="http://namespaces.zope.org/zope"
+    xmlns:browser="http://namespaces.zope.org/browser"
+    xmlns:zcml="http://namespaces.zope.org/zcml"
+    >
+
+    <adapter
+        provides=".FileSystem.IFileSystemInfo"
+        for=".FileSystem.FileSystem"
+        factory=".FileSystem.FileSystemInfo"
+        />
+
+    <adapter
+        provides=".HardDisk.IHardDiskInfo"
+        for=".HardDisk.HardDisk"
+        factory=".HardDisk.HardDiskInfo"
+        />
+
+    <!-- DynamicView -->
+    <configure zcml:condition="installed ZenPacks.zenoss.DynamicView">
+        <include package="ZenPacks.zenoss.DynamicView" file="meta.zcml"/>
+
+        <!-- FileSystem -->
+        <dynamicViewToGroup
+            view="service_view"
+            group="File Systems"
+            />
+
+        <relatableGroup
+            name="File Systems"
+            weight="40"
+            groupType="linux"
+            />
+
+        <adapter
+            provides="ZenPacks.zenoss.DynamicView.interfaces.IRelatable"
+            for=".FileSystem.FileSystem"
+            factory=".dynamicview.FileSystemRelatable"
+            />
+
+        <subscriber
+            provides="ZenPacks.zenoss.DynamicView.interfaces.IRelationsProvider"
+            for=".FileSystem.FileSystem"
+            factory=".dynamicview.FileSystemRelationsProvider"
+            />
+        
+        <!-- HardDisk -->
+        <dynamicViewToGroup
+            view="service_view"
+            group="Hard Disks"
+            />
+
+        <relatableGroup
+            name="Hard Disks"
+            weight="45"
+            groupType="linux"
+            />
+
+        <adapter
+            provides="ZenPacks.zenoss.DynamicView.interfaces.IRelatable"
+            for=".HardDisk.HardDisk"
+            factory=".dynamicview.HardDiskRelatable"
+            />
+
+        <subscriber
+            provides="ZenPacks.zenoss.DynamicView.interfaces.IRelationsProvider"
+            for=".HardDisk.HardDisk"
+            factory=".dynamicview.HardDiskRelationsProvider"
+            />
+
+    </configure>
+
+    <!-- Impact -->
+    <configure zcml:condition="installed ZenPacks.zenoss.Impact">
+        <include package="ZenPacks.zenoss.Impact" file="meta.zcml"/>
+
+        <subscriber
+            provides="ZenPacks.zenoss.Impact.impactd.interfaces.IRelationshipDataProvider"
+            for="Products.ZenModel.CPU.CPU"
+            factory=".impact.CPURelationsProvider"
+            />
+
+        <subscriber
+            provides="ZenPacks.zenoss.Impact.impactd.interfaces.IRelationshipDataProvider"
+            for="Products.ZenModel.OSProcess.OSProcess"
+            factory=".impact.OSProcessRelationsProvider"
+            />
+
+        <subscriber
+            provides="ZenPacks.zenoss.Impact.impactd.interfaces.IRelationshipDataProvider"
+            for="Products.ZenModel.IpService.IpService"
+            factory=".impact.IpServiceRelationsProvider"
+            />
+
+        <subscriber
+                provides="ZenPacks.zenoss.Impact.impactd.interfaces.IRelationshipDataProvider"
+                for="ZenPacks.zenoss.LinuxMonitor.LinuxDevice.LinuxDevice"
+                factory=".impact.DeviceRelationsProvider"
+            />
+
+    </configure>
+
+    <!-- OpenStack Cinder integration -->
+    <configure zcml:condition="installed ZenPacks.zenoss.OpenStackInfrastructure.interfaces">
+      <configure zcml:condition="have openstack_cinder_integration">
+          <utility
+              name="cinder.lvm"
+              factory=".openstack_cinder.LinuxCinderImplementationPlugin"
+              provides="ZenPacks.zenoss.OpenStackInfrastructure.interfaces.ICinderImplementationPlugin"
+              />
+      </configure>
+    </configure>
+
+    <!-- Browser -->
+    <include package=".browser"/>
+
+</configure>
