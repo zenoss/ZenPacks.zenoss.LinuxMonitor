@@ -46,11 +46,6 @@ class LinuxDevice(schema.LinuxDevice):
         for cpu in self.hw.cpus():
             yield cpu
 
-    def all_linuxservices(self):
-        """Generate all LinuxService components."""
-        for linuxservice in self.linuxServices():
-            yield linuxservice
-
     def impacted_filesystems(self):
         """Generate filesystems impacted by this device.
 
@@ -64,3 +59,33 @@ class LinuxDevice(schema.LinuxDevice):
             if isinstance(fs, FileSystem):
                 if fs.impacting_object() == self:
                     yield fs
+
+    def is_hypervisor(self):
+        if hasattr(self, 'openstack_hostComponent'):
+            if self.openstack_hostComponent():
+                return True
+
+        return False
+
+    def getDynamicViewGroup(self):
+        """Return DynamicView group information.
+
+        Overrides zenpack.yaml to distinguish between standard devices, and
+        devices potentially running other devices as guests. Devices on which
+        other devices run need a different group name, and a higher weight.
+
+        """
+        if self.is_hypervisor():
+            return {
+                "name": "Devices (Hypervisor)",
+                "weight": 550,
+                "type": self.zenpack_name,
+                "icon": self.icon_url,
+                }
+        else:
+            return {
+                "name": "Devices",
+                "weight": 50,
+                "type": self.zenpack_name,
+                "icon": self.icon_url,
+                }
