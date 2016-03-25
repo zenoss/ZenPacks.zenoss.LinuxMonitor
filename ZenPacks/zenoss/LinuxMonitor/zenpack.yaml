@@ -56,6 +56,7 @@ classes:
                 type: int
                 renderer: Zenoss.render.bytesString
                 datapoint: volume_size
+                datapoint_default: 0
                 order: 4.1
 
             free:
@@ -109,6 +110,7 @@ classes:
                 label: Size
                 type: int
                 datapoint: group_size
+                datapoint_default: 0
                 renderer: Zenoss.render.bytesString
                 order: 4.1
 
