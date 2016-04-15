@@ -98,11 +98,36 @@ class lvm(CommandPlugin):
         self.lvm_parser = LVMAttributeParser()
         section = ''
         hd_re = re.compile('(?P<disk>\S+) (?P<size>\d+)')
-        dev_blk_re = re.compile('(?P<device_block>.*)\s+(?P<major_minor>\d+:\d+)\s+\d+\s+(?P<size>\d+)\s+\d+\s+(?P<type>\w+)\s*(?P<mount>\S*)')
-        pv_re = re.compile('\s*(?P<pv_name>\S+)\s*(?P<pv_fmt>\S+)\s*(?P<pv_attr>\S+)\s*(?P<pv_size>\S+)'
-                           '\s*(?P<pv_free>\S+)\s*(?P<pv_uuid>\S+)\s*(?P<vg_name>\S*)')
-        vg_re = re.compile('\s*(?P<vg_name>\S+)\s*(?P<vg_attr>\S+)\s*(?P<vg_size>\S+)\s*(?P<vg_free>\S+)\s*(?P<vg_uuid>\S+)')
-        lv_re = re.compile('\s*(?P<lv_name>\S+)\s*(?P<vg_name>\S+)\s*(?P<lv_attr>\S+)\s*(?P<lv_size>\S+)\s*(?P<lv_uuid>\S+)\s*(?P<origin>\S*)')
+        dev_blk_re = re.compile(
+            '(?P<device_block>.*)'        # Block Devices
+            '\s+(?P<major_minor>\d+:\d+)' # Blk Major/Minor
+            '\s+\d+\s+'                   # RM number
+            '(?P<size>\d+)'               # Size
+            '\s+\d+\s+'                   # RO number
+            '(?P<type>\w+)'               # Block Type
+            '\s*'                         # Unlimited space
+            '(?P<mount>\S*)')             # Mount point
+        pv_re = re.compile(
+            '(?P<pv_name>\S+)'
+            '\s*(?P<pv_fmt>\S+)'
+            '\s*(?P<pv_attr>\S+)'
+            '\s*(?P<pv_size>\d+)'
+            '\s*(?P<pv_free>\d+)'
+            '\s*(?P<pv_uuid>\S+)'
+            '\s*(?P<vg_name>\S*)')
+        vg_re = re.compile(
+            '(?P<vg_name>\S+)'
+            '\s*(?P<vg_attr>\S+)'
+            '\s*(?P<vg_size>\d+)'
+            '\s*(?P<vg_free>\d+)'
+            '\s*(?P<vg_uuid>\S+)')
+        lv_re = re.compile(
+            '(?P<lv_name>\S+)'
+            '\s*(?P<vg_name>\S+)'
+            '\s*(?P<lv_attr>\S+)'
+            '\s*(?P<lv_size>\d+)'
+            '\s*(?P<lv_uuid>\S+)'
+            '\s*(?P<origin>\S*)')
         parse_re = {'HD': hd_re, 'PV': pv_re, 'VG': vg_re, 'LV': lv_re, 'NAME': dev_blk_re}
         for line in results.split('\n'):
             if self.checkErr(line):
@@ -114,7 +139,7 @@ class lvm(CommandPlugin):
                 section = res[0]
                 continue
             try:
-                columns = parse_re[section].match(line).groupdict()
+                columns = parse_re[section].match(line.strip()).groupdict()
             except (AttributeError, Exception):
                 continue
 
