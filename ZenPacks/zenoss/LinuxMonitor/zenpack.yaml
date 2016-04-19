@@ -340,12 +340,17 @@ device_classes:
                         severity: Clear
 
                         datapoints:
+                            ssCpuUsedPerCpu:
+                                rrdtype: DERIVE
+                                rrdmin: 0
+                                aliases:
+                                    cpu__pct: ""
+
                             ssCpuIdlePerCpu:
                                 rrdtype: DERIVE
                                 rrdmin: 0
                                 aliases:
                                     cpu_idle__pct: ""
-                                    cpu__pct: "100,EXC,-,0,MAX"
 
                             ssCpuUserPerCpu:
                                 rrdtype: DERIVE
@@ -423,16 +428,25 @@ device_classes:
                                 aliases:
                                     mem_free__bytes: ""
                                     mem_free__pct: "${here/hw/totalMemory},/,*,100"
-                                    mem_used__bytes: "${here/hw/totalMemory},EXC,-,0,MAX"
-                                    mem_used__pct: "${here/hw/totalMemory},/,1,-,100,*,ABS"
                                     mem__pct: "${here/hw/totalMemory},/,1,-,100,*,ABS"
                                     memoryAvailable__bytes: ""
-                                    memoryUsed__pct: "${here/hw/totalMemory},/,1,-,100,*,ABS"
 
                             MemTotal:
                                 rrdmin: 0
                                 aliases:
                                     mem_total__bytes: ""
+
+                            MemUsed:
+                                rrdmin: 0
+                                aliases:
+                                    mem_used__bytes: ""
+
+                            MemUsedPercent:
+                                rrdmin: 0
+                                rrdmax: 100
+                                aliases:
+                                    mem_used__pct: ""
+                                    memoryUsed__pct: ""
 
                             SwapFree:
                                 rrdmin: 0
@@ -476,8 +490,7 @@ device_classes:
 
                         graphpoints:
                             Busy:
-                                dpName: cpu_ssCpuIdlePerCpu
-                                rpn: "100,EXC,-,0,MAX"
+                                dpName: cpu_ssCpuUsedPerCpu
                                 format: "%7.2lf%%"
 
                             User:
@@ -516,8 +529,7 @@ device_classes:
 
                         graphpoints:
                             Used:
-                                dpName: mem_MemFree
-                                rpn: "${here/hw/totalMemory},/,1,-,100,*,ABS"
+                                dpName: mem_MemUsedPercent
                                 format: "%7.2lf%%"
 
                             Cached:
@@ -542,8 +554,7 @@ device_classes:
 
                         graphpoints:
                             Used:
-                                dpName: mem_MemFree
-                                rpn: "${here/hw/totalMemory},EXC,-,0,MAX"
+                                dpName: mem_MemUsed
                                 format: "%7.2lf%s"
 
                             Cached:

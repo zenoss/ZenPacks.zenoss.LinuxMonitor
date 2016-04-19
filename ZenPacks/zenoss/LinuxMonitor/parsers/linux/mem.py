@@ -24,15 +24,37 @@ class mem(CommandParser):
         """
         datapointMap = dict([(dp.id, dp) for dp in cmd.points])
         data = [line.split(':', 1) for line in cmd.result.output.splitlines()]
-        
+
+        # For derivatives we always need to consider some keys.
+        desiredKeys = frozenset(datapointMap.keys() + ["MemFree", "MemTotal"])
+
+        # Extract values from data. Convert values to bytes.
+        values = {}
         for id, vals in data:
-            if id in datapointMap:
+            if id in desiredKeys:
                 try:
                     value, unit = vals.strip().split()
-                except:
-                    value = vals
-                    unit = 1
-                size = int(value) * MULTIPLIER.get(unit, 1)
-                result.values.append((datapointMap[id], size))
-        
+                except Exception:
+                    value, unit = vals, "b"
+
+                values[id] = int(value) * MULTIPLIER.get(unit, 1)
+
+        # MemAvailable is useful, but only introduced in Linux 3.14.
+        # https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/commit/?id=34e431b0ae398fc54ea69ff85ec700722c9da773
+        if "MemAvailable" not in values:
+            # Naively use MemFree for MemAvailable on older kernels. It's
+            # "pretty much guaranteed to be wrong today", but we don't have the
+            # /proc/zoneinfo information to calculate MemAvailable here.
+            values["MemAvailable"] = values["MemFree"]
+
+        # Derivatives.
+        values["MemUsed"] = values["MemTotal"] - values["MemAvailable"]
+        values["MemUsedPercent"] = (
+            float(values["MemUsed"]) / float(values["MemTotal"])) * 100.0
+
+        # Add all requested values to result.
+        result.values.extend(
+            (datapointMap[k], v) for k, v in values.items()
+            if k in datapointMap)
+
         return result
