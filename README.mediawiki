@@ -235,7 +235,7 @@ Installing this ZenPack will add the following items to your Zenoss system.
 * zenoss.cmd.linux.df
 * zenoss.cmd.linux.alt_kernel_name
 * zenoss.cmd.linux.cpuinfo
-* zenoss.cmd.linux.ifconfig
+* zenoss.cmd.linux.interfaces
 * zenoss.cmd.linux.lvm
 * zenoss.cmd.linux.memory
 * zenoss.cmd.linux.netstat_an
