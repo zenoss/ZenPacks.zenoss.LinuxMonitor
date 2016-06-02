@@ -82,7 +82,7 @@ class lvm(CommandPlugin):
     MAJ:MIN can be used for diskstats
     """
 
-    command = ('export PATH=/bin:/sbin:/usr/bin:/usr/sbin;'
+    command = ('export PATH=/bin:/sbin:/usr/bin:/usr/sbin; '
                'lsblk -rb 2>&1; '
                'sudo pvs --units b --nosuffix -o pv_name,pv_fmt,pv_attr,pv_size,pv_free,pv_uuid,vg_name 2>&1; '
                'sudo vgs --units b --nosuffix -o vg_name,vg_attr,vg_size,vg_free,vg_uuid 2>&1; '
