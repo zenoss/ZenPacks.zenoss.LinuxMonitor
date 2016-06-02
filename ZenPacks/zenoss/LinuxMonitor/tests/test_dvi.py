@@ -308,7 +308,8 @@ class TestDVI(zenpacklib.TestCase):
                         TAG_IMPACTS: TAG_IMPACTED_BY,
                         })))
 
-    @unittest.skipUnless(DYNAMICVIEW_INSTALLED and IMPACT_INSTALLED, "DynamicView and Impact are not installed")
+    @unittest.skipUnless(DYNAMICVIEW_INSTALLED and IMPACT_INSTALLED,
+                         "DynamicView and Impact are not installed")
     def test_Impact_Edges(self):
         expected = tu.triples_from_yuml(EXPECTED_IMPACTS)
         all_expected = tu.complement_triples(expected)
