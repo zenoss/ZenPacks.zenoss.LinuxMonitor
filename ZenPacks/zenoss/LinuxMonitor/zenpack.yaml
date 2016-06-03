@@ -9,6 +9,7 @@ classes:
         label: Device
 
         dynamicview_views: [service_view]
+        dynamicview_weight: 50
         dynamicview_relations:
             impacts:
                 - all_harddisks
@@ -16,11 +17,10 @@ classes:
                 - all_ipservices
                 - all_cpus
                 - impacted_filesystems
-                - all_linuxservices
+                - linuxServices
 
     LinuxService:
         label: OS Service
-        dynamicview_views: []
         properties:
             loaded_status:
                 label: Loaded Status
@@ -44,7 +44,10 @@ classes:
                 label: Description
                 order: 1.5
 
-        impacted_by:
+        dynamicview_views: [service_view]
+        dynamicview_weight: 30
+        dynamicview_relations:
+          impacted_by:
             - linuxDevice
 
     PhysicalVolume:
@@ -96,6 +99,7 @@ classes:
                 type: entity
 
         dynamicview_views: [service_view]
+        dynamicview_weight: 41
         dynamicview_relations:
             impacts:
                 - volumeGroup
@@ -141,6 +145,7 @@ classes:
                 grid_display: False
 
         dynamicview_views: [service_view]
+        dynamicview_weight: 40
         dynamicview_relations:
             impacts:
                 - logicalVolumes
@@ -205,6 +210,7 @@ classes:
                 index_type: field
 
         dynamicview_views: [service_view]
+        dynamicview_weight: 39
         dynamicview_relations:
             impacts:
                 - snapshotVolumes
@@ -274,6 +280,7 @@ classes:
                 index_type: field
 
         dynamicview_views: [service_view]
+        dynamicview_weight: 38
         dynamicview_relations:
             impacted_by:
                 - logicalVolume
@@ -304,7 +311,7 @@ device_classes:
                 - zenoss.cmd.linux.df
                 - zenoss.cmd.linux.alt_kernel_name
                 - zenoss.cmd.linux.cpuinfo
-                - zenoss.cmd.linux.ifconfig
+                - zenoss.cmd.linux.interfaces
                 - zenoss.cmd.linux.lvm
                 - zenoss.cmd.linux.memory
                 - zenoss.cmd.linux.netstat_an

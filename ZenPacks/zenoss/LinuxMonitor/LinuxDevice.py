@@ -7,12 +7,6 @@
 #
 ##############################################################################
 
-from Products.Zuul import getFacade
-from zenoss.protocols.protobufs.zep_pb2 import (
-    SEVERITY_CRITICAL, SEVERITY_ERROR,
-    STATUS_NEW, STATUS_ACKNOWLEDGED, STATUS_SUPPRESSED,
-    )
-
 from . import schema
 
 from .FileSystem import FileSystem
@@ -45,11 +39,6 @@ class LinuxDevice(schema.LinuxDevice):
         """Generate all CPU components."""
         for cpu in self.hw.cpus():
             yield cpu
-
-    def all_linuxservices(self):
-        """Generate all LinuxService components."""
-        for linuxservice in self.linuxServices():
-            yield linuxservice
 
     def impacted_filesystems(self):
         """Generate filesystems impacted by this device.
