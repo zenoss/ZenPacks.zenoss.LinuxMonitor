@@ -7,12 +7,6 @@
 #
 ##############################################################################
 
-from Products.Zuul import getFacade
-from zenoss.protocols.protobufs.zep_pb2 import (
-    SEVERITY_CRITICAL, SEVERITY_ERROR,
-    STATUS_NEW, STATUS_ACKNOWLEDGED, STATUS_SUPPRESSED,
-    )
-
 from . import schema
 
 from .FileSystem import FileSystem
