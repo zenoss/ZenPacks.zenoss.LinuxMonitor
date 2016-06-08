@@ -197,6 +197,8 @@ class ZenPack(ZenPackBase):
             d.buildRelations()
 
     def install(self, app):
+        self.createZProperties(app)
+
         # create device classes and set zProperties on them
         for dcname, dcspec in self.device_classes.iteritems():
             if dcspec.create:
@@ -1129,7 +1131,6 @@ def ModelTypeFactory(name, bases):
 
     @ClassProperty
     @classmethod
-    @memoize
     def _relations(cls):
         """Return _relations property
 
@@ -2432,6 +2433,7 @@ class ClassSpec(Spec):
             'class_plural_label': self.plural_label,
             'class_short_label': self.short_label,
             'class_plural_short_label': self.plural_short_label,
+            'dynamicview_views': self.dynamicview_views,
             'dynamicview_group': {
                 'name': self.dynamicview_group,
                 'weight': self.dynamicview_weight,
@@ -5954,6 +5956,12 @@ if DYNAMICVIEW_INSTALLED:
             self._adapted = adapted
 
         def getGroup(self, viewName):
+            group = self._adapted
+            entity = group._adapted
+
+            if viewName not in entity.dynamicview_views:
+                return
+
             data = self._adapted.group_data
             if data:
                 return BaseGroup(
