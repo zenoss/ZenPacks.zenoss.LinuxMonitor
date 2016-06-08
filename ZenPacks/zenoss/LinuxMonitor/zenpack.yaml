@@ -677,7 +677,7 @@ device_classes:
                 thresholds:
                     "75 percent utilization":
                         type: MinMaxThreshold
-                        maxval: "(here.speed or 1e7) / 8 * .75"
+                        maxval: "(here.speed or 1e12) / 8 * .75"
                         eventClass: /Perf/Interface
                         dsnames:
                             - intf_ifInOctets
