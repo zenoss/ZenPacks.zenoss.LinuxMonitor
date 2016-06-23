@@ -510,8 +510,9 @@ The following flavors of Linux are supported
 
 == Changes ==
 
-=== 2.0.0 ===
+;2.0.1
 
+;2.0.0
 * Added support for LVM Physical Volumes, Volume Groups, and Logical Volumes
 * Added support for OpenStack-LVM Integration
 * Added disk (block device) monitoring.
