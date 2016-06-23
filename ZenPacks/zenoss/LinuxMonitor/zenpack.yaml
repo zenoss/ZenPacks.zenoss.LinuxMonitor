@@ -782,7 +782,7 @@ device_classes:
                     "90 percent used":
                         type: MinMaxThreshold
                         maxval: "here.getTotalBlocks() * 0.90"
-                        eventClass: /Perf/FileSystem
+                        eventClass: /Perf/Filesystem
                         dsnames:
                             - disk_usedBlocks
 
