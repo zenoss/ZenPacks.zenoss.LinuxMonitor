@@ -493,6 +493,9 @@ The following flavors of Linux are supported
 * Fix invalid event class in filesystem threshold
 
 ;2.0.0
+
+Enhancement Highlights
+
 * Added support for LVM Physical Volumes, Volume Groups, and Logical Volumes
 * Added support for OpenStack-LVM Integration
 * Added disk (block device) monitoring.
@@ -503,3 +506,8 @@ The following flavors of Linux are supported
 * Completely replaces EnterpriseLinux ZenPack
 * Many other smaller improvements.
 
+Changes to Existing Objects
+
+* The endpoint device type was changed to LinuxDevice
+* Impact Changes: GUID's are changed:
+** Since Linux device type was changed (see above), the GUID's of the Linux objects are also changed at upgrade. This implies that the original impact graph will lose the associated Linux devices at upgrade. Re-add the Linux devices to the impact diagram to restore these objects.
