@@ -26,11 +26,6 @@ log = logging.getLogger('zen.lvm')
 
 
 class lvm(CommandPlugin):
-
-    deviceProperties = CommandPlugin.deviceProperties + (
-        'zIgnoreUnmounted',
-    )
-
     """
     /usr/bin/fdisk -l  | grep '^Disk' | grep -v 'mapper\|identifier\|label' | awk '{gsub(":","");print $2" "$5}'
     /usr/bin/sudo pvs --units b --nosuffix -o pv_name,pv_fmt,pv_attr,pv_size,pv_free,pv_uuid,vg_name;
@@ -94,7 +89,6 @@ class lvm(CommandPlugin):
                'sudo lvs --units b --nosuffix -o lv_name,vg_name,lv_attr,lv_size,lv_uuid,origin 2>&1 ')
 
     def process(self, device, results, log):
-        ignore_unmounted = getattr(device, 'zIgnoreUnmounted', None)
         hd_maps = []
         pv_maps = []
         vg_maps = []
@@ -174,8 +168,7 @@ class lvm(CommandPlugin):
                 if any(columns['device_block'] == om.title for om in hd_maps):
                     continue
                 if columns['type'] in ('disk', 'lvm', 'part', 'raid1'):
-                    if columns['mount'] or not ignore_unmounted:
-                        hd_maps.append(self.makeHDMap(columns))
+                    hd_maps.append(self.makeHDMap(columns))
 
         maps = []
         maps.append(RelationshipMap(

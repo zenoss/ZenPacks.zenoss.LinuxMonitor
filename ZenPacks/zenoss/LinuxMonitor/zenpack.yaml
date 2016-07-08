@@ -1,11 +1,5 @@
 name: ZenPacks.zenoss.LinuxMonitor
 
-zProperties:
-    zIgnoreUnmounted:
-        category: Modeler Controls
-        type: boolean
-        default: false
-
 classes:
     DEFAULTS:
         base: [zenpacklib.Component]
