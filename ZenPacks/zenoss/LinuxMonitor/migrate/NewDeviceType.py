@@ -61,7 +61,7 @@ def logLevel(name, level=logging.NOTSET):
 
 class NewDeviceType(ZenPackMigration):
 
-    version = Version(2, 0, 0)
+    version = Version(2, 0, 2)
 
     def migrate(self, pack):
         dmd = pack.getDmd()
@@ -111,8 +111,8 @@ class NewDeviceType(ZenPackMigration):
             with logLevel("zen.GraphChangeFactory", level=logging.ERROR):
                 for device in deviceclass.getSubDevicesGen_recursive():
                     if not isinstance(device, LinuxDevice):
-                        device.changeDeviceClass(
-                            device.deviceClass().getOrganizerName())
+                        device.__class__ = LinuxDevice
+                        device.buildRelations()
                         progress.increment()
 
         LOG.info("finished converting %s devices", progress.pos)

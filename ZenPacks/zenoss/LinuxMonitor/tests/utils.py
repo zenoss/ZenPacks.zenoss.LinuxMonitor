@@ -34,12 +34,10 @@ except ImportError:
 
 def create_device(dmd, zPythonClass, device_id, datamaps):
     device = dmd.Devices.findDeviceByIdExact(device_id)
-    if device:
-        return device
-
-    deviceclass = dmd.Devices.createOrganizer("/Test")
-    deviceclass.setZenProperty("zPythonClass", zPythonClass)
-    device = deviceclass.createInstance(device_id)
+    if not device:
+        deviceclass = dmd.Devices.createOrganizer("/Server/SSH/Linux")
+        deviceclass.setZenProperty("zPythonClass", zPythonClass)
+        device = deviceclass.createInstance(device_id)
 
     adm = ApplyDataMap()._applyDataMap
 
