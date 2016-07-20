@@ -29,6 +29,10 @@ to every 12 hours.
 not available, in which case this component will be missing.
 </div>
 
+<div style="margin-left: 2em;">
+{{ Note }} To ignore unmounted drives, set the zIgnoreUnmounted configuration property to True.
+</div>
+
 ;Processors
 : Attributes: Socket, Manufacturer, Model, Speed, Ext Speed, L1, L2, Voltage
 
@@ -509,6 +513,10 @@ The following flavors of Linux are supported
 |}
 
 == Changes ==
+
+;2.0.2
+* Added property to ignore unmounted hard disks
+* Improve 1.x to 2.x migration time. (ZEN-24024)
 
 ;2.0.1
 * Fix invalid event class in filesystem threshold
