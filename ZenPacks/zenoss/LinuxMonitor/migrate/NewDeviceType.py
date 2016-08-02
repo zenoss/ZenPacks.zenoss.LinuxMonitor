@@ -61,7 +61,7 @@ def logLevel(name, level=logging.NOTSET):
 
 class NewDeviceType(ZenPackMigration):
 
-    version = Version(2, 0, 2)
+    version = Version(2, 0, 3)
 
     def migrate(self, pack):
         dmd = pack.getDmd()
@@ -111,8 +111,44 @@ class NewDeviceType(ZenPackMigration):
             with logLevel("zen.GraphChangeFactory", level=logging.ERROR):
                 for device in deviceclass.getSubDevicesGen_recursive():
                     if not isinstance(device, LinuxDevice):
-                        device.__class__ = LinuxDevice
+                        reclass_device(device, LinuxDevice)
+
+                        # LinuxDevice has more relations than Device. We must
+                        # cause them to be created on the reclassed device.
                         device.buildRelations()
+
                         progress.increment()
 
         LOG.info("finished converting %s devices", progress.pos)
+
+
+def reclass_device(device, klass):
+    """Change the __class__ of device to klass.
+
+    This isn't quite as simple as "device.__class__ = klass" because ZODB
+    stores the class in the persistent reference to the object, not in the
+    object itself. As soon as the container is loaded from the ZODB, a ghost is
+    created for its persistent reference using the class mentioned there.
+
+    This function works around this issue by also replacing the persistent
+    reference to the object after changing it's __class__.
+
+    See the following article for the inspiration for this function.
+
+    http://blog.redturtle.it/2013/02/25/migrating-dexterity-items-to-dexterity-containers
+
+    """
+    # For example: dmd.Devices.Server.SSH.Linux.devices._objects
+    container = device.getPrimaryParent()._objects
+
+    # Get the unwrapped object.
+    unwrapped_device = container[device.id]
+
+    # Delete the object's persistent reference.
+    del container[unwrapped_device.id]
+
+    # Change the unwrapped object's class.
+    unwrapped_device.__class__ = klass
+
+    # Add back a persistent reference to the newly-classed object.
+    container[unwrapped_device.id] = unwrapped_device
