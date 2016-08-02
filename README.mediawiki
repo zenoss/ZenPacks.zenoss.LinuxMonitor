@@ -493,6 +493,9 @@ The following flavors of Linux are supported
 ;2.1.0
 * Prevent threshold violations on interfaces with unknown speed.
 
+;2.0.3
+* Fix migration of Linux devices to new type. (ZEN-24293)
+
 ;2.0.2
 * Added property to ignore unmounted hard disks
 * Improve 1.x to 2.x migration time. (ZEN-24024)
