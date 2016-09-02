@@ -23,7 +23,7 @@ try:
     from ZenPacks.zenoss.DynamicView import TAG_IMPACTED_BY, TAG_IMPACTS
     from ZenPacks.zenoss.DynamicView.interfaces import IRelatable
 except ImportError:
-    TAG_IMPACTED_BY, TAG_IMPACTS, IRelatable = None
+    TAG_IMPACTED_BY, TAG_IMPACTS, IRelatable = None, None, None
 
 # Impact Imports
 try:
