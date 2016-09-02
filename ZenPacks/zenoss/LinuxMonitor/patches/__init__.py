@@ -8,7 +8,10 @@
 ##############################################################################
 
 import logging
+import twisted
 from importlib import import_module
+from pkg_resources import parse_version
+
 LOG = logging.getLogger('zen.LinuxMonitor')
 
 
@@ -27,5 +30,8 @@ def optional_import(module_name, patch_module_name):
             LOG.exception("failed to apply %s patches", patch_module_name)
 
 
-optional_import('twisted.conch', 'twistedConch')
 optional_import('Products.ZenModel', 'platform')
+
+# We only need to patch Conch in Twisted versions earlier than 15.
+if parse_version(twisted.__version__) < parse_version("15"):
+    optional_import('twisted.conch', 'twistedConch')
