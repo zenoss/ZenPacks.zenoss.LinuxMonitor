@@ -492,6 +492,7 @@ The following flavors of Linux are supported
 
 ;2.1.0
 * Prevent threshold violations on interfaces with unknown speed.
+* Add common datapoint aliases. (ZEN-24619)
 
 ;2.0.4
 * Fix "unimplemented" SSH error on 4.2.5 SP709. (ZEN-23392)

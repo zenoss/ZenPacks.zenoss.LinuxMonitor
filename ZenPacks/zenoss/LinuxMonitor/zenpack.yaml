@@ -441,7 +441,6 @@ device_classes:
                                 aliases:
                                     mem_free__bytes: ""
                                     mem_free__pct: "${here/hw/totalMemory},/,*,100"
-                                    mem__pct: "${here/hw/totalMemory},/,1,-,100,*,ABS"
                                     memoryAvailable__bytes: ""
 
                             MemTotal:
@@ -458,6 +457,7 @@ device_classes:
                                 rrdmin: 0
                                 rrdmax: 100
                                 aliases:
+                                    mem__pct: ""
                                     mem_used__pct: ""
                                     memoryUsed__pct: ""
 
@@ -618,6 +618,7 @@ device_classes:
                                 aliases:
                                     if_received__bytessec: ""
                                     inputOctets__bytes: ""
+                                    in__pct: "8,*,${here/speed},/,100,*"
 
                             ifOutOctets:
                                 rrdtype: DERIVE
@@ -625,6 +626,7 @@ device_classes:
                                 aliases:
                                     if_sent__bytessec: ""
                                     outputOctets__bytes: ""
+                                    out_pct: "8,*,${here/speed},/,100,*"
 
                             ifInPackets:
                                 rrdtype: DERIVE
@@ -769,6 +771,7 @@ device_classes:
                             usedBlocks:
                                 rrdmin: 0
                                 aliases:
+                                    fs__pct: "${here/getTotalBlocks},/,100,*"
                                     fs_used__pct: "${here/getTotalBlocks},/,100,*"
                                     fs_used__bytes: "${here/blockSize},*"
                                     usedFilesystemSpace__bytes: "${here/blockSize},*"
