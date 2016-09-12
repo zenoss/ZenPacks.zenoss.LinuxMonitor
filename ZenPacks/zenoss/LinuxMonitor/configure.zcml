@@ -17,6 +17,13 @@
         factory=".HardDisk.HardDiskInfo"
         />
 
+    <!-- Custom Index Wrappers -->
+    <adapter
+        provides="Products.Zuul.catalog.interfaces.IIndexableWrapper"
+        for=".FileSystem.FileSystem"
+        factory=".FileSystem.FileSystemWrapper"
+        />
+
     <!-- DynamicView -->
     <configure zcml:condition="installed ZenPacks.zenoss.DynamicView">
         <include package="ZenPacks.zenoss.DynamicView" file="meta.zcml"/>
