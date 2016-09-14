@@ -14,7 +14,6 @@ from Products.DataCollector.plugins.DataMaps import ObjectMap, RelationshipMap
 from ZenPacks.zenoss.LinuxMonitor import zenpacklib
 from ZenPacks.zenoss.LinuxMonitor.tests import utils as tu
 
-# DynamicView Imports
 try:
     from ZenPacks.zenoss.DynamicView import TAG_IMPACTED_BY, TAG_IMPACTS
     DYNAMICVIEW_INSTALLED = True
@@ -22,12 +21,12 @@ except ImportError:
     TAG_IMPACTED_BY, TAG_IMPACTS = None, None
     DYNAMICVIEW_INSTALLED = False
 
-# Impact Import
 try:
-    import ZenPacks.zenoss.Impact
+    import ZenPacks.zenoss.Impact  # NOQA
     IMPACT_INSTALLED = True
 except ImportError:
     IMPACT_INSTALLED = False
+
 
 # These are the DynamicView/Impact impactful relationships we'll test for.
 EXPECTED_IMPACTS = """
@@ -308,8 +307,7 @@ class TestDVI(zenpacklib.TestCase):
                         TAG_IMPACTS: TAG_IMPACTED_BY,
                         })))
 
-    @unittest.skipUnless(DYNAMICVIEW_INSTALLED and IMPACT_INSTALLED,
-                         "DynamicView and Impact are not installed")
+    @unittest.skipUnless(IMPACT_INSTALLED, "Impact not installed")
     def test_Impact_Edges(self):
         expected = tu.triples_from_yuml(EXPECTED_IMPACTS)
         all_expected = tu.complement_triples(expected)
