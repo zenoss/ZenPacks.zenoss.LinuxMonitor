@@ -9,15 +9,27 @@
 
 import itertools
 
+from zope.component import adapts
 from zope.interface import implements
 
 from Products.ZenModel.FileSystem import FileSystem as BaseFileSystem
 from Products.Zuul.decorators import info
 from Products.Zuul.form import schema
+from Products.Zuul.catalog.interfaces import IIndexableWrapper
 from Products.Zuul.infos.component.filesystem import FileSystemInfo as BaseFileSystemInfo
+
+try:
+    from Products.Zuul.catalog.global_catalog \
+        import FileSystemWrapper as BaseFileSystemWrapper
+except ImportError:
+    # Zenoss 4.1 doesn't have FileSystemWrapper.
+    from Products.Zuul.catalog.global_catalog import ComponentWrapper
+
+    BaseFileSystemWrapper = ComponentWrapper
+
 from Products.Zuul.interfaces.component import IFileSystemInfo as IBaseFileSystemInfo
 from Products.Zuul.utils import ZuulMessageFactory as _t
-from ZenPacks.zenoss.LinuxMonitor.util import override_graph_labels
+from ZenPacks.zenoss.LinuxMonitor.util import override_graph_labels, keyword_search
 
 
 class FileSystem(BaseFileSystem):
@@ -109,6 +121,18 @@ class FileSystem(BaseFileSystem):
         '''
         return '/++resource++linux/img/file-system.png'
 
+    def getStorageServer(self):
+        """Generate objects for storage server for this FileSystem."""
+        search_keywords = set()
+
+        storage_device = self.storageDevice
+        if ':' in storage_device:
+            search_keywords.add('has-nfs-client:{}'.format(storage_device))
+
+        search_root = self.getDmdRoot('Devices')
+        for obj in keyword_search(search_root, search_keywords):
+            yield obj
+
 
 class IFileSystemInfo(IBaseFileSystemInfo):
 
@@ -154,6 +178,9 @@ class FileSystemInfo(BaseFileSystemInfo):
     @property
     @info
     def storageDevice(self):
+        for server in self._object.getStorageServer():
+            return"<a class='z-entity' href='{0}'>{1}</a>".format(
+                server.getPrimaryUrlPath(), self._object.storageDevice)
         if self._object.logicalVolume():
             storagedevice = self._object.logicalVolume()
         elif self._object.blockDevice():
@@ -162,3 +189,34 @@ class FileSystemInfo(BaseFileSystemInfo):
             return self._object.storageDevice
         return"<a class='z-entity' href='{0}'>{1}</a>".format(
             storagedevice.getPrimaryUrlPath(), storagedevice.title)
+
+
+class FileSystemWrapper(BaseFileSystemWrapper):
+    '''
+    Indexing adapter for FileSystem.
+    '''
+
+    implements(IIndexableWrapper)
+    adapts(FileSystem)
+
+    def searchKeywordsForChildren(self):
+        """Return tuple of search keywords for FileSystem objects.
+
+        Overrides ComponentWrapper to add junction point information for the FileSystem.
+        This provides a way for storage servers to find
+        the Linux FileSystem components by their junction point.
+
+        """
+        keywords = set()
+
+        storage_device = self._context.storageDevice
+        if ':' in storage_device:
+            keywords.add(
+                'has-nfs-server:{0}'.format(
+                    storage_device
+                )
+            )
+
+        return (
+            super(FileSystemWrapper, self).searchKeywordsForChildren() +
+            tuple(keywords))
