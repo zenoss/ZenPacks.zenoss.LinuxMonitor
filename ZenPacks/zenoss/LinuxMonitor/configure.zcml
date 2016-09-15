@@ -101,9 +101,15 @@
             />
 
         <subscriber
-                provides="ZenPacks.zenoss.Impact.impactd.interfaces.IRelationshipDataProvider"
-                for="ZenPacks.zenoss.LinuxMonitor.LinuxDevice.LinuxDevice"
-                factory=".impact.DeviceRelationsProvider"
+            provides="ZenPacks.zenoss.Impact.impactd.interfaces.IRelationshipDataProvider"
+            for="ZenPacks.zenoss.LinuxMonitor.LinuxDevice.LinuxDevice"
+            factory=".impact.DeviceRelationsProvider"
+            />
+
+        <subscriber
+            provides="ZenPacks.zenoss.Impact.impactd.interfaces.IRelationshipDataProvider"
+            for=".FileSystem.FileSystem"
+            factory=".impact.FileSystemRelationsProvider"
             />
 
     </configure>

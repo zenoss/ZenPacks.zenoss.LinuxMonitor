@@ -134,7 +134,6 @@ class FileSystem(BaseFileSystem):
             yield obj
 
 
-
 class IFileSystemInfo(IBaseFileSystemInfo):
 
     """IInfo interface for FileSystem.
