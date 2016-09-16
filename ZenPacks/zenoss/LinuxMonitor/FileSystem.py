@@ -94,6 +94,16 @@ class FileSystem(BaseFileSystem):
         return self.device()
 
     def getRRDTemplateName(self):
+        """
+        Return name of monitoring template to bind to this component.
+
+        Return non-existent template name if this FileSystem has external storage
+        to prevent monitoring for such component on Linux device or
+        returns the name of an appropriate template for this FileSystem otherwise.
+        """
+        storage_server = list(self.getStorageServer())
+        if storage_server:
+            return "FileSystem-NFS-Client"
         return "FileSystem"
 
     def getDefaultGraphDefs(self, drange=None):
