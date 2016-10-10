@@ -133,15 +133,33 @@ class FileSystem(BaseFileSystem):
 
     def getStorageServer(self):
         """Generate objects for storage server for this FileSystem."""
-        search_keywords = set()
+        if hasattr(self, '_v_result'):
+            if self._v_result:
+                yield self._v_result
+        else:
+            self._v_result = None
+            search_keywords = set()
+            d = self.device()
+            # search for file system servers for all Linux file systems once
+            if not hasattr(d, '_v_filesystem_servers'):
+                d._v_filesystem_servers = []
+                for fs in d.os.filesystems():
+                    storage_device = fs.storageDevice
+                    if ':' in storage_device:
+                        search_keywords.add('has-nfs-client:{}'.format(storage_device))
 
-        storage_device = self.storageDevice
-        if ':' in storage_device:
-            search_keywords.add('has-nfs-client:{}'.format(storage_device))
-
-        search_root = self.getDmdRoot('Devices')
-        for obj in keyword_search(search_root, search_keywords):
-            yield obj
+                search_root = self.getDmdRoot('Devices').Storage
+                if search_keywords:
+                    for obj in keyword_search(search_root, search_keywords):
+                        d._v_filesystem_servers.append(obj)
+            # check if this filesystem has a server
+            try:
+                for filesystem in d._v_filesystem_servers:
+                    if self.storageDevice in filesystem.storage_clients_list:
+                        self._v_result = filesystem
+                        yield filesystem
+            except AttributeError:
+                pass
 
 
 class IFileSystemInfo(IBaseFileSystemInfo):
