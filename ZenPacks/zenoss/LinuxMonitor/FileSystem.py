@@ -15,6 +15,7 @@ from zope.interface import implements
 from Products.ZenModel.FileSystem import FileSystem as BaseFileSystem
 from Products.Zuul.decorators import info
 from Products.Zuul.form import schema
+from Products.Zuul.infos import ProxyProperty
 from Products.Zuul.catalog.interfaces import IIndexableWrapper
 from Products.Zuul.infos.component.filesystem import FileSystemInfo as BaseFileSystemInfo
 
@@ -44,6 +45,12 @@ class FileSystem(BaseFileSystem):
     plural_class_label = "File Systems"
 
     meta_type = 'LinuxFileSystem'
+
+    server_name = None
+
+    _properties = BaseFileSystem._properties + (
+        {'id': 'server_name', 'label': 'Server Name', 'type': 'string'},
+    )
 
     def logicalVolume(self):
         """Return the underlying LogicalVolume."""
@@ -103,7 +110,7 @@ class FileSystem(BaseFileSystem):
         """
         storage_server = list(self.getStorageServer())
         if storage_server:
-            return "FileSystem-NFS-Client"
+            return "FileSystem_NFS_Client"
         return "FileSystem"
 
     def getDefaultGraphDefs(self, drange=None):
@@ -193,6 +200,8 @@ class FileSystemInfo(BaseFileSystemInfo):
 
     implements(IFileSystemInfo)
 
+    server_name = ProxyProperty('server_name')
+
     @property
     @info
     def logicalVolume(self):
@@ -206,15 +215,24 @@ class FileSystemInfo(BaseFileSystemInfo):
     @property
     @info
     def storageDevice(self):
+        storage = self._object.storageDevice
+        server_name = self._object.server_name
+        if server_name:
+            try:
+                storage = ':'.join(
+                    [server_name, storage.rsplit(':', 1)[1]]
+                )
+            except:
+                pass
         for server in self._object.getStorageServer():
             return"<a class='z-entity' href='{0}'>{1}</a>".format(
-                server.getPrimaryUrlPath(), self._object.storageDevice)
+                server.getPrimaryUrlPath(), storage)
         if self._object.logicalVolume():
             storagedevice = self._object.logicalVolume()
         elif self._object.blockDevice():
             storagedevice = self._object.blockDevice()
         else:
-            return self._object.storageDevice
+            return storage
         return"<a class='z-entity' href='{0}'>{1}</a>".format(
             storagedevice.getPrimaryUrlPath(), storagedevice.title)
 
