@@ -860,6 +860,105 @@ device_classes:
                                 dpName: idisk_usedInodes
                                 format: "%7.2lf%s"
 
+            FileSystem_NFS_Client:
+                description: "Linux file system monitoring via SSH."
+                targetPythonClass: Products.ZenModel.FileSystem
+
+                datasources:
+                    disk:
+                        type: COMMAND
+                        usessh: true
+                        commandTemplate: "/usr/bin/env df -kP"
+                        parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.df
+                        component: "${here/id}"
+                        eventClass: /Ignore
+                        severity: Clear
+
+                        datapoints:
+                            usedBlocks:
+                                rrdmin: 0
+                                aliases:
+                                    fs__pct: "${here/getTotalBlocks},/,100,*"
+                                    fs_used__pct: "${here/getTotalBlocks},/,100,*"
+                                    fs_used__bytes: "${here/blockSize},*"
+                                    usedFilesystemSpace__bytes: "${here/blockSize},*"
+
+                    idisk:
+                        type: COMMAND
+                        usessh: true
+                        commandTemplate: "/usr/bin/env df -ikP"
+                        parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.dfi
+                        component: "${here/id}"
+                        eventClass: /Ignore
+                        severity: Clear
+
+                        datapoints:
+                            percentInodesUsed:
+                                rrdmin: 0
+                                aliases:
+                                    fs_inodes__pct: ""
+
+                            totalInodes:
+                                rrdmin: 0
+                                aliases:
+                                    fs_inodes_total: ""
+
+                            usedInodes:
+                                rrdmin: 0
+                                aliases:
+                                    fs_inodes_used: ""
+
+                            availableInodes:
+                                rrdmin: 0
+                                aliases:
+                                    fs_inodes_avail: ""
+
+                graphs:
+                    Utilization:
+                        units: percent
+                        miny: 0
+                        maxy: 100
+
+                        graphpoints:
+                            Used:
+                                dpName: disk_usedBlocks
+                                rpn: "${here/getTotalBlocks},/,100,*"
+                                format: "%7.2lf%%"
+
+                    Usage:
+                        units: bytes
+                        miny: 0
+                        base: true
+
+                        graphpoints:
+                            Used:
+                                dpName: disk_usedBlocks
+                                rpn: "${here/blockSize},*"
+                                format: "%7.2lf%s"
+
+                    Inode Utilization:
+                        units: percent
+                        miny: 0
+                        maxy: 100
+
+                        graphpoints:
+                            Used:
+                                dpName: idisk_percentInodesUsed
+                                format: "%7.2lf%%"
+
+                    Inode Usage:
+                        units: inodes
+                        miny: 0
+
+                        graphpoints:
+                            Total:
+                                dpName: idisk_totalInodes
+                                format: "%7.2lf%s"
+
+                            Used:
+                                dpName: idisk_usedInodes
+                                format: "%7.2lf%s"
+
             OSProcess:
                 description: "Linux process monitoring via SSH."
                 targetPythonClass: Products.ZenModel.OSProcess

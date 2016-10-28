@@ -49,6 +49,7 @@ class df(CommandPlugin):
             if ':' in storage_device:
                 try:
                     server, junction_point = storage_device.rsplit(':', 1)
+                    om.server_name = server
                     spline[0] = '{0}:{1}'.format(
                         getHostByName(server), junction_point
                     )
