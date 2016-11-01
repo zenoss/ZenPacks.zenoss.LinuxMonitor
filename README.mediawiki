@@ -514,6 +514,9 @@ The following flavors of Linux are supported
 
 == Changes ==
 
+;2.0.6
+* Fix LinuxMonitor - util.py lv_attributes references invalid position (ZEN-25792)
+
 ;2.0.4
 * Fix "unimplemented" SSH error on 4.2.5 SP709. (ZEN-23392)
 
