@@ -514,6 +514,9 @@ The following flavors of Linux are supported
 
 == Changes ==
 
+;2.0.6
+* Fix "string index out of range" error when modeling older LVM versions (ZEN-25792)
+
 ;2.0.4
 * Fix "unimplemented" SSH error on 4.2.5 SP709. (ZEN-23392)
 
