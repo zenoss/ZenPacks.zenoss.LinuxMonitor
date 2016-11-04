@@ -36,7 +36,11 @@ Kernel \r on an \m
             return
 
         log.debug("Results = %s", results.split('\n'))
-
+        fixed_res = ""
+        for line in results.split('\n'):
+                if not line.startswith("#"):
+                        fixed_res += line
+        results = fixed_res                
         om = self.objectMap()
         om.setOSProductKey = results
         log.debug("setOSProductKey = %s", om.setOSProductKey)
