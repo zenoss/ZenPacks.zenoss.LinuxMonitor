@@ -491,8 +491,15 @@ The following flavors of Linux are supported
 == Changes ==
 
 ;2.1.0
-* Prevent threshold violations on interfaces with unknown speed.
+* Add cpu_ssCpuUsedPerCpu and mem_MemUsedPercent datapoints. (ZEN-22978)
 * Add common datapoint aliases. (ZEN-24619)
+* Improve ability to model network interface speeds.
+* Improve support for NFS filesystem impact. (ZEN-24478)
+* Improve NFS filesystem linking to NFS server. (ZEN-24478)
+* Disable monitor of NFS mounted filesystems by default. (ZEN-24650)
+* Prevent threshold violations on interfaces with unknown speed.
+* Fix IndexError when modeling older LVM versions. (ZEN-25792)
+* Fix setIdForRelationship error when modeling some LVM versions. (ZEN-22409)
 
 ;2.0.6
 * Fix "string index out of range" error when modeling older LVM versions (ZEN-25792)
