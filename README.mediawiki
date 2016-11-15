@@ -453,39 +453,63 @@ The following flavors of Linux are supported
 {| class="wikitable"
 !width="25%"|Linux Flavor
 !width="25%"|Version
+!width="25%"|Released
+!width="25%"|EOS
 |-
 |Ubuntu
 |12.04 LTS
+|April 2012
+|April 2017
 |-
 |
 |14.04 LTS
+|April 2014
+|April 2019
 |-
 |
 |15.04
+|April 2015
+|Feb 2016
 |-
 |
 |15.10
+|Oct 2015
+|July 2016
 |-
 |RedHat EL
 |RHEL 5
+|March 2007
+|March 2017
 |-
 |
 |RHEL 6
+|Nov 2010
+|Nov 2020
 |-
 |CentOS
 |5
+|
+|March 2017
 |-
 |
 |6
+|
+|Nov 2020
 |-
 |
 |7
+|
+|June 2024
 |-
 |SuSE LES
 |SLES 11
+|
+|March 2022
 |-
 |
 |SLES 12
+|
+|Oct 2027
 |}
 
 == Changes ==
@@ -519,8 +543,6 @@ The following flavors of Linux are supported
 
 ;2.0.0
 
-Enhancement Highlights
-
 * Added support for LVM Physical Volumes, Volume Groups, and Logical Volumes
 * Added support for OpenStack-LVM Integration
 * Added disk (block device) monitoring.
@@ -530,9 +552,3 @@ Enhancement Highlights
 * Added Dynamic View Support
 * Completely replaces EnterpriseLinux ZenPack
 * Many other smaller improvements.
-
-Changes to Existing Objects
-
-* The endpoint device type was changed to LinuxDevice
-* Impact Changes: GUID's are changed:
-** Since Linux device type was changed (see above), the GUID's of the Linux objects are also changed at upgrade. This implies that the original impact graph will lose the associated Linux devices at upgrade. Re-add the Linux devices to the impact diagram to restore these objects.
