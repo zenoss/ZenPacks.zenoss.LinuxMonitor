@@ -13,6 +13,8 @@ utility module for linux monitor
 LVMAttributes is a class for parsing attributes from pvs,vgs,lvs
 '''
 import re
+from Products.AdvancedQuery import In
+from Products.Zuul.interfaces import ICatalogTool
 
 
 class LVMAttributeParser(object):
@@ -209,3 +211,20 @@ def override_graph_labels(component, drange):
         graphs.append(g)
 
     return graphs
+
+
+def keyword_search(root, keywords):
+    """Generate objects that match one or more of given keywords."""
+    if isinstance(keywords, basestring):
+        keywords = [keywords]
+    elif isinstance(keywords, set):
+        keywords = list(keywords)
+
+    if keywords:
+        catalog = ICatalogTool(root)
+        query = In('searchKeywords', keywords)
+        for result in catalog.search(query=query):
+            try:
+                yield result.getObject()
+            except Exception:
+                pass

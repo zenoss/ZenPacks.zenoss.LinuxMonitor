@@ -9,15 +9,28 @@
 
 import itertools
 
+from zope.component import adapts
 from zope.interface import implements
 
 from Products.ZenModel.FileSystem import FileSystem as BaseFileSystem
 from Products.Zuul.decorators import info
 from Products.Zuul.form import schema
+from Products.Zuul.infos import ProxyProperty
+from Products.Zuul.catalog.interfaces import IIndexableWrapper
 from Products.Zuul.infos.component.filesystem import FileSystemInfo as BaseFileSystemInfo
+
+try:
+    from Products.Zuul.catalog.global_catalog \
+        import FileSystemWrapper as BaseFileSystemWrapper
+except ImportError:
+    # Zenoss 4.1 doesn't have FileSystemWrapper.
+    from Products.Zuul.catalog.global_catalog import ComponentWrapper
+
+    BaseFileSystemWrapper = ComponentWrapper
+
 from Products.Zuul.interfaces.component import IFileSystemInfo as IBaseFileSystemInfo
 from Products.Zuul.utils import ZuulMessageFactory as _t
-from ZenPacks.zenoss.LinuxMonitor.util import override_graph_labels
+from ZenPacks.zenoss.LinuxMonitor.util import override_graph_labels, keyword_search
 
 
 class FileSystem(BaseFileSystem):
@@ -32,6 +45,12 @@ class FileSystem(BaseFileSystem):
     plural_class_label = "File Systems"
 
     meta_type = 'LinuxFileSystem'
+
+    server_name = None
+
+    _properties = BaseFileSystem._properties + (
+        {'id': 'server_name', 'label': 'Server Name', 'type': 'string'},
+    )
 
     def logicalVolume(self):
         """Return the underlying LogicalVolume."""
@@ -82,6 +101,16 @@ class FileSystem(BaseFileSystem):
         return self.device()
 
     def getRRDTemplateName(self):
+        """
+        Return name of monitoring template to bind to this component.
+
+        Return non-existent template name if this FileSystem has external storage
+        to prevent monitoring for such component on Linux device or
+        returns the name of an appropriate template for this FileSystem otherwise.
+        """
+        storage_server = list(self.getStorageServer())
+        if storage_server:
+            return "FileSystem_NFS_Client"
         return "FileSystem"
 
     def getDefaultGraphDefs(self, drange=None):
@@ -108,6 +137,36 @@ class FileSystem(BaseFileSystem):
         Return the path to an icon for this component.
         '''
         return '/++resource++linux/img/file-system.png'
+
+    def getStorageServer(self):
+        """Generate objects for storage server for this FileSystem."""
+        if hasattr(self, '_v_result'):
+            if self._v_result:
+                yield self._v_result
+        else:
+            self._v_result = None
+            search_keywords = set()
+            d = self.device()
+            # search for file system servers for all Linux file systems once
+            if not hasattr(d, '_v_filesystem_servers'):
+                d._v_filesystem_servers = []
+                for fs in d.os.filesystems():
+                    storage_device = fs.storageDevice
+                    if ':' in storage_device:
+                        search_keywords.add('has-nfs-client:{}'.format(storage_device))
+
+                search_root = self.getDmdRoot('Devices').Storage
+                if search_keywords:
+                    for obj in keyword_search(search_root, search_keywords):
+                        d._v_filesystem_servers.append(obj)
+            # check if this filesystem has a server
+            try:
+                for filesystem in d._v_filesystem_servers:
+                    if self.storageDevice in filesystem.storage_clients_list:
+                        self._v_result = filesystem
+                        yield filesystem
+            except AttributeError:
+                pass
 
 
 class IFileSystemInfo(IBaseFileSystemInfo):
@@ -141,6 +200,8 @@ class FileSystemInfo(BaseFileSystemInfo):
 
     implements(IFileSystemInfo)
 
+    server_name = ProxyProperty('server_name')
+
     @property
     @info
     def logicalVolume(self):
@@ -154,11 +215,54 @@ class FileSystemInfo(BaseFileSystemInfo):
     @property
     @info
     def storageDevice(self):
+        storage = self._object.storageDevice
+        server_name = self._object.server_name
+        if server_name:
+            try:
+                storage = ':'.join(
+                    [server_name, storage.rsplit(':', 1)[1]]
+                )
+            except:
+                pass
+        for server in self._object.getStorageServer():
+            return"<a class='z-entity' href='{0}'>{1}</a>".format(
+                server.getPrimaryUrlPath(), storage)
         if self._object.logicalVolume():
             storagedevice = self._object.logicalVolume()
         elif self._object.blockDevice():
             storagedevice = self._object.blockDevice()
         else:
-            return self._object.storageDevice
+            return storage
         return"<a class='z-entity' href='{0}'>{1}</a>".format(
             storagedevice.getPrimaryUrlPath(), storagedevice.title)
+
+
+class FileSystemWrapper(BaseFileSystemWrapper):
+    '''
+    Indexing adapter for FileSystem.
+    '''
+
+    implements(IIndexableWrapper)
+    adapts(FileSystem)
+
+    def searchKeywordsForChildren(self):
+        """Return tuple of search keywords for FileSystem objects.
+
+        Overrides ComponentWrapper to add junction point information for the FileSystem.
+        This provides a way for storage servers to find
+        the Linux FileSystem components by their junction point.
+
+        """
+        keywords = set()
+
+        storage_device = self._context.storageDevice
+        if ':' in storage_device:
+            keywords.add(
+                'has-nfs-server:{0}'.format(
+                    storage_device
+                )
+            )
+
+        return (
+            super(FileSystemWrapper, self).searchKeywordsForChildren() +
+            tuple(keywords))

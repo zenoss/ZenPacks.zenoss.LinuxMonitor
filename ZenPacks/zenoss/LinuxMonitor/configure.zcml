@@ -17,6 +17,13 @@
         factory=".HardDisk.HardDiskInfo"
         />
 
+    <!-- Custom Index Wrappers -->
+    <adapter
+        provides="Products.Zuul.catalog.interfaces.IIndexableWrapper"
+        for=".FileSystem.FileSystem"
+        factory=".FileSystem.FileSystemWrapper"
+        />
+
     <!-- DynamicView -->
     <configure zcml:condition="installed ZenPacks.zenoss.DynamicView">
         <include package="ZenPacks.zenoss.DynamicView" file="meta.zcml"/>
@@ -29,7 +36,7 @@
 
         <relatableGroup
             name="File Systems"
-            weight="40"
+            weight="37"
             groupType="linux"
             />
 
@@ -53,7 +60,7 @@
 
         <relatableGroup
             name="Hard Disks"
-            weight="45"
+            weight="42"
             groupType="linux"
             />
 
@@ -94,9 +101,15 @@
             />
 
         <subscriber
-                provides="ZenPacks.zenoss.Impact.impactd.interfaces.IRelationshipDataProvider"
-                for="ZenPacks.zenoss.LinuxMonitor.LinuxDevice.LinuxDevice"
-                factory=".impact.DeviceRelationsProvider"
+            provides="ZenPacks.zenoss.Impact.impactd.interfaces.IRelationshipDataProvider"
+            for="ZenPacks.zenoss.LinuxMonitor.LinuxDevice.LinuxDevice"
+            factory=".impact.DeviceRelationsProvider"
+            />
+
+        <subscriber
+            provides="ZenPacks.zenoss.Impact.impactd.interfaces.IRelationshipDataProvider"
+            for=".FileSystem.FileSystem"
+            factory=".impact.FileSystemRelationsProvider"
             />
 
     </configure>

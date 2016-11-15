@@ -8,6 +8,7 @@
 ##############################################################################
 import re
 from Products.DataCollector.plugins.CollectorPlugin import CommandPlugin
+from Products.ZenUtils.IpUtil import getHostByName
 
 
 class df(CommandPlugin):
@@ -43,6 +44,18 @@ class df(CommandPlugin):
                 bline = None
             if len(spline) != 7:
                 continue
+
+            storage_device = spline[0]
+            if ':' in storage_device:
+                try:
+                    server, junction_point = storage_device.rsplit(':', 1)
+                    om.server_name = server
+                    spline[0] = '{0}:{1}'.format(
+                        getHostByName(server), junction_point
+                    )
+                except(Exception):
+                    spline[0] = storage_device
+
             (om.storageDevice, om.type, tblocks, u, a, p, om.mount) = spline
             if skipfsnames and re.search(skipfsnames, om.mount):
                 continue

@@ -33,6 +33,7 @@ class cpu(CommandParser):
                    'ssCpuUserPerCpu',
                    'ssCpuSystemPerCpu',
                    'ssCpuIdlePerCpu',
+                   'ssCpuUsedPerCpu',
                    'ssCpuWaitPerCpu']
             
             # Calculate the number of CPUs
@@ -48,11 +49,13 @@ class cpu(CommandParser):
               userCpuPerCpu = float(perCpuValues[1])/float(cpuCount)
               systemCpuPerCpu = float(perCpuValues[3])/float(cpuCount)
               idleCpuPerCpu = float(perCpuValues[4])/float(cpuCount)
+              usedCpuPerCpu = userCpuPerCpu + systemCpuPerCpu
               waitCpuPerCpu = float(perCpuValues[5])/float(cpuCount)
             else:
               userCpuPerCpu = None
               systemCpuPerCpu = None
               idleCpuPerCpu = None
+              usedCpuPerCpu = None
               waitCpuPerCpu = None
 
             values = cmd.result.output.splitlines()[0].split()[1:]
@@ -61,6 +64,7 @@ class cpu(CommandParser):
             valueMap['ssCpuUserPerCpu']=userCpuPerCpu
             valueMap['ssCpuSystemPerCpu']=systemCpuPerCpu
             valueMap['ssCpuIdlePerCpu']=idleCpuPerCpu
+            valueMap['ssCpuUsedPerCpu']=usedCpuPerCpu
             valueMap['ssCpuWaitPerCpu']=waitCpuPerCpu
         
             for id in valueMap:

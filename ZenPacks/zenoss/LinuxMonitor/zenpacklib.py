@@ -27,7 +27,7 @@ This module provides a single integration point for common ZenPacks.
 """
 
 # PEP-396 version. (https://www.python.org/dev/peps/pep-0396/)
-__version__ = "1.0.11"
+__version__ = "1.1.0"
 
 
 import logging
@@ -35,7 +35,8 @@ LOG = logging.getLogger('zen.zenpacklib')
 
 # Suppresses "No handlers could be found for logger" errors if logging
 # hasn't been configured.
-LOG.addHandler(logging.NullHandler())
+if len(LOG.handlers) == 0:
+    LOG.addHandler(logging.NullHandler())
 
 import collections
 import imp
@@ -91,6 +92,7 @@ from Products.ZenUtils.Search import makeFieldIndex, makeKeywordIndex
 from Products.ZenUtils.Utils import monkeypatch, importClass
 
 from Products import Zuul
+from Products.Zuul import marshal
 from Products.Zuul.catalog.events import IndexingEvent
 from Products.Zuul.catalog.global_catalog import ComponentWrapper as BaseComponentWrapper
 from Products.Zuul.catalog.global_catalog import DeviceWrapper as BaseDeviceWrapper
@@ -196,6 +198,8 @@ class ZenPack(ZenPackBase):
             d.buildRelations()
 
     def install(self, app):
+        self.createZProperties(app)
+
         # create device classes and set zProperties on them
         for dcname, dcspec in self.device_classes.iteritems():
             if dcspec.create:
@@ -207,6 +211,9 @@ class ZenPack(ZenPackBase):
 
             dcObject = self.dmd.Devices.getOrganizer(dcspec.path)
             for zprop, value in dcspec.zProperties.iteritems():
+                if dcObject.getPropertyType(zprop) is None:
+                    LOG.error("Unable to set zProperty %s on %s (undefined zProperty)", zprop, dcspec.path)
+                    continue
                 LOG.info('Setting zProperty %s on %s' % (zprop, dcspec.path))
                 dcObject.setZenProperty(zprop, value)
 
@@ -274,8 +281,6 @@ class ZenPack(ZenPackBase):
                         lines_orig_mtspec = [x + '\n' for x in yaml.dump(orig_mtspec, Dumper=Dumper).split('\n')]
                         diff = ''.join(difflib.unified_diff(lines_orig_mtspec, lines_installed))
 
-                        # installed is not going to have cycletime in it, because it's the default.
-
                         newname = "{}-upgrade-{}".format(orig_mtname, int(time.time()))
                         LOG.error(
                             "Monitoring template %s/%s has been modified "
@@ -300,8 +305,13 @@ class ZenPack(ZenPackBase):
                 LOG.info('Removing %s components' % self.id)
                 cat = ICatalogTool(app.zport.dmd)
                 for brain in cat.search(types=self.NEW_COMPONENT_TYPES):
-                    component = brain.getObject()
-                    component.getPrimaryParent()._delObject(component.id)
+                    try:
+                        component = brain.getObject()
+                    except Exception as e:
+                        LOG.error("Trying to remove non-existent object %s", e)
+                        continue
+                    else:
+                        component.getPrimaryParent()._delObject(component.id)
 
                 # Remove our Device relations additions.
                 from Products.ZenUtils.Utils import importClass
@@ -589,8 +599,11 @@ class CatalogBase(object):
         from Products.Zuul.interfaces import ICatalogTool
         catalog = zcatalog._catalog
 
-        classname = spec.get(
-            'class', 'Products.ZenModel.DeviceComponent.DeviceComponent')
+        # I think this is the original intent for setting classname, not sure why it would fail
+        try:
+            classname = '%s.%s' % (cls.__module__, cls.__class__.__name__)
+        except Exception:
+            classname = 'Products.ZenModel.DeviceComponent.DeviceComponent'
 
         for propname, propdata in spec['indexes'].items():
             index_type = propdata.get('type')
@@ -622,8 +635,14 @@ class CatalogBase(object):
                 # catalog.
                 results = ICatalogTool(context).search(types=(classname,))
                 for result in results:
-                    if hasattr(result.getObject(), 'index_object'):
-                        result.getObject().index_object()
+                    try:
+                        new_obj = result.getObject()
+                    except Exception as e:
+                        LOG.error("Trying to index non-existent object %s", e)
+                        continue
+                    else:
+                        if hasattr(new_obj, 'index_object'):
+                            new_obj.index_object()
 
     def index_object(self, idxs=None):
         """Index in all configured catalogs."""
@@ -645,6 +664,9 @@ class ModelBase(CatalogBase):
     def getIconPath(self):
         """Return relative URL path for class' icon."""
         return getattr(self, 'icon_url', '/zport/dmd/img/icons/noicon.png')
+
+    def getDynamicViewGroup(self):
+        return getattr(self, 'dynamicview_group', None)
 
 
 class DeviceBase(ModelBase):
@@ -741,8 +763,12 @@ class ComponentBase(ModelBase):
 
         # Find and add new object to relationship.
         for result in catalog_search(self.device(), 'ComponentBase', id=id_):
-            new_obj = result.getObject()
-            relationship.addRelation(new_obj)
+            try:
+                new_obj = result.getObject()
+            except Exception as e:
+                LOG.error("Trying to add relation to non-existent object %s", e)
+            else:
+                relationship.addRelation(new_obj)
 
             # Index remote object. It might have a custom path reporter.
             notify(IndexingEvent(new_obj.primaryAq(), 'path', False))
@@ -785,7 +811,12 @@ class ComponentBase(ModelBase):
 
         obj_map = {}
         for result in catalog_search(self.device(), 'ComponentBase', query):
-            obj_map[result.id] = result.getObject()
+            try:
+                component = result.getObject()
+            except Exception as e:
+                LOG.error("Trying to access non-existent object %s", e)
+            else:
+                obj_map[result.id] = component
 
         for id_ in new_ids.symmetric_difference(current_ids):
             obj = obj_map.get(id_)
@@ -2042,6 +2073,7 @@ class ClassSpec(Spec):
             filter_hide_from=None,
             dynamicview_views=None,
             dynamicview_group=None,
+            dynamicview_weight=None,
             dynamicview_relations=None,
             extra_paths=None,
             _source_location=None
@@ -2101,6 +2133,8 @@ class ClassSpec(Spec):
             :type dynamicview_views: list(str)
             :param dynamicview_group: TODO
             :type dynamicview_group: str
+            :param dynamicview_weight: TODO
+            :type dynamicview_weight: float
             :param dynamicview_relations: TODO
             :type dynamicview_relations: dict
             :param extra_paths: TODO
@@ -2181,6 +2215,11 @@ class ClassSpec(Spec):
             self.dynamicview_group = self.plural_short_label
         else:
             self.dynamicview_group = dynamicview_group
+
+        if dynamicview_weight is None:
+            self.dynamicview_weight = 1000 + (self.order * 100)
+        else:
+            self.dynamicview_weight = dynamicview_weight
 
         # additional relationships to add, beyond IMPACTS and IMPACTED_BY.
         if dynamicview_relations is None:
@@ -2359,6 +2398,9 @@ class ClassSpec(Spec):
     @property
     def icon_url(self):
         """Return relative URL to icon."""
+        if self.icon and self.icon.startswith('/'):
+            return self.icon
+
         icon_filename = self.icon or '{}.png'.format(self.name)
 
         zenpack_path = get_zenpack_path(self.zenpack.name)
@@ -2392,7 +2434,13 @@ class ClassSpec(Spec):
             'class_plural_label': self.plural_label,
             'class_short_label': self.short_label,
             'class_plural_short_label': self.plural_short_label,
-            'class_dynamicview_group': self.dynamicview_group,
+            'dynamicview_views': self.dynamicview_views,
+            'dynamicview_group': {
+                'name': self.dynamicview_group,
+                'weight': self.dynamicview_weight,
+                'type': self.zenpack.name,
+                'icon': self.icon_url,
+                },
             }
 
         properties = []
@@ -2679,27 +2727,10 @@ class ClassSpec(Spec):
             required=(self.model_class,),
             provided=IRelationsProvider)
 
-        dvm = DynamicViewMappings()
-
-        groupName = self.model_class.class_dynamicview_group
-        weight = 1000 + (self.order * 100)
-        icon_url = getattr(self, 'icon_url', '/zport/dmd/img/icons/noicon.png')
-
-        # Make sure the named utility is also registered.  It seems that
-        # during unit tests, it may not be, even if the mapping is still
-        # present.
-        group = GSM.queryUtility(IGroup, groupName)
-        if not group:
-            group = BaseGroup(groupName, weight, None, icon_url)
-            GSM.registerUtility(group, IGroup, groupName)
-
-        for viewName in self.dynamicview_views:
-            if groupName not in dvm.getGroupNames(viewName):
-                dvm.addMapping(
-                    viewName=viewName,
-                    groupName=group.name,
-                    weight=group.weight,
-                    icon=group.icon)
+        GSM.registerSubscriptionAdapter(
+            DynamicViewGroupMappingProvider,
+            required=(DynamicViewRelatable,),
+            provided=IGroupMappingProvider)
 
     def register_impact_adapters(self):
         """Register Impact adapters."""
@@ -3185,8 +3216,9 @@ class ClassPropertySpec(Spec):
     def info_properties(self):
         """Return Info properties dict."""
         if self.api_backendtype == 'method':
+            isEntity = self.type_ == 'entity'
             return {
-                self.name: MethodInfoProperty(self.name),
+                self.name: MethodInfoProperty(self.name, entity=isEntity),
                 }
         else:
             if not self.enum:
@@ -3685,8 +3717,8 @@ class RRDTemplateSpec(Spec):
             datasource_spec.create(self, template)
 
         self.speclog.debug("adding {} graphs".format(len(self.graphs)))
-        for graph_id, graph_spec in self.graphs.items():
-            graph_spec.create(self, template)
+        for i, (graph_id, graph_spec) in enumerate(self.graphs.items()):
+            graph_spec.create(self, template, sequence=i)
 
 
 class RRDThresholdSpec(Spec):
@@ -3786,7 +3818,6 @@ class RRDDatasourceSpec(Spec):
             eventKey=None,
             severity=None,
             commandTemplate=None,
-            cycletime=None,
             datapoints=None,
             extra_params=None,
             _source_location=None
@@ -3809,8 +3840,6 @@ class RRDDatasourceSpec(Spec):
             :type severity: Severity
             :param commandTemplate: TODO
             :type commandTemplate: str
-            :param cycletime: TODO
-            :type cycletime: int
             :param datapoints: TODO
             :type datapoints: SpecsParameter(RRDDatapointSpec)
             :param extra_params: Additional parameters that may be used by subclasses of RRDDatasource
@@ -3828,7 +3857,6 @@ class RRDDatasourceSpec(Spec):
         self.eventKey = eventKey
         self.severity = severity
         self.commandTemplate = commandTemplate
-        self.cycletime = cycletime
         if extra_params is None:
             self.extra_params = {}
         else:
@@ -3864,8 +3892,6 @@ class RRDDatasourceSpec(Spec):
             datasource.severity = self.severity
         if self.commandTemplate is not None:
             datasource.commandTemplate = self.commandTemplate
-        if self.cycletime is not None:
-            datasource.cycletime = self.cycletime
 
         if self.extra_params:
             for param, value in self.extra_params.iteritems():
@@ -4065,10 +4091,12 @@ class GraphDefinitionSpec(Spec):
 
         # TODO fix comments parsing - must always be a list.
 
-    def create(self, templatespec, template):
+    def create(self, templatespec, template, sequence=None):
         graph = template.manage_addGraphDefinition(self.name)
         self.speclog.debug("adding graph")
 
+        if sequence:
+            graph.sequence = sequence
         if self.height is not None:
             graph.height = self.height
         if self.width is not None:
@@ -4098,8 +4126,8 @@ class GraphDefinitionSpec(Spec):
                 comment.text = comment_text
 
         self.speclog.debug("adding {} graphpoints".format(len(self.graphpoints)))
-        for graphpoint_id, graphpoint_spec in self.graphpoints.items():
-            graphpoint_spec.create(self, graph)
+        for i, (graphpoint_id, graphpoint_spec) in enumerate(self.graphpoints.items()):
+            graphpoint_spec.create(self, graph, sequence=i)
 
 
 class GraphPointSpec(Spec):
@@ -4195,12 +4223,14 @@ class GraphPointSpec(Spec):
                 raise ValueError("'%s' is not a valid graphpoint lineType. Valid lineTypes: %s" % (
                                  lineType, ', '.join(valid_linetypes)))
 
-    def create(self, graph_spec, graph):
+    def create(self, graph_spec, graph, sequence=None):
         graphpoint = graph.createGraphPoint(DataPointGraphPoint, self.name)
         self.speclog.debug("adding graphpoint")
 
         graphpoint.dpName = self.dpName
 
+        if sequence:
+            graphpoint.sequence = sequence
         if self.lineType is not None:
             graphpoint.lineType = self.lineType
         if self.lineWidth is not None:
@@ -4384,7 +4414,7 @@ class RRDDatasourceSpecParams(SpecParams, RRDDatasourceSpec):
 
         self.sourcetype = datasource.sourcetype
         for propname in ('enabled', 'component', 'eventClass', 'eventKey',
-                         'severity', 'commandTemplate', 'cycletime',):
+                         'severity', 'commandTemplate'):
             if hasattr(sample_ds, propname):
                 setattr(self, '_%s_defaultvalue' % propname, getattr(sample_ds, propname))
             if getattr(datasource, propname, None) != getattr(sample_ds, propname, None):
@@ -5213,6 +5243,10 @@ def load_yaml(yaml_filename=None):
         try:
             CFG = yaml.load(file(yaml_filename, 'r'), Loader=Loader)
         except Exception as e:
+            if not [x for x in LOG.handlers if not isinstance(x, logging.NullHandler)]:
+                # Logging has not ben initialized yet- LOG.error may not be
+                # seen.
+                logging.basicConfig()
             LOG.error(e)
     else:
         zenpack_name = None
@@ -5475,7 +5509,7 @@ def relationships_from_yuml(yuml):
     return classes
 
 
-def MethodInfoProperty(method_name):
+def MethodInfoProperty(method_name, entity=False):
     """Return a property with the Infos for object(s) returned by a method.
 
     A list of Info objects is returned for methods returning a list, or a single
@@ -5483,10 +5517,18 @@ def MethodInfoProperty(method_name):
     """
     def getter(self):
         try:
-            return Zuul.info(getattr(self._object, method_name)())
+            result = Zuul.info(getattr(self._object, method_name)())
         except TypeError:
             # If not callable avoid the traceback and send the property
-            return Zuul.info(getattr(self._object, method_name))
+            result = Zuul.info(getattr(self._object, method_name))
+        if entity:
+            # rather than returning entire object(s), return just
+            # the fields needed by the UI renderer for creating links.
+            return marshal(
+                result,
+                keys=('name', 'meta_type', 'class_label', 'uid'))
+        else:
+            return result
 
     return property(getter)
 
@@ -5515,7 +5557,11 @@ def RelationshipInfoProperty(relationship_name):
 
     """
     def getter(self):
-        return Zuul.info(getattr(self._object, relationship_name)())
+        # rather than returning entire object(s), return just the fields
+        # required by the UI renderer for creating links.
+        return marshal(
+            Zuul.info(getattr(self._object, relationship_name)()),
+            keys=('name', 'meta_type', 'class_label', 'uid'))
 
     return property(getter)
 
@@ -5786,7 +5832,7 @@ def create_class(module, schema_module, classname, bases, attributes):
 # Impact Stuff ##############################################################
 
 try:
-    from ZenPacks.zenoss.Impact.impactd.relations import ImpactEdge, DSVRelationshipProvider, RelationshipEdgeError
+    from ZenPacks.zenoss.Impact.impactd.relations import ImpactEdge
     from ZenPacks.zenoss.Impact.impactd.interfaces import IRelationshipDataProvider
 except ImportError:
     IMPACT_INSTALLED = False
@@ -5795,10 +5841,11 @@ else:
 
 try:
     from ZenPacks.zenoss.DynamicView import BaseRelation, BaseGroup
-    from ZenPacks.zenoss.DynamicView import TAG_IMPACTED_BY, TAG_IMPACTS, TAG_ALL
-    from ZenPacks.zenoss.DynamicView.interfaces import IRelatable, IRelationsProvider, IGroup
-    from ZenPacks.zenoss.DynamicView.dynamicview import DynamicViewMappings
-    from ZenPacks.zenoss.DynamicView.model.adapters import BaseRelatable, BaseRelationsProvider
+    from ZenPacks.zenoss.DynamicView import TAG_ALL
+    from ZenPacks.zenoss.DynamicView.interfaces import IRelatable, IRelationsProvider
+    from ZenPacks.zenoss.DynamicView.interfaces import IGroupMappingProvider
+    from ZenPacks.zenoss.DynamicView.model.adapters import BaseRelatable
+    from ZenPacks.zenoss.DynamicView.model.adapters import BaseRelationsProvider
 
 except ImportError:
     DYNAMICVIEW_INSTALLED = False
@@ -5890,7 +5937,6 @@ if DYNAMICVIEW_INSTALLED:
         """
 
         implements(IRelatable)
-        adapts(DeviceBase, ComponentBase)
 
         @property
         def id(self):
@@ -5906,7 +5952,41 @@ if DYNAMICVIEW_INSTALLED:
 
         @property
         def group(self):
-            return self._adapted.class_dynamicview_group
+            data = self._adapted.getDynamicViewGroup()
+            if data:
+                return data.get('name', 'Unknown')
+
+        @property
+        def group_data(self):
+            return self._adapted.getDynamicViewGroup()
+
+    class DynamicViewGroupMappingProvider(object):
+        """Generic DynamicView IGroupMappingProvider adapter.
+
+        All group information is gathered from the adapted model object.
+
+        """
+
+        implements(IGroupMappingProvider)
+        adapts(DynamicViewRelatable)
+
+        def __init__(self, adapted):
+            self._adapted = adapted
+
+        def getGroup(self, viewName):
+            group = self._adapted
+            entity = group._adapted
+
+            if viewName not in entity.dynamicview_views:
+                return
+
+            data = self._adapted.group_data
+            if data:
+                return BaseGroup(
+                    name=data.get('name', 'Unknown'),
+                    weight=data.get('weight', 999),
+                    type=data.get('type', 'Unknown'),
+                    icon=data.get('icon', '/zport/dmd/img/icons/noicon.png'))
 
     class DynamicViewRelationsProvider(BaseRelationsProvider):
         """Generic DynamicView RelationsProvider subscription adapter (IRelationsProvider)
@@ -5920,7 +6000,6 @@ if DYNAMICVIEW_INSTALLED:
         DynamicViewRelationsProvider for a given model class.
         """
         implements(IRelationsProvider)
-        adapts(DeviceBase, ComponentBase)
 
         def relations(self, type=TAG_ALL):
             target = IRelatable(self._adapted)
@@ -6034,7 +6113,7 @@ def create_zenpack_srcdir(zenpack_name):
     with open(init_fname, 'w') as init_f:
         init_f.write(
             "from . import zenpacklib\n\n"
-            "zenpacklib.load_yaml()\n")
+            "CFG = zenpacklib.load_yaml()\n")
 
     # Create zenpack.yaml in ZenPack module directory.
     yaml_fname = os.path.join(module_directory, 'zenpack.yaml')

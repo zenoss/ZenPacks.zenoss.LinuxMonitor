@@ -239,7 +239,7 @@ Installing this ZenPack will add the following items to your Zenoss system.
 * zenoss.cmd.linux.df
 * zenoss.cmd.linux.alt_kernel_name
 * zenoss.cmd.linux.cpuinfo
-* zenoss.cmd.linux.ifconfig
+* zenoss.cmd.linux.interfaces
 * zenoss.cmd.linux.lvm
 * zenoss.cmd.linux.memory
 * zenoss.cmd.linux.netstat_an
@@ -453,66 +453,53 @@ The following flavors of Linux are supported
 {| class="wikitable"
 !width="25%"|Linux Flavor
 !width="25%"|Version
-!width="25%"|Released
-!width="25%"|EOS
 |-
 |Ubuntu
 |12.04 LTS
-|April 2012
-|April 2017
 |-
 |
 |14.04 LTS
-|April 2014
-|April 2019
 |-
 |
 |15.04
-|April 2015
-|Feb 2016
 |-
 |
 |15.10
-|Oct 2015
-|July 2016
 |-
 |RedHat EL
 |RHEL 5
-|March 2007
-|March 2017
 |-
 |
 |RHEL 6
-|Nov 2010
-|Nov 2020
 |-
 |CentOS
 |5
-|
-|March 2017
 |-
 |
 |6
-|
-|Nov 2020
 |-
 |
 |7
-|
-|June 2024
 |-
 |SuSE LES
 |SLES 11
-|
-|March 2022
 |-
 |
 |SLES 12
-|
-|Oct 2027
 |}
 
 == Changes ==
+
+;2.1.0
+* Add cpu_ssCpuUsedPerCpu and mem_MemUsedPercent datapoints. (ZEN-22978)
+* Add common datapoint aliases. (ZEN-24619)
+* Improve ability to model network interface speeds.
+* Improve support for NFS filesystem impact. (ZEN-24478)
+* Improve NFS filesystem linking to NFS server. (ZEN-24478)
+* Disable monitor of NFS mounted filesystems by default. (ZEN-24650)
+* Prevent threshold violations on interfaces with unknown speed.
+* Fix IndexError when modeling older LVM versions. (ZEN-25792)
+* Fix setIdForRelationship error when modeling some LVM versions. (ZEN-22409)
 
 ;2.0.6
 * Fix "string index out of range" error when modeling older LVM versions (ZEN-25792)
@@ -531,6 +518,9 @@ The following flavors of Linux are supported
 * Fix invalid event class in filesystem threshold
 
 ;2.0.0
+
+Enhancement Highlights
+
 * Added support for LVM Physical Volumes, Volume Groups, and Logical Volumes
 * Added support for OpenStack-LVM Integration
 * Added disk (block device) monitoring.
@@ -541,3 +531,8 @@ The following flavors of Linux are supported
 * Completely replaces EnterpriseLinux ZenPack
 * Many other smaller improvements.
 
+Changes to Existing Objects
+
+* The endpoint device type was changed to LinuxDevice
+* Impact Changes: GUID's are changed:
+** Since Linux device type was changed (see above), the GUID's of the Linux objects are also changed at upgrade. This implies that the original impact graph will lose the associated Linux devices at upgrade. Re-add the Linux devices to the impact diagram to restore these objects.
