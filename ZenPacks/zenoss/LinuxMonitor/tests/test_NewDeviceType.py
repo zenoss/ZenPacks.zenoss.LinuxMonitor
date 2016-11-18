@@ -11,18 +11,23 @@
 
 import datetime
 
-from Products.DataCollector.plugins.DataMaps import ObjectMap, RelationshipMap
+# Zenoss Imports
+import Globals  # noqa
+from Products.ZenUtils.Utils import unused
+
+unused(Globals)
+
+from Products.ZenTestCase.BaseTestCase import BaseTestCase
+
+from Products.DataCollector.plugins.DataMaps import RelationshipMap
 from Products.ZenModel.Device import Device
 
-from .. import zenpacklib
-from .. import ZenPack
-from ..LinuxDevice import LinuxDevice
-from ..migrate.NewDeviceType import NewDeviceType
+from ZenPacks.zenoss.LinuxMonitor import ZenPack
+from ZenPacks.zenoss.LinuxMonitor.LinuxDevice import LinuxDevice
+from ZenPacks.zenoss.LinuxMonitor.migrate.NewDeviceType import NewDeviceType
 
-from .utils import create_device
-from .test_dvi import DATAMAPS as NEW_DATAMAPS
-
-zenpacklib.enableTesting()
+from ZenPacks.zenoss.LinuxMonitor.tests.utils import create_device
+from ZenPacks.zenoss.LinuxMonitor.tests.test_dvi import DATAMAPS as NEW_DATAMAPS
 
 
 OLD_DATAMAPS = [
@@ -52,7 +57,7 @@ OLD_DATAMAPS = [
 ]
 
 
-class migrateTests(zenpacklib.TestCase):
+class migrateTests(BaseTestCase):
     """Tests for NewDeviceType.migrate."""
 
     def afterSetUp(self):
@@ -149,3 +154,16 @@ class migrateTests(zenpacklib.TestCase):
             "{} devices took to long to migrate ({})".format(
                 count,
                 duration))
+
+def test_suite():
+    """Return test suite for this module."""
+    from unittest import TestSuite, makeSuite
+    suite = TestSuite()
+    suite.addTest(makeSuite(migrateTests))
+    return suite
+
+
+if __name__ == "__main__":
+    from zope.testrunner.runner import Runner
+    runner = Runner(found_suites=[test_suite()])
+    runner.run()
