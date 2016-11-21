@@ -6,17 +6,13 @@
 # License.zenoss under the directory where your Zenoss product is installed.
 #
 ##############################################################################
+
 import unittest
 
-# Zenoss Imports
-import Globals  # noqa
-from Products.ZenUtils.Utils import unused
-
-unused(Globals)
-
 from Products.DataCollector.plugins.DataMaps import ObjectMap, RelationshipMap
-from ZenPacks.zenoss.ZenPackLib.lib.tests.TestCase import TestCase
-from ZenPacks.zenoss.LinuxMonitor.tests import utils as tu
+
+from ZenPacks.zenoss.LinuxMonitor import zenpacklib
+from . import utils as tu
 
 try:
     from ZenPacks.zenoss.DynamicView import TAG_IMPACTED_BY, TAG_IMPACTS
@@ -264,8 +260,11 @@ DATAMAPS = [
 ]
 
 
+# Testing must be enabled before zenpacklib.TestCase can be used.
+zenpacklib.enableTesting()
 
-class TestDVI(TestCase):
+
+class TestDVI(zenpacklib.TestCase):
 
     def afterSetUp(self):
         super(TestDVI, self).afterSetUp()
@@ -328,15 +327,3 @@ class TestDVI(TestCase):
                         TAG_IMPACTS: TAG_IMPACTED_BY,
                         })))
 
-def test_suite():
-    """Return test suite for this module."""
-    from unittest import TestSuite, makeSuite
-    suite = TestSuite()
-    suite.addTest(makeSuite(TestDVI))
-    return suite
-
-
-if __name__ == "__main__":
-    from zope.testrunner.runner import Runner
-    runner = Runner(found_suites=[test_suite()])
-    runner.run()
