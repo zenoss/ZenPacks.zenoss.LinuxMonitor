@@ -12,7 +12,10 @@ import itertools
 from zope.component import adapts
 from zope.interface import implements
 
+from zExceptions import NotFound
+
 from Products.ZenModel.FileSystem import FileSystem as BaseFileSystem
+from Products.ZenUtils.FunctionCache import FunctionCache
 from Products.Zuul.decorators import info
 from Products.Zuul.form import schema
 from Products.Zuul.infos import ProxyProperty
@@ -100,6 +103,7 @@ class FileSystem(BaseFileSystem):
 
         return self.device()
 
+    @FunctionCache("LinuxFileSystem_getRRDTemplateName", default_timeout=60)
     def getRRDTemplateName(self):
         """
         Return name of monitoring template to bind to this component.
@@ -140,33 +144,36 @@ class FileSystem(BaseFileSystem):
 
     def getStorageServer(self):
         """Generate objects for storage server for this FileSystem."""
-        if hasattr(self, '_v_result'):
-            if self._v_result:
-                yield self._v_result
-        else:
-            self._v_result = None
-            search_keywords = set()
-            d = self.device()
-            # search for file system servers for all Linux file systems once
-            if not hasattr(d, '_v_filesystem_servers'):
-                d._v_filesystem_servers = []
-                for fs in d.os.filesystems():
-                    storage_device = fs.storageDevice
-                    if ':' in storage_device:
-                        search_keywords.add('has-nfs-client:{}'.format(storage_device))
+        device = self.device()
+        search_root = self.getDmdRoot('Devices').Storage
 
-                search_root = self.getDmdRoot('Devices').Storage
-                if search_keywords:
-                    for obj in keyword_search(search_root, search_keywords):
-                        d._v_filesystem_servers.append(obj)
-            # check if this filesystem has a server
-            try:
-                for filesystem in d._v_filesystem_servers:
-                    if self.storageDevice in filesystem.storage_clients_list:
-                        self._v_result = filesystem
-                        yield filesystem
-            except AttributeError:
-                pass
+        try:
+            for filesystem in getStorageServerPaths(device, search_root):
+                filesystem = self.getObjByPath(filesystem)
+                if self.storageDevice in filesystem.storage_clients_list:
+                    yield filesystem
+        except (AttributeError, NotFound,):
+            """
+            Pass if filesystem has been already deleted (NotFound)
+            or if it is not a LinuxFileSystem instance (AttributeError).
+            """
+
+
+@FunctionCache("LinuxFileSystem_getStorageServerPaths", default_timeout=60)
+def getStorageServerPaths(device, search_root):
+    """Return the list of paths to external file system servers."""
+    filesystem_servers = []
+    search_keywords = set()
+    for fs in device.os.filesystems():
+        storage_device = fs.storageDevice
+        if ':' in storage_device:
+            search_keywords.add('has-nfs-client:{}'.format(storage_device))
+
+    if search_keywords:
+        for obj in keyword_search(search_root, search_keywords):
+            filesystem_servers.append(obj.getPrimaryUrlPath())
+
+    return filesystem_servers
 
 
 class IFileSystemInfo(IBaseFileSystemInfo):
