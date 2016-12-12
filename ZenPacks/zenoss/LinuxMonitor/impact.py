@@ -20,7 +20,6 @@ from Products.ZenModel.CPU import CPU
 from Products.ZenModel.OSProcess import OSProcess
 from Products.ZenModel.IpService import IpService
 from ZenPacks.zenoss.LinuxMonitor.LinuxDevice import LinuxDevice
-from ZenPacks.zenoss.LinuxMonitor.FileSystem import FileSystem
 
 
 class BaseRelationsProvider(object):
@@ -94,16 +93,4 @@ class DeviceRelationsProvider(BaseRelationsProvider):
         for cpu in device.hw.cpus():
             yield ImpactEdge(IGlobalIdentifier(device).getGUID(),
                              IGlobalIdentifier(cpu).getGUID(),
-                             self.relationship_provider)
-
-
-class FileSystemRelationsProvider(BaseRelationsProvider):
-    implements(IRelationshipDataProvider)
-    adapts(FileSystem)
-
-    def getEdges(self):
-        file_system = self._object
-        for storage_server in file_system.getStorageServer():
-            yield ImpactEdge(IGlobalIdentifier(storage_server).getGUID(),
-                             IGlobalIdentifier(file_system).getGUID(),
                              self.relationship_provider)

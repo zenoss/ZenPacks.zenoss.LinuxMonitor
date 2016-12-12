@@ -514,6 +514,9 @@ The following flavors of Linux are supported
 
 == Changes ==
 
+;2.2.0
+* Add Disk IDs to HardDrive for external correlation (ZEN-26399)
+
 ;2.1.0
 * Add cpu_ssCpuUsedPerCpu and mem_MemUsedPercent datapoints. (ZEN-22978)
 * Add common datapoint aliases. (ZEN-24619)

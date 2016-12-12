@@ -17,6 +17,7 @@ volumes.
 
 import logging
 import re
+from collections import defaultdict
 
 from Products.DataCollector.plugins.CollectorPlugin import CommandPlugin
 from Products.DataCollector.plugins.DataMaps import ObjectMap, RelationshipMap
@@ -91,7 +92,10 @@ class lvm(CommandPlugin):
                'lsblk -rb 2>&1; '
                'sudo pvs --units b --nosuffix -o pv_name,pv_fmt,pv_attr,pv_size,pv_free,pv_uuid,vg_name 2>&1; '
                'sudo vgs --units b --nosuffix -o vg_name,vg_attr,vg_size,vg_free,vg_uuid 2>&1; '
-               'sudo lvs --units b --nosuffix -o lv_name,vg_name,lv_attr,lv_size,lv_uuid,origin 2>&1 ')
+               'sudo lvs --units b --nosuffix -o lv_name,vg_name,lv_attr,lv_size,lv_uuid,origin 2>&1; '
+               'echo "DISK_BY_ID  LINK" 2>&1; '
+               'find /dev/disk/by-id -type l ! -name "*-part*" -printf "%P %l\\n" 2>&1'
+               )
 
     def process(self, device, results, log):
         ignore_unmounted = getattr(device, 'zIgnoreUnmounted', None)
@@ -134,7 +138,19 @@ class lvm(CommandPlugin):
             '\s*(?P<lv_size>\d+)'
             '\s*(?P<lv_uuid>\S+)'
             '\s*(?P<origin>\S*)')
-        parse_re = {'HD': hd_re, 'PV': pv_re, 'VG': vg_re, 'LV': lv_re, 'NAME': dev_blk_re}
+        by_id_re = re.compile(
+            '(?P<disk_id>\S+)'            # the id label
+            '\s*\.\./\.\./'               # the ../../ prefix to the link
+            '\s*(?P<disk_name>\S*)')      # the block device name
+
+        parse_re = {'HD': hd_re,
+                    'PV': pv_re,
+                    'VG': vg_re,
+                    'LV': lv_re,
+                    'NAME': dev_blk_re,
+                    'DISK_BY_ID': by_id_re}
+
+        disk_by_id_map = defaultdict(list)
         for line in results.split('\n'):
             if self.checkErr(line):
                 return []
@@ -176,6 +192,33 @@ class lvm(CommandPlugin):
                 if columns['type'] in ('disk', 'lvm', 'part', 'raid1'):
                     if columns['mount'] or not ignore_unmounted:
                         hd_maps.append(self.makeHDMap(columns))
+            elif section == 'DISK_BY_ID':
+                # Collect the disk_by_id map first. Process outside of loop.
+                device_block = columns.get('disk_name')
+                disk_by_id_map[device_block].append(columns.get('disk_id'))
+
+        # disk-id's to the disk assocations
+        plain_disk_re = re.compile('disk-'
+                                   '(?P<disk_name>[a-z]{3})'
+                                   '$'
+                                   )
+        dm_disk_re = re.compile('disk-'
+                                '[\w_.\-]*'
+                                '\('
+                                '(?P<disk_name>dm-[\d]+)'
+                                '\)$'
+                                )
+        # Set disk-id's here on hd_maps
+        for hd_om in hd_maps:
+            match = plain_disk_re.match(hd_om.id)
+            if match:
+                hd_om.disk_ids = disk_by_id_map[match.group('disk_name')]
+                continue
+
+            match = dm_disk_re.match(hd_om.id)
+            if match:
+                hd_om.disk_ids = disk_by_id_map[match.group('disk_name')]
+                continue
 
         maps = []
         maps.append(RelationshipMap(
