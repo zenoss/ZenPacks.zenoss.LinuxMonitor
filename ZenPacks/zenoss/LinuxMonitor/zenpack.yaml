@@ -605,7 +605,7 @@ device_classes:
                     intf:
                         type: COMMAND
                         usessh: true
-                        commandTemplate: "/bin/sh -c 'export PATH=/bin:/sbin:/usr/bin:/usr/sbin; [ -x $$(which ifconfig) ] && ifconfig -a || ip -s -o link'"
+                        commandTemplate: "/bin/sh -c 'export PATH=/bin:/sbin:/usr/bin:/usr/sbin; if which ip >/dev/null 2>&1; then ip -s -o link; else ifconfig -a; fi'"
                         parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.ifconfig
                         component: "${here/id}"
                         eventClass: /Ignore
