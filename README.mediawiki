@@ -514,6 +514,9 @@ The following flavors of Linux are supported
 
 == Changes ==
 
+;2.1.1
+* Fix "ifconfig" is checked before "ip" Linux Monitor (ZEN-25425)
+
 ;2.1.0
 * Add cpu_ssCpuUsedPerCpu and mem_MemUsedPercent datapoints. (ZEN-22978)
 * Add common datapoint aliases. (ZEN-24619)
