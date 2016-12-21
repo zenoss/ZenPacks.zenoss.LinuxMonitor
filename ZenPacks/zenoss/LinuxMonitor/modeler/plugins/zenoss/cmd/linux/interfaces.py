@@ -95,10 +95,10 @@ class interfaces(LinuxCommandPlugin):
 
     # echo __COMMAND__ is used to delimit the results
     command = 'export PATH=$PATH:/sbin:/usr/sbin; \
-               if which ifconfig >/dev/null 2>&1; then \
-                   ifconfig -a; \
-               elif which ip >/dev/null 2>&1; then \
+               if which ip >/dev/null 2>&1; then \
                    echo "### ip addr output"; ip addr; \
+               elif which ifconfig >/dev/null 2>&1; then \
+                   ifconfig -a; \
                else \
                    echo "No ifconfig or ip utilities were found."; exit 127; \
                fi \
