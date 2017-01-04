@@ -14,13 +14,8 @@ from zope.interface import implements
 
 from zExceptions import NotFound
 
-from Products.ZenModel.FileSystem import FileSystem as BaseFileSystem
 from Products.ZenUtils.FunctionCache import FunctionCache
-from Products.Zuul.decorators import info
-from Products.Zuul.form import schema
-from Products.Zuul.infos import ProxyProperty
 from Products.Zuul.catalog.interfaces import IIndexableWrapper
-from Products.Zuul.infos.component.filesystem import FileSystemInfo as BaseFileSystemInfo
 
 try:
     from Products.Zuul.catalog.global_catalog \
@@ -31,29 +26,17 @@ except ImportError:
 
     BaseFileSystemWrapper = ComponentWrapper
 
-from Products.Zuul.interfaces.component import IFileSystemInfo as IBaseFileSystemInfo
-from Products.Zuul.utils import ZuulMessageFactory as _t
 from ZenPacks.zenoss.LinuxMonitor.util import override_graph_labels, keyword_search
 
+from . import schema
 
-class FileSystem(BaseFileSystem):
 
-    """Model class for FileSystem.
-
-    Instances of this class get stored in ZODB.
+class FileSystem(schema.FileSystem):
 
     """
-
-    class_label = "File System"
-    plural_class_label = "File Systems"
-
-    meta_type = 'LinuxFileSystem'
-
-    server_name = None
-
-    _properties = BaseFileSystem._properties + (
-        {'id': 'server_name', 'label': 'Server Name', 'type': 'string'},
-    )
+    Model class for FileSystem.
+    Instances of this class get stored in ZODB.
+    """
 
     def logicalVolume(self):
         """Return the underlying LogicalVolume."""
@@ -112,7 +95,7 @@ class FileSystem(BaseFileSystem):
         to prevent monitoring for such component on Linux device or
         returns the name of an appropriate template for this FileSystem otherwise.
         """
-        storage_server = list(self.getStorageServer())
+        storage_server = list(self.getStorageServers())
         if storage_server:
             return "FileSystem_NFS_Client"
         return "FileSystem"
@@ -136,14 +119,9 @@ class FileSystem(BaseFileSystem):
                 graphs.append(graph)
         return graphs
 
-    def getIconPath(self):
-        '''
-        Return the path to an icon for this component.
-        '''
-        return '/++resource++linux/img/file-system.png'
-
-    def getStorageServer(self):
+    def getStorageServers(self):
         """Generate objects for storage server for this FileSystem."""
+
         device = self.device()
         search_root = self.getDmdRoot('Devices').Storage
 
@@ -157,6 +135,35 @@ class FileSystem(BaseFileSystem):
             Pass if filesystem has been already deleted (NotFound)
             or if it is not a LinuxFileSystem instance (AttributeError).
             """
+
+    def getStorageDevice(self):
+        """Get the storage device that contains this fs.
+
+           :return: Storage component
+           :rtype:  Component object
+        """
+        # Return self.type for non-storage type filesystems
+        if not self.blockDevice():
+            return self.type
+
+        # For network mounted servers
+        for server in self.getStorageServers():
+            return server
+
+        # The remainder should be HardDisk, LVM, or other block device
+        storagedevice = None
+        if self.logicalVolume():
+            storagedevice = self.logicalVolume()
+        elif self.blockDevice():
+            storagedevice = self.blockDevice()
+
+        return storagedevice
+
+    def capacity(self):
+        utilization = super(FileSystem, self).capacity()
+        if isinstance(utilization, (int, float)):
+            return '{} %'.format(utilization)
+        return utilization
 
 
 @FunctionCache("LinuxFileSystem_getStorageServerPaths", default_timeout=60)
@@ -174,74 +181,6 @@ def getStorageServerPaths(device, search_root):
             filesystem_servers.append(obj.getPrimaryUrlPath())
 
     return filesystem_servers
-
-
-class IFileSystemInfo(IBaseFileSystemInfo):
-
-    """IInfo interface for FileSystem.
-
-    This is used for JSON API definition. Fields described here are what will
-    appear on instance's component details panel.
-
-    """
-
-    logicalVolume = schema.Entity(
-        title=_t(u"LVM Logical Volume"),
-        group="Details",
-        readonly=True)
-
-    blockDevice = schema.Entity(
-        title=_t(u"Block Device"),
-        group="Details",
-        readonly=True)
-
-
-class FileSystemInfo(BaseFileSystemInfo):
-
-    """Info adapter for FileSystem.
-
-    This is used for API implementation and JSON serialization. Properties
-    implemented here will be available through the JSON API.
-
-    """
-
-    implements(IFileSystemInfo)
-
-    server_name = ProxyProperty('server_name')
-
-    @property
-    @info
-    def logicalVolume(self):
-        return self._object.logicalVolume()
-
-    @property
-    @info
-    def blockDevice(self):
-        return self._object.blockDevice()
-
-    @property
-    @info
-    def storageDevice(self):
-        storage = self._object.storageDevice
-        server_name = self._object.server_name
-        if server_name:
-            try:
-                storage = ':'.join(
-                    [server_name, storage.rsplit(':', 1)[1]]
-                )
-            except:
-                pass
-        for server in self._object.getStorageServer():
-            return"<a class='z-entity' href='{0}'>{1}</a>".format(
-                server.getPrimaryUrlPath(), storage)
-        if self._object.logicalVolume():
-            storagedevice = self._object.logicalVolume()
-        elif self._object.blockDevice():
-            storagedevice = self._object.blockDevice()
-        else:
-            return storage
-        return"<a class='z-entity' href='{0}'>{1}</a>".format(
-            storagedevice.getPrimaryUrlPath(), storagedevice.title)
 
 
 class FileSystemWrapper(BaseFileSystemWrapper):

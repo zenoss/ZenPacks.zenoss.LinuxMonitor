@@ -295,6 +295,151 @@ classes:
                 - openstack_core_components
                 - filesystem
 
+    HardDisk:
+        label: Linux Hard Disk
+        base: [zenpacklib.HardDisk]
+        meta_type: LinuxHardDisk
+        plural_label: Hard Disks
+        monitoring_templates: [HardDisk]
+
+        properties:
+            DEFAULTS:
+               grid_display: false
+
+            size:
+                label: Size
+                type: int
+                renderer: Zenoss.render.bytesString
+                order: 4.1
+                grid_display: true
+
+            major_minor:
+                label: 'Major:Minor'
+                grid_display: false
+
+            mount:
+                label: 'Mount Point'
+                order: 4.2
+
+            physicalVolume:
+                label: 'LVM PV'
+                type: entity
+                api_only: true
+                api_backendtype: method
+                grid_display: true
+
+            logicalVolume:
+                label: LVM Logical Volume
+                api_only: true
+                api_backendtype: method
+                type: entity
+
+            filesystem:
+                label: 'FileSystem'
+                order: 4.3
+                api_only: true
+                api_backendtype: method
+                type: entity
+
+            disk_ids:
+                label: 'Disk IDs'
+                type: lines
+
+        dynamicview_views: [service_view]
+        dynamicview_weight: 40
+        dynamicview_relations:
+            impacts:
+                - device
+                - impacted_object
+
+    FileSystem:
+        label: File System
+        base: [zenpacklib.FileSystem]
+        meta_type: LinuxFileSystem
+        plural_label: File Systems
+        monitoring_templates: [FileSystem]
+
+        properties:
+            DEFAULTS:
+               grid_display: false
+
+            blockDevice:
+                label: Block Device
+                api_only: true
+                api_backendtype: method
+                type: entity
+
+            capacityBytes:
+                label: Capacity
+                grid_display: false
+                details_display: false
+
+            logicalVolume:
+                label: LVM Logical Volume
+                api_only: true
+                api_backendtype: method
+                type: entity
+
+            mount:
+                label: Mount
+
+            server_name:
+                label: Server Name
+                details_display: false
+
+            storageDevice:
+                label: Storage Dev
+                details_display: true
+
+            getStorageDevice:
+                label: Storage Device
+                api_only: true
+                api_backendtype: method
+                grid_display: true
+                details_display: false
+                renderer: Zenoss.render.zenpacklib_ZenPacks_zenoss_LinuxMonitor_fileSystemStorageDevice
+                order: 4.1
+
+            totalBytes:
+                label: Total Bytes
+                renderer: Zenoss.render.bytesString
+                api_only: true
+                api_backendtype: method
+                grid_display: true
+                order: 4.2
+
+            usedBytes:
+                label: Used Bytes
+                renderer: Zenoss.render.bytesString
+                api_only: true
+                api_backendtype: method
+                grid_display: true
+                order: 4.3
+
+            availBytes:
+                label: Free Bytes
+                renderer: Zenoss.render.bytesString
+                api_only: true
+                api_backendtype: method
+                grid_display: true
+                details_display: false
+                order: 4.4
+
+            capacity:
+                label: '% Util'
+                api_only: true
+                api_backendtype: method
+                grid_display: true
+                details_display: true
+                order: 4.5
+
+        dynamicview_views: [service_view]
+        dynamicview_weight: 40
+        dynamicview_relations:
+            impacted_by:
+                - impacting_object
+                - getStorageServers
+
 
 class_relationships:
     - LinuxDevice 1:MC VolumeGroup

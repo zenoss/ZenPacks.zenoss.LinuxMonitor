@@ -9,8 +9,6 @@
 
 from . import schema
 
-from .FileSystem import FileSystem
-
 
 class LinuxDevice(schema.LinuxDevice):
 
@@ -49,6 +47,7 @@ class LinuxDevice(schema.LinuxDevice):
         be impacted by their device.
 
         """
+        from .FileSystem import FileSystem
         for fs in self.os.filesystems():
             if isinstance(fs, FileSystem):
                 if fs.impacting_object() == self:

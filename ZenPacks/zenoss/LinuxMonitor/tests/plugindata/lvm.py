@@ -16,7 +16,8 @@
              'title': 'lvmserver',
              'uuid': 'RRYHWp-twqJ-x89e-1WXs-iDFu-R2EE-5KPL4d'}, },
         {'disk-sda':
-            {'id': 'disk-sda',
+            {'disk_ids': ['ata-3.14159', 'scsi-3.14159'],
+             'id': 'disk-sda',
              'major_minor': '8:0',
              'modname': 'ZenPacks.zenoss.LinuxMonitor.HardDisk',
              'mount': '',
