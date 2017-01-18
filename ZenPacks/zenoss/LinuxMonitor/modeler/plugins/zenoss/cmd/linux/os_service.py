@@ -9,8 +9,7 @@
 
 
 """
-Systemd output('systemctl list-units -t service --all --no-page --no-legend | awk '{ print $1 }' | xargs -n 1 systemctl status -l -n 0'):
-
+Systemd output('systemctl list-units -t service --all --no-page --no-legend | cut -d" " -f1 | xargs -n 1 systemctl status -l -n 0'):
     ...
     systemd-udev-trigger.service - udev Coldplug all Devices
        Loaded: loaded (/usr/lib/systemd/system/systemd-udev-trigger.service; static; vendor preset: disabled)
@@ -53,6 +52,9 @@ Systemd output('systemctl list-units -t service --all --no-page --no-legend | aw
      Main PID: 629 (code=exited, status=0/SUCCESS)
        Memory: 0B
        CGroup: /system.slice/systemd-update-utmp.service
+       display-manager.service
+       Loaded: not-found (Reason: No such file or directory)
+       Active: inactive (dead)
     ...
 
 
@@ -191,13 +193,13 @@ class os_service(LinuxCommandPlugin):
     command = ('export PATH=$PATH:/bin:/sbin:/usr/bin:/usr/sbin; '
                'if command -v systemctl >/dev/null 2>&1; then '
                 'echo "SYSTEMD"; '
-                'sudo systemctl list-units -t service --all --no-page --no-legend | awk \'{ print $1 }\' | xargs -n 1 sudo systemctl status -l -n 0; '
+                'sudo systemctl list-units -t service --all --no-page --no-legend | sed /not-found/d | cut -d" " -f1 | xargs -n 1 sudo systemctl status -l -n 0 2>&1 || true; '
                'elif command -v initctl >/dev/null 2>&1; then '
                 'echo "UPSTART"; '
-                'sudo initctl list; '
+                'sudo initctl list 2>&1 || true ; '
                'elif command -v service >/dev/null 2>&1; then '
                 'echo "SYSTEMV"; '
-                'sudo service --status-all; '
+                'sudo service --status-all 2>&1 || true; '
                'else '
                 'echo "UNKNOWN"; '
                 'exit 127; '
@@ -207,7 +209,7 @@ class os_service(LinuxCommandPlugin):
     relname = 'linuxServices'
     modname = 'ZenPacks.zenoss.LinuxMonitor.LinuxService'
 
-    def populateRelMap(self, rm, services, regex, getProcesses):
+    def populateRelMap(self, rm, services, regex, getProcesses, log):
         for line in services:
             line = line.strip()
             match = regex.match(line)
@@ -224,6 +226,9 @@ class os_service(LinuxCommandPlugin):
                 om.processes = getProcesses(line) if callable(getProcesses) \
                     else groupdict.get('processes')
                 rm.append(om)
+            else:
+                log.debug("Unmapped in populateRelMap(): %s", line)
+                continue
 
     def process(self, device, results, log):
         log.info("Processing the OS Service info for device %s", device.id)
@@ -238,7 +243,7 @@ class os_service(LinuxCommandPlugin):
             if functions:
                 services = functions.get('services')(services)
                 processesFunc = functions.get('processes')
-            self.populateRelMap(rm, services, regex, processesFunc)
+            self.populateRelMap(rm, services, regex, processesFunc, log)
             log.debug("Init service: %s, Relationship: %s", initService, rm.relname)
         else:
             log.info("Can not parse OS services, init service is unknown!")
