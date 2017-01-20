@@ -7,6 +7,14 @@ This ZenPack monitors the Linux Operating System.
 Releases
 --------
 
+.. _Version-2.1.2: http://wiki.zenoss.org/download/zenpacks/ZenPacks.zenoss.LinuxMonitor/2.1.2/ZenPacks.zenoss.LinuxMonitor-2.1.2.egg
+
+Version-2.1.2_ : Released on 2017/01/20
+
+   Compatible with Zenoss Core 4.2.x, Zenoss Core 5.0.x, Zenoss Core 5.1.x,
+   Zenoss Resource Manager 4.2.x, Zenoss Resource Manager 5.0.x, Zenoss
+   Resource Manager 5.1.x, Zenoss Resource Manager 5.x.x
+
 .. _Version-2.1.1: http://wiki.zenoss.org/download/zenpacks/ZenPacks.zenoss.LinuxMonitor/2.1.1/ZenPacks.zenoss.LinuxMonitor-2.1.1.egg
 
 Version-2.1.1_ : Released on 2016/12/21
