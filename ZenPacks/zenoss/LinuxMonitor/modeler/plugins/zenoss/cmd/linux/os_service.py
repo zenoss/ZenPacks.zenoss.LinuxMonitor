@@ -137,11 +137,15 @@ Collect linux services information using appropriate init service command.
 """
 
 
-RE_SYSTEMD_SERVICE = re.compile('(?P<title>[@A-Za-z0-9\-\.]+)\.service\s\-\s'
-                                '(?P<description>.+)\s+'
-                                'Loaded:\s(?P<loaded_status>\w.+\))\s+'
-                                'Active:\s(?P<active_status>\w+\s\(\w+\)(\ssince.+ago)?)'
-                                '(.+Main\sPID:\s(?P<main_pid>\d+))?')
+RE_SYSTEMD_SERVICE = re.compile(
+                        '(?P<title>[@\w\-\.:]+)\.service\s\-\s'          # service title
+                        '(?P<description>.+)\s+'                         # description
+                        'Loaded:\s(?P<loaded_status>\w.+\))\s+'          # loaded status
+                        '(Drop-In:(?P<drop_in>\s/\w[\w./].+)\s+)?'       # optional Drop-In
+                        'Active:\s+'
+                        '(?P<active_status>\w+\s\(\w+\)(\ssince.+ago)?)' # active status
+                        '(.+Main\sPID:\s(?P<main_pid>\d+))?'             # optional sevicepid
+                        '.*')
 RE_UPSTART_SERVICE = re.compile('(?P<title>[A-Za-z0-9\-\.]+)\s'
                                 '(?P<active_status>[\w/]+)'
                                 '(.\sprocess\s(?P<main_pid>\d+))?')
@@ -157,6 +161,10 @@ def systemd_getServices(services):
     The delimiter of a new service line is BLACK CIRCLE unicode char.
     """
     uServices = unicode(''.join(services), 'utf-8')
+    # remove these unicode chars before we splitlines() and parse
+    if re.match(ur'.*\u2514\u2500.*', uServices):
+        uServices = re.sub(ur'\u2514\u2500', ' ', uServices)
+
     if re.match(ur'\u25cf', uServices):
         return re.sub(ur'\u25cf', '\n', uServices).splitlines()
     else:
