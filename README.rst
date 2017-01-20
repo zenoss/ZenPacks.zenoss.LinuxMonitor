@@ -591,6 +591,11 @@ The following flavors of Linux are supported
 Changes
 -------
 
+2.1.2
+
+- Improve OS process detection. (ZPS-659)
+- Quiet modeler error messages for missing services. (ZPS-644)
+
 2.1.1
 
 -  Fix "ifconfig" is checked before "ip" Linux Monitor (ZEN-25425)
