@@ -226,21 +226,36 @@ ul.auto-toc {
 <p>This ZenPack monitors the Linux Operating System.</p>
 <div class="section" id="releases">
 <h1><a class="toc-backref" href="#id1">Releases</a></h1>
-<p><a class="reference external" href="http://wiki.zenoss.org/download/zenpacks/ZenPacks.zenoss.LinuxMonitor/2.1.2/ZenPacks.zenoss.LinuxMonitor-2.1.2.egg">Version-2.1.2</a> : Released on 2017/01/20</p>
-<blockquote>
-Compatible with Zenoss Core 4.2.x, Zenoss Core 5.0.x, Zenoss Core 5.1.x,
+<dl class="docutils">
+<dt><a class="reference external" href="http://wiki.zenoss.org/download/zenpacks/ZenPacks.zenoss.LinuxMonitor/2.1.2/ZenPacks.zenoss.LinuxMonitor-2.1.2.egg">Version-2.1.2</a></dt>
+<dd><div class="first last line-block">
+<div class="line">Released on 2017/01/20</div>
+<div class="line">Compatible with Zenoss Core 4.2.x, Zenoss Core 5.0.x, Zenoss Core 5.1.x,
 Zenoss Resource Manager 4.2.x, Zenoss Resource Manager 5.0.x, Zenoss
-Resource Manager 5.1.x, Zenoss Resource Manager 5.x.x</blockquote>
-<p><a class="reference external" href="http://wiki.zenoss.org/download/zenpacks/ZenPacks.zenoss.LinuxMonitor/2.1.1/ZenPacks.zenoss.LinuxMonitor-2.1.1.egg">Version-2.1.1</a> : Released on 2016/12/21</p>
-<blockquote>
-Compatible with Zenoss Core 4.2.x, Zenoss Core 5.0.x, Zenoss Core 5.1.x,
+Resource Manager 5.1.x, Zenoss Resource Manager 5.x.x</div>
+</div>
+</dd>
+</dl>
+<dl class="docutils">
+<dt><a class="reference external" href="http://wiki.zenoss.org/download/zenpacks/ZenPacks.zenoss.LinuxMonitor/2.1.1/ZenPacks.zenoss.LinuxMonitor-2.1.1.egg">Version-2.1.1</a></dt>
+<dd><div class="first last line-block">
+<div class="line">Released on 2016/12/21</div>
+<div class="line">Compatible with Zenoss Core 4.2.x, Zenoss Core 5.0.x, Zenoss Core 5.1.x,
 Zenoss Resource Manager 4.2.x, Zenoss Resource Manager 5.0.x, Zenoss
-Resource Manager 5.1.x, Zenoss Resource Manager 5.x.x</blockquote>
-<p><a class="reference external" href="http://wiki.zenoss.org/download/zenpacks/ZenPacks.zenoss.LinuxMonitor/2.0.6/ZenPacks.zenoss.LinuxMonitor-2.0.6.egg">Version-2.0.6</a> : Released on 2016/11/01</p>
-<blockquote>
-Compatible with Zenoss Core 4.2.x, Zenoss Core 5.0.x, Zenoss Core 5.1.x,
+Resource Manager 5.1.x, Zenoss Resource Manager 5.x.x</div>
+</div>
+</dd>
+</dl>
+<dl class="docutils">
+<dt><a class="reference external" href="http://wiki.zenoss.org/download/zenpacks/ZenPacks.zenoss.LinuxMonitor/2.0.6/ZenPacks.zenoss.LinuxMonitor-2.0.6.egg">Version-2.0.6</a></dt>
+<dd><div class="first last line-block">
+<div class="line">Released on 2016/11/01</div>
+<div class="line">Compatible with Zenoss Core 4.2.x, Zenoss Core 5.0.x, Zenoss Core 5.1.x,
 Zenoss Resource Manager 4.2.x, Zenoss Resource Manager 5.0.x, Zenoss
-Resource Manager 5.1.x</blockquote>
+Resource Manager 5.1.x</div>
+</div>
+</dd>
+</dl>
 <div class="contents topic" id="contents">
 <p class="topic-title first">Contents</p>
 <ul class="simple">
@@ -383,15 +398,15 @@ not be required to use TTY.</p>
 <li><p class="first">Install the <strong>sudo</strong> package on your server.</p>
 </li>
 <li><p class="first">Allow root user to execute commands via ssh without a TTY.</p>
-<ol class="arabic">
+<ol class="loweralpha">
 <li><p class="first">Edit the /etc/sudoers file.</p>
 </li>
 <li><p class="first">Find the line containing <em>root ALL=(ALL) ALL</em>.</p>
 </li>
 <li><p class="first">Add this line underneath it:</p>
-<blockquote>
-<p>Defaults:root !requiretty</p>
-</blockquote>
+<pre class="literal-block">
+Defaults:root !requiretty
+</pre>
 </li>
 <li><p class="first">Save the changes and exit.</p>
 </li>
@@ -416,10 +431,9 @@ allow the <strong>zenmonitor</strong> user to run the commands.</p>
 </li>
 <li><p class="first">Allow the <strong>zenmonitor</strong> user to run the commands via ssh without a TTY</p>
 <ul>
-<li><dl class="first docutils">
-<dt>Edit /etc/sudoers.d/zenoss (Or /etc/sudoers if sudoers.d not</dt>
-<dd><p class="first">supported) and&nbsp;add&nbsp;the&nbsp;following&nbsp;lines&nbsp;to&nbsp;the&nbsp;bottom&nbsp;of&nbsp;the&nbsp;file:</p>
-<pre class="last literal-block">
+<li><p class="first">Edit /etc/sudoers.d/zenoss (Or /etc/sudoers if sudoers.d not
+supported) and&nbsp;add&nbsp;the&nbsp;following&nbsp;lines&nbsp;to&nbsp;the&nbsp;bottom&nbsp;of&nbsp;the&nbsp;file:</p>
+<pre class="literal-block">
 Defaults:zenmonitor !requiretty
 Cmnd_Alias ZENOSS_LVM_CMDS = /sbin/pvs, /sbin/vgs, /sbin/lvs, \
     /usr/sbin/pvs, /usr/sbin/vgs, /usr/sbin/lvs
@@ -428,8 +442,6 @@ Cmnd_Alias ZENOSS_SVC_CMDS = /bin/systemctl list-units *, \
     /usr/sbin/dmidecode
 zenmonitor ALL=(ALL) NOPASSWD: ZENOSS_LVM_CMDS, ZENOSS_SVC_CMDS
 </pre>
-</dd>
-</dl>
 </li>
 <li><p class="first">Save, ensuring all paths for these commands are correct</p>
 </li>
@@ -438,15 +450,14 @@ zenmonitor ALL=(ALL) NOPASSWD: ZENOSS_LVM_CMDS, ZENOSS_SVC_CMDS
 </ol>
 <div class="note">
 <p class="first admonition-title">Note</p>
-<p class="last">In order for Ssh operation works correctly, ensure OpenSSH is updated
+<ul class="last simple">
+<li>In order for Ssh operation works correctly, ensure OpenSSH is updated
 to your distro's current version. This is especially true for older
-versions of RHEL, CentOS, Ubuntu, and Suse Linux.</p>
-</div>
-<div class="note">
-<p class="first admonition-title">Note</p>
-<p class="last">For Suse Linux the paths for (<strong>pvs, vgs, lvs</strong>) are located at
+versions of RHEL, CentOS, Ubuntu, and Suse Linux.</li>
+<li>For Suse Linux the paths for (<strong>pvs, vgs, lvs</strong>) are located at
 <strong>/sbin/pvs</strong>, <strong>/sbin/vgs</strong>, and <strong>/sbin/lvs</strong> respectively. Please
-ensure that each command can be manually executed remotely.</p>
+ensure that each command can be manually executed remotely.</li>
+</ul>
 </div>
 <table border="1" class="docutils">
 <colgroup>

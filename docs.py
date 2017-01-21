@@ -16,6 +16,8 @@ try:
     stylesheet = rx_comments.sub('', stylesheet)
     stylesheet = re.sub('\n\n\n', '\n', stylesheet)
     stylesheet = re.sub('\n\n', '\n', stylesheet)
+    gallery_css = "img.gallery { padding:5px; border:2px; margin:2px; }\n"
+    stylesheet = re.sub('</style>', gallery_css + '</style>', stylesheet)
 
 except Exception:
     print "Error converting to html"
