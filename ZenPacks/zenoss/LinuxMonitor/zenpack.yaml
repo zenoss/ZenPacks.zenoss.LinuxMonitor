@@ -344,6 +344,7 @@ classes:
             disk_ids:
                 label: 'Disk IDs'
                 type: lines
+                index_type: keyword
 
         dynamicview_views: [service_view]
         dynamicview_weight: 40
