@@ -213,12 +213,31 @@ class lvm(CommandPlugin):
             match = plain_disk_re.match(hd_om.id)
             if match:
                 hd_om.disk_ids = disk_by_id_map[match.group('disk_name')]
-                continue
+            else:
+                match = dm_disk_re.match(hd_om.id)
+                if match:
+                    hd_om.disk_ids = disk_by_id_map[match.group('disk_name')]
 
-            match = dm_disk_re.match(hd_om.id)
-            if match:
-                hd_om.disk_ids = disk_by_id_map[match.group('disk_name')]
-                continue
+
+            if hasattr(hd_om, 'disk_ids'):
+                for id in hd_om.disk_ids:
+                    if id.startswith('wwn-0x') and len(id) == 38:
+                        # add 30 bytes of likely uuid to disk_ids 
+                        # to simplify uuid search on CiscoUCS side
+                        # because Windows hard disk would chop off
+                        # the first 2 bytes
+                        disk_id = id[8:]
+                        if disk_id not in hd_om.disk_ids:
+                            hd_om.disk_ids.append(disk_id)
+                    elif id.find('_') > -1:
+                        # add the likely disk serial number to disk_ids
+                        # for serial number search on CiscoUCS side
+                        # 'scsi-SATA_INTEL_SSDSC2BB1PHWA616003QY120CGN',
+                        # 'ata-INTEL_SSDSC2BB120G6K_PHWA616003QY120CGN'
+                        # add the part right of the last '_'
+                        disk_id = id[id.rfind('_') + 1:].upper()
+                        if disk_id not in hd_om.disk_ids:
+                            hd_om.disk_ids.append(disk_id)
 
         maps = []
         maps.append(RelationshipMap(
