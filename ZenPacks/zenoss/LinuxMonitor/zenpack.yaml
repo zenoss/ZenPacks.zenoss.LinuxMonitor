@@ -922,6 +922,9 @@ device_classes:
                                     fs_used__bytes: "${here/blockSize},*"
                                     usedFilesystemSpace__bytes: "${here/blockSize},*"
 
+                            availBlocks:
+                                rrdmin: 0
+
                     idisk:
                         type: COMMAND
                         usessh: true
