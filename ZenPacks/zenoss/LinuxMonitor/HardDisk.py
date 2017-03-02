@@ -10,6 +10,8 @@
 import itertools
 
 from Products.ZenUtils.Utils import prepId
+from Products.Zuul.interfaces import ICatalogTool
+from Products.AdvancedQuery import Eq, Or
 
 from . import schema
 
@@ -76,3 +78,17 @@ class HardDisk(schema.HardDisk):
         lv = self.logicalVolume()
         if lv:
             return lv
+
+    def storage_disk_lun(self):
+        # return the UCS storage disk/virtual drive
+        # if disk_ids contains the IDs of disk/virtual drive
+        if self.disk_ids:
+            results = ICatalogTool(self.getDmdRoot('Devices')).search(
+                query=Or(*[Eq('searchKeywords', id)
+                           for id in self.disk_ids]))
+
+            for brain in results:
+                try:
+                    yield brain.getObject()
+                except Exception:
+                    continue
