@@ -54,7 +54,7 @@ Features
 
 .. Note::
    This version of LinuxMonitor fully replaces EnterpriseLinux. To avoid
-   related errors in zenhub logs, EnterpriseLinux ZP should be removed.
+   related errors in zenhub logs, EnterpriseLinux ZP should be removed after the new LinuxMonitor has been applied.
 
 Discovery
 ~~~~~~~~~
