@@ -1,6 +1,6 @@
 ##############################################################################
 #
-# Copyright (C) Zenoss, Inc. 2016, all rights reserved.
+# Copyright (C) Zenoss, Inc. 2017, all rights reserved.
 #
 # This content is made available according to terms specified in
 # License.zenoss under the directory where your Zenoss product is installed.
@@ -132,19 +132,25 @@ class FileSystem(schema.FileSystem):
 
         return self.device()
 
-    @FunctionCache("LinuxFileSystem_getRRDTemplateName", default_timeout=60)
-    def getRRDTemplateName(self):
+    def getRRDTemplates(self):
         """
-        Return name of monitoring template to bind to this component.
+        For NFS mounts replace general FileSystem template with NFS-specific one.
+        """
+        old_templates = super(FileSystem, self).getRRDTemplates()
 
-        Return non-existent template name if this FileSystem has external storage
-        to prevent monitoring for such component on Linux device or
-        returns the name of an appropriate template for this FileSystem otherwise.
-        """
-        storage_server = list(self.getStorageServers())
-        if storage_server:
-            return "FileSystem_NFS_Client"
-        return "FileSystem"
+        if self.type != 'nfs':
+            return old_templates
+
+        new_templates = []
+
+        for template in old_templates:
+            if 'FileSystem' in template.id and 'FileSystem_NFS_Client' not in template.id:
+                new_templates.append(self.getRRDTemplateByName(
+                    template.id.replace('FileSystem', 'FileSystem_NFS_Client')))
+            else:
+                new_templates.append(template)
+
+        return new_templates
 
     def getDefaultGraphDefs(self, drange=None):
         # Add and re-label graphs displayed in other components
