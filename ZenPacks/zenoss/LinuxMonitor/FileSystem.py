@@ -12,6 +12,8 @@ import itertools
 from zope.component import adapts
 from zope.interface import implements
 
+from math import isnan
+
 from zExceptions import NotFound
 
 from Products.ZenUtils.FunctionCache import FunctionCache
@@ -38,6 +40,28 @@ class FileSystem(schema.FileSystem):
     Instances of this class get stored in ZODB.
     """
 
+    def getTotalBlocks(self):
+
+        availBlocks = self.cacheRRDValue('availBlocks', None)
+        usedBlocks = self.usedBlocks()
+        if availBlocks is not None and usedBlocks is not None:
+            nonRootTotalBlocks = availBlocks + usedBlocks
+            return nonRootTotalBlocks
+
+        offset = getattr(self.primaryAq(), 'zFileSystemSizeOffset', 1.0)
+        return int(self.totalBlocks) * offset
+
+    def usedBlocks(self):
+        dskPercent = self.cacheRRDValue("dskPercent", None)
+        if dskPercent is not None and dskPercent != "Unknown" and not isnan(dskPercent):
+            return self.getTotalBlocks() * dskPercent / 100.0
+
+        blocks = self.cacheRRDValue('usedBlocks', None)
+        if blocks is not None and not isnan(blocks):
+            return long(blocks)
+        
+        return None
+
     def logicalVolume(self):
         """Return the underlying LogicalVolume."""
         if not self.mount:
@@ -52,7 +76,7 @@ class FileSystem(schema.FileSystem):
                 return result.getObject()
             except Exception:
                 pass
-
+   
     def blockDevice(self):
         """Return the underlying HardDisk."""
         if not self.mount:
