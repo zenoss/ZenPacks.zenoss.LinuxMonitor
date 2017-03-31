@@ -7,29 +7,17 @@ This ZenPack monitors the Linux Operating System.
 Releases
 --------
 
-.. _Version-2.1.2: http://wiki.zenoss.org/download/zenpacks/ZenPacks.zenoss.LinuxMonitor/2.1.2/ZenPacks.zenoss.LinuxMonitor-2.1.2.egg
+.. _Version-2.1.3: http://wiki.zenoss.org/download/zenpacks/ZenPacks.zenoss.LinuxMonitor/2.1.3/ZenPacks.zenoss.LinuxMonitor-2.1.3.egg
 
-Version-2.1.2_ : Released on 2017/01/20
-
-   Compatible with Zenoss Core 4.2.x, Zenoss Core 5.0.x, Zenoss Core 5.1.x,
-   Zenoss Resource Manager 4.2.x, Zenoss Resource Manager 5.0.x, Zenoss
-   Resource Manager 5.1.x, Zenoss Resource Manager 5.x.x
-
-.. _Version-2.1.1: http://wiki.zenoss.org/download/zenpacks/ZenPacks.zenoss.LinuxMonitor/2.1.1/ZenPacks.zenoss.LinuxMonitor-2.1.1.egg
-
-Version-2.1.1_ : Released on 2016/12/21
-
-   Compatible with Zenoss Core 4.2.x, Zenoss Core 5.0.x, Zenoss Core 5.1.x,
-   Zenoss Resource Manager 4.2.x, Zenoss Resource Manager 5.0.x, Zenoss
-   Resource Manager 5.1.x, Zenoss Resource Manager 5.x.x
+Version-2.1.3_
+   | Released on 2017/03/31
+   | Compatible with Zenoss 4.2 - 5.2
 
 .. _Version-2.0.6: http://wiki.zenoss.org/download/zenpacks/ZenPacks.zenoss.LinuxMonitor/2.0.6/ZenPacks.zenoss.LinuxMonitor-2.0.6.egg
 
-Version-2.0.6_ : Released on 2016/11/01
-
-   Compatible with Zenoss Core 4.2.x, Zenoss Core 5.0.x, Zenoss Core 5.1.x,
-   Zenoss Resource Manager 4.2.x, Zenoss Resource Manager 5.0.x, Zenoss
-   Resource Manager 5.1.x
+Version-2.0.6_
+  | Released on 2016/11/01
+  | Compatible with Zenoss 4.2 - 5.1
 
 .. contents::
    :depth: 2
@@ -159,11 +147,11 @@ not be required to use TTY.
 #. Install the **sudo** package on your server.
 #. Allow root user to execute commands via ssh without a TTY.
 
-   #. Edit the /etc/sudoers file.
+   a. Edit the /etc/sudoers file.
    #. Find the line containing *root ALL=(ALL) ALL*.
-   #. Add this line underneath it:
+   #. Add this line underneath it::
 
-          Defaults:root !requiretty
+         Defaults:root !requiretty
 
    #. Save the changes and exit.
 
@@ -186,28 +174,27 @@ allow the **zenmonitor** user to run the commands.
 #. Allow the **zenmonitor** user to run the commands via ssh without a TTY
 
    - Edit /etc/sudoers.d/zenoss (Or /etc/sudoers if sudoers.d not
-      supported) and add the following lines to the bottom of the file::
+     supported) and add the following lines to the bottom of the file::
 
-         Defaults:zenmonitor !requiretty
-         Cmnd_Alias ZENOSS_LVM_CMDS = /sbin/pvs, /sbin/vgs, /sbin/lvs, \
-             /usr/sbin/pvs, /usr/sbin/vgs, /usr/sbin/lvs
-         Cmnd_Alias ZENOSS_SVC_CMDS = /bin/systemctl list-units *, \
-             /bin/systemctl status *, /sbin/initctl list, /sbin/service --status-all, \
-             /usr/sbin/dmidecode
-         zenmonitor ALL=(ALL) NOPASSWD: ZENOSS_LVM_CMDS, ZENOSS_SVC_CMDS
+        Defaults:zenmonitor !requiretty
+        Cmnd_Alias ZENOSS_LVM_CMDS = /sbin/pvs, /sbin/vgs, /sbin/lvs, \
+            /usr/sbin/pvs, /usr/sbin/vgs, /usr/sbin/lvs
+        Cmnd_Alias ZENOSS_SVC_CMDS = /bin/systemctl list-units *, \
+            /bin/systemctl status *, /sbin/initctl list, /sbin/service --status-all, \
+            /usr/sbin/dmidecode
+        zenmonitor ALL=(ALL) NOPASSWD: ZENOSS_LVM_CMDS, ZENOSS_SVC_CMDS
 
    - Save, ensuring all paths for these commands are correct
 
 .. Note::
-   In order for Ssh operation works correctly, ensure OpenSSH is updated
-   to your distro's current version. This is especially true for older
-   versions of RHEL, CentOS, Ubuntu, and Suse Linux.
+   * In order for Ssh operation works correctly, ensure OpenSSH is updated
+     to your distro's current version. This is especially true for older
+     versions of RHEL, CentOS, Ubuntu, and Suse Linux.
 
 
-.. Note::
-   For Suse Linux the paths for (**pvs, vgs, lvs**) are located at
-   **/sbin/pvs**, **/sbin/vgs**, and **/sbin/lvs** respectively. Please
-   ensure that each command can be manually executed remotely.
+   * For Suse Linux the paths for (**pvs, vgs, lvs**) are located at
+     **/sbin/pvs**, **/sbin/vgs**, and **/sbin/lvs** respectively. Please
+     ensure that each command can be manually executed remotely.
 
 +--------------------------------------+--------------------------------------+
 | Name                                 | Description                          |
@@ -265,15 +252,15 @@ Here is an example...
 
 .. code:: text
 
-    /Devices/Server/Linux
-    LinuxDevice zCommandUsername="user", zCommandPassword="password"
+   /Devices/Server/Linux
+   LinuxDevice zCommandUsername="user", zCommandPassword="password"
 
 You can then load the Linux servers into Zenoss Core or Resource Manager
 as devices with the following command.
 
 .. code:: bash
 
-    zenbatchload <filename>
+   zenbatchload <filename>
 
 Installed Items
 ---------------
@@ -598,6 +585,10 @@ The following flavors of Linux are supported
 
 Changes
 -------
+
+2.1.3
+
+- Properly account for reserved space to match df output. (ZPS-26739)
 
 2.1.2
 
