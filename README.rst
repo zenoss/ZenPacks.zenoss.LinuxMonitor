@@ -7,29 +7,17 @@ This ZenPack monitors the Linux Operating System.
 Releases
 --------
 
-.. _Version-2.1.2: http://wiki.zenoss.org/download/zenpacks/ZenPacks.zenoss.LinuxMonitor/2.1.2/ZenPacks.zenoss.LinuxMonitor-2.1.2.egg
+.. _Version-2.1.3: http://wiki.zenoss.org/download/zenpacks/ZenPacks.zenoss.LinuxMonitor/2.1.3/ZenPacks.zenoss.LinuxMonitor-2.1.3.egg
 
-Version-2.1.2_
-   | Released on 2017/01/20
-   | Compatible with Zenoss Core 4.2.x, Zenoss Core 5.0.x, Zenoss Core 5.1.x,
-     Zenoss Resource Manager 4.2.x, Zenoss Resource Manager 5.0.x, Zenoss
-     Resource Manager 5.1.x, Zenoss Resource Manager 5.x.x
-
-.. _Version-2.1.1: http://wiki.zenoss.org/download/zenpacks/ZenPacks.zenoss.LinuxMonitor/2.1.1/ZenPacks.zenoss.LinuxMonitor-2.1.1.egg
-
-Version-2.1.1_
-  | Released on 2016/12/21
-  | Compatible with Zenoss Core 4.2.x, Zenoss Core 5.0.x, Zenoss Core 5.1.x,
-    Zenoss Resource Manager 4.2.x, Zenoss Resource Manager 5.0.x, Zenoss
-    Resource Manager 5.1.x, Zenoss Resource Manager 5.x.x
+Version-2.1.3_
+   | Released on 2017/03/31
+   | Compatible with Zenoss 4.2 - 5.2
 
 .. _Version-2.0.6: http://wiki.zenoss.org/download/zenpacks/ZenPacks.zenoss.LinuxMonitor/2.0.6/ZenPacks.zenoss.LinuxMonitor-2.0.6.egg
 
 Version-2.0.6_
   | Released on 2016/11/01
-  | Compatible with Zenoss Core 4.2.x, Zenoss Core 5.0.x, Zenoss Core 5.1.x,
-    Zenoss Resource Manager 4.2.x, Zenoss Resource Manager 5.0.x, Zenoss
-    Resource Manager 5.1.x
+  | Compatible with Zenoss 4.2 - 5.1
 
 .. contents::
    :depth: 2
@@ -597,6 +585,10 @@ The following flavors of Linux are supported
 
 Changes
 -------
+
+2.1.3
+
+- Properly account for reserved space to match df output. (ZPS-26739)
 
 2.1.2
 
