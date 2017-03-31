@@ -76,7 +76,7 @@ class FileSystem(BaseFileSystem):
         blocks = self.cacheRRDValue('usedBlocks', None)
         if blocks is not None and not isnan(blocks):
             return long(blocks)
-        
+
         return None
 
     def logicalVolume(self):
