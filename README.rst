@@ -586,6 +586,10 @@ The following flavors of Linux are supported
 Changes
 -------
 
+2.2.0
+
+- Fix NFS filesystem monitoring not working as expected. (ZPS-1006)
+
 2.1.3
 
 - Properly account for reserved space to match df output. (ZPS-26739)
