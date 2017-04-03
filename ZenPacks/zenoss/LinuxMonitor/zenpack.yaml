@@ -358,8 +358,9 @@ classes:
         dynamicview_weight: 40
         dynamicview_relations:
             impacts:
-                - device
                 - impacted_object
+            impacted_by:
+                - device
 
     FileSystem:
         label: File System

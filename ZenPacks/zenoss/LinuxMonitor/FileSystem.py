@@ -173,11 +173,10 @@ class FileSystem(schema.FileSystem):
 
     def getStorageServers(self):
         """Generate objects for storage server for this FileSystem."""
-
-        device = self.device()
-        search_root = self.getDmdRoot('Devices').Storage
-
         try:
+            device = self.device()
+            search_root = self.getDmdRoot('Devices').Storage
+
             for filesystem in getStorageServerPaths(device, search_root):
                 filesystem = self.getObjByPath(filesystem)
                 if self.storageDevice in filesystem.storage_clients_list:
@@ -187,6 +186,7 @@ class FileSystem(schema.FileSystem):
             Pass if filesystem has been already deleted (NotFound)
             or if it is not a LinuxFileSystem instance (AttributeError).
             """
+            pass
 
     def getStorageDevice(self):
         """Get the storage device that contains this fs.
