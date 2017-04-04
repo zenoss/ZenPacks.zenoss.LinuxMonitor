@@ -27,7 +27,7 @@ This module provides a single integration point for common ZenPacks.
 """
 
 # PEP-396 version. (https://www.python.org/dev/peps/pep-0396/)
-__version__ = "1.1.0"
+__version__ = "1.1.2"
 
 
 import logging
@@ -49,6 +49,7 @@ import re
 import sys
 import math
 import types
+import keyword
 
 from lxml import etree
 
@@ -57,10 +58,11 @@ if __name__ == '__main__':
     from Products.ZenUtils.Utils import unused
     unused(Globals)
 
+import zope.schema
 from zope.browser.interfaces import IBrowserView
 from zope.component import adapts, getGlobalSiteManager
 from zope.event import notify
-from zope.interface import classImplements, implements
+from zope.interface import classImplements, implements, providedBy
 from zope.interface.interface import InterfaceClass
 from Acquisition import aq_base
 
@@ -68,10 +70,6 @@ from Products.AdvancedQuery import Eq, Or
 from Products.AdvancedQuery.AdvancedQuery import _BaseQuery as BaseQuery
 from Products.Five import zcml
 
-from Products.ZenModel.Device import Device as BaseDevice
-from Products.ZenModel.DeviceComponent import DeviceComponent as BaseDeviceComponent
-from Products.ZenModel.HWComponent import HWComponent as BaseHWComponent
-from Products.ZenModel.ManagedEntity import ManagedEntity as BaseManagedEntity
 from Products.ZenModel.ZenossSecurity import ZEN_CHANGE_DEVICE
 from Products.ZenModel.ZenPack import ZenPack as ZenPackBase
 from Products.ZenModel.CommentGraphPoint import CommentGraphPoint
@@ -91,6 +89,26 @@ from Products.ZenUtils.guid.interfaces import IGlobalIdentifier
 from Products.ZenUtils.Search import makeFieldIndex, makeKeywordIndex
 from Products.ZenUtils.Utils import monkeypatch, importClass
 
+# Extendable Model Classes
+from Products.ZenModel.CPU import CPU as BaseCPU
+from Products.ZenModel.Device import Device as BaseDevice
+from Products.ZenModel.DeviceComponent import DeviceComponent as BaseDeviceComponent
+from Products.ZenModel.ExpansionCard import ExpansionCard as BaseExpansionCard
+from Products.ZenModel.Fan import Fan as BaseFan
+from Products.ZenModel.FileSystem import FileSystem as BaseFileSystem
+from Products.ZenModel.HardDisk import HardDisk as BaseHardDisk
+from Products.ZenModel.HWComponent import HWComponent as BaseHWComponent
+from Products.ZenModel.IpInterface import IpInterface as BaseIpInterface
+from Products.ZenModel.IpRouteEntry import IpRouteEntry as BaseIpRouteEntry
+from Products.ZenModel.IpService import IpService as BaseIpService
+from Products.ZenModel.ManagedEntity import ManagedEntity as BaseManagedEntity
+from Products.ZenModel.OSComponent import OSComponent as BaseOSComponent
+from Products.ZenModel.OSProcess import OSProcess as BaseOSProcess
+from Products.ZenModel.PowerSupply import PowerSupply as BasePowerSupply
+from Products.ZenModel.Service import Service as BaseService
+from Products.ZenModel.TemperatureSensor import TemperatureSensor as BaseTemperatureSensor
+from Products.ZenModel.WinService import WinService as BaseWinService
+
 from Products import Zuul
 from Products.Zuul import marshal
 from Products.Zuul.catalog.events import IndexingEvent
@@ -103,16 +121,30 @@ from Products.Zuul.form import schema
 from Products.Zuul.form.interfaces import IFormBuilder
 from Products.Zuul.infos import InfoBase, ProxyProperty
 from Products.Zuul.infos.component import ComponentInfo as BaseComponentInfo
+from Products.Zuul.infos.component.filesystem import FileSystemInfo as BaseFileSystemInfo
 from Products.Zuul.infos.component import ComponentFormBuilder as BaseComponentFormBuilder
 from Products.Zuul.infos.device import DeviceInfo as BaseDeviceInfo
 from Products.Zuul.interfaces import IInfo
 from Products.Zuul.interfaces.component import IComponentInfo as IBaseComponentInfo
+from Products.Zuul.interfaces.component import IFileSystemInfo as IBaseFileSystemInfo
+
+try:
+    from Products.Zuul.interfaces.component import IHardDiskInfo as IBaseHardDiskInfo
+except ImportError:
+    IBaseHardDiskInfo = IBaseComponentInfo
+
 from Products.Zuul.interfaces.device import IDeviceInfo as IBaseDeviceInfo
 from Products.Zuul.routers.device import DeviceRouter
 from Products.Zuul.utils import ZuulMessageFactory as _t
 
 from zope.publisher.interfaces.browser import IDefaultBrowserLayer
 from zope.viewlet.interfaces import IViewlet
+
+from zenoss.protocols.protobufs.zep_pb2 import (
+    STATUS_NEW, STATUS_ACKNOWLEDGED,
+    SEVERITY_CRITICAL,
+    )
+
 
 try:
     import yaml
@@ -160,6 +192,24 @@ TestCase = None
 # Required for registering ZCSA adapters.
 GSM = getGlobalSiteManager()
 
+
+def getZenossKeywords(klasses):
+    kwset = set()
+    for klass in klasses:
+        for k in klass.__dict__.keys():
+            if callable(getattr(klass, k)):
+                kwset = kwset.union([k])
+        for attribute in dir(klass):
+            if callable(getattr(klass, attribute)):
+                kwset = kwset.union([attribute])
+    return kwset
+
+ZENOSS_KEYWORDS = getZenossKeywords([BaseDevice,
+                                    BaseDeviceInfo,
+                                    BaseDeviceComponent,
+                                    BaseComponentInfo])
+
+JS_WORDS = set(['uuid', 'uid', 'meta_type', 'monitor', 'severity', 'monitored', 'locking'])
 
 # Public Classes ############################################################
 
@@ -409,252 +459,187 @@ class ZenPack(ZenPackBase):
 
 
 class CatalogBase(object):
-    """Base class that implements cataloging a property"""
+    """Abstract base class that implements cataloging properties."""
 
-    # By Default there is no default catalog created.
-    _catalogs = {}
+    _device_catalogs = {}
+    _global_catalogs = {}
 
-    def search(self, name, *args, **kwargs):
-        """
-        Return iterable of matching brains in named catalog.
-        'name' is the catalog name (typically the name of a class)
-        """
+    # Searching ##############################################################
+
+    def device_search(self, name, *args, **kwargs):
+        """Return iterable of brains from named catalog that match."""
         return catalog_search(self, name, *args, **kwargs)
 
-    @classmethod
-    def class_search(cls, dmd, name, *args, **kwargs):
-        """
-        Return iterable of matching brains in named catalog.
-        'name' is the catalog name (typically the name of a class)
-        """
+    # Method alias for backwards compatibility.
+    search = device_search
 
-        name = cls.__module__.replace('.', '_')
+    @classmethod
+    def global_search(cls, dmd, name=None, *args, **kwargs):
+        """Return iterable of brains from named catalog that match."""
+        name = "{}_{}".format(
+            cls.zenpack_name.replace(".", "_"),
+            name or cls.__name__)
+
         return catalog_search(dmd.Devices, name, *args, **kwargs)
 
-    @classmethod
-    def get_catalog_name(cls, name, scope):
-        if scope == 'device':
-            return '{}Search'.format(name)
-        else:
-            name = cls.__module__.replace('.', '_')
-            return '{}Search'.format(name)
+    # Method alias for backwards compatibility.
+    class_search = global_search
 
-    @classmethod
-    def class_get_catalog(cls, dmd, name, scope, create=True):
-        """Return catalog by name."""
-        spec = cls._get_catalog_spec(name)
-        if not spec:
-            return
+    # Catalog Lookup #########################################################
 
-        if scope == 'device':
-            raise ValueError("device scoped catalogs are only available from device or component objects, not classes")
-        else:
-            try:
-                return getattr(dmd.Devices, cls.get_catalog_name(name, scope))
-            except AttributeError:
-                if create:
-                    return cls._class_create_catalog(dmd, name, 'global')
-        return
+    def get_all_catalogs(self):
+        """Return list of device and global catalogs for this object."""
+        catalogs = self.get_device_catalogs()
 
-    def get_catalog(self, name, scope, create=True):
-        """Return catalog by name."""
-
-        spec = self._get_catalog_spec(name)
-        if not spec:
-            return
-
-        if scope == 'device':
-            try:
-                return getattr(self.device(), self.get_catalog_name(name, scope))
-            except AttributeError:
-                if create:
-                    return self._create_catalog(name, 'device')
-        else:
-            try:
-                return getattr(self.dmd.Devices, self.get_catalog_name(name, scope))
-            except AttributeError:
-                if create:
-                    return self._create_catalog(name, 'global')
-        return
-
-    @classmethod
-    def get_catalog_scopes(cls, name):
-        """Return catalog scopes by name."""
-        spec = cls._get_catalog_spec(name)
-        if not spec:
-            []
-
-        scopes = [spec['indexes'][x].get('scope', 'device') for x in spec['indexes']]
-        if 'both' in scopes:
-            scopes = [x for x in scopes if x != 'both']
-            scopes.append('device')
-            scopes.append('global')
-        return set(scopes)
-
-    @classmethod
-    def class_get_catalogs(cls, dmd, whiteList=None):
-        """Return all catalogs for this class."""
-
-        catalogs = []
-        for name in cls._catalogs:
-            for scope in cls.get_catalog_scopes(name):
-                if scope == 'device':
-                    # device scoped catalogs are not available at the class level
-                    continue
-
-                if not whiteList:
-                    catalogs.append(cls.class_get_catalog(dmd, name, scope))
-                else:
-                    if scope in whiteList:
-                        catalogs.append(cls.class_get_catalog(dmd, name, scope, create=False))
-        return catalogs
-
-    def get_catalogs(self, whiteList=None):
-        """Return all catalogs for this class."""
-        catalogs = []
-        for name in self._catalogs:
-            for scope in self.get_catalog_scopes(name):
-                if not whiteList:
-                    catalogs.append(self.get_catalog(name, scope))
-                else:
-                    if scope in whiteList:
-                        catalogs.append(self.get_catalog(name, scope, create=False))
-        return catalogs
-
-    @classmethod
-    def _get_catalog_spec(cls, name):
-        if not hasattr(cls, '_catalogs'):
-            LOG.error("%s has no catalogs defined", cls)
-            return
-
-        spec = cls._catalogs.get(name)
-        if not spec:
-            LOG.error("%s catalog definition is missing", name)
-            return
-
-        if not isinstance(spec, dict):
-            LOG.error("%s catalog definition is not a dict", name)
-            return
-
-        if not spec.get('indexes'):
-            LOG.error("%s catalog definition has no indexes", name)
-            return
-
-        return spec
-
-    @classmethod
-    def _class_create_catalog(cls, dmd, name, scope='device'):
-        """Create and return catalog defined by name."""
-        from Products.ZCatalog.ZCatalog import manage_addZCatalog
-
-        spec = cls._get_catalog_spec(name)
-        if not spec:
-            return
-
-        if scope == 'device':
-            raise ValueError("device scoped catalogs may only be created from the device or component object, not classes")
-        else:
-            catalog_name = cls.get_catalog_name(name, scope)
-            deviceClass = dmd.Devices
-
-            if not hasattr(deviceClass, catalog_name):
-                manage_addZCatalog(deviceClass, catalog_name, catalog_name)
-
-            zcatalog = deviceClass._getOb(catalog_name)
-
-        cls._create_indexes(zcatalog, spec)
-        return zcatalog
-
-    def _create_catalog(self, name, scope='device'):
-        """Create and return catalog defined by name."""
-        from Products.ZCatalog.ZCatalog import manage_addZCatalog
-
-        spec = self._get_catalog_spec(name)
-        if not spec:
-            return
-
-        if scope == 'device':
-            catalog_name = self.get_catalog_name(name, scope)
-
-            device = self.device()
-            if not hasattr(device, catalog_name):
-                manage_addZCatalog(device, catalog_name, catalog_name)
-
-            zcatalog = device._getOb(catalog_name)
-        else:
-            catalog_name = self.get_catalog_name(name, scope)
-            deviceClass = self.dmd.Devices
-
-            if not hasattr(deviceClass, catalog_name):
-                manage_addZCatalog(deviceClass, catalog_name, catalog_name)
-
-            zcatalog = deviceClass._getOb(catalog_name)
-
-        self._create_indexes(zcatalog, spec)
-        return zcatalog
-
-    @classmethod
-    def _create_indexes(cls, zcatalog, spec):
-        from Products.ZCatalog.Catalog import CatalogError
-        from Products.Zuul.interfaces import ICatalogTool
-        catalog = zcatalog._catalog
-
-        # I think this is the original intent for setting classname, not sure why it would fail
         try:
-            classname = '%s.%s' % (cls.__module__, cls.__class__.__name__)
+            dmd = self.getDmd()
         except Exception:
-            classname = 'Products.ZenModel.DeviceComponent.DeviceComponent'
+            pass
+        else:
+            catalogs.extend(self.get_global_catalogs(dmd))
 
-        for propname, propdata in spec['indexes'].items():
-            index_type = propdata.get('type')
-            if not index_type:
-                LOG.error("%s index has no type", propname)
-                return
+        return catalogs
 
-            index_factory = {
-                'field': makeFieldIndex,
-                'keyword': makeKeywordIndex,
-                }.get(index_type.lower())
+    def get_device_catalogs(self):
+        """Return list of device catalogs for this object."""
+        return [self.get_device_catalog(x) for x in self._device_catalogs]
 
-            if not index_factory:
-                LOG.error("%s is not a valid index type", index_type)
-                return
+    @classmethod
+    def get_global_catalogs(cls, dmd):
+        """Return list of global catalogs for this class."""
+        return [cls.get_global_catalog(dmd, x) for x in cls._global_catalogs]
+
+    def get_device_catalog(self, name):
+        """Return device catalog by name."""
+        catalog = getattr(
+            self.device(),
+            "{}Search".format(name),
+            None)
+
+        if catalog:
+            return catalog
+        else:
+            return self.create_device_catalog(name)
+
+    @classmethod
+    def get_global_catalog(cls, dmd, name):
+        """Return global catalog by name."""
+        catalog = getattr(
+            dmd.Devices,
+            "{}_{}Search".format(cls.zenpack_name.replace('.', '_'), name),
+            None)
+
+        if catalog:
+            return catalog
+        else:
+            return cls.create_global_catalog(dmd, name)
+
+    # Catalog Creation and Maintenance #######################################
+
+    def create_device_catalog(self, name):
+        indexes = self._device_catalogs.get(name)
+        if indexes:
+            # Create an id index in all device catalogs.
+            expanded_indexes = {'id': 'field'}
+            expanded_indexes.update(indexes)
+            return self.create_catalog(
+                context=self.device(),
+                name='{}Search'.format(name),
+                indexes=expanded_indexes,
+                classname='{0}.{1}.{1}'.format(self.zenpack_name, name))
+
+    @classmethod
+    def create_global_catalog(cls, dmd, name):
+        indexes = cls._global_catalogs.get(name)
+        if indexes:
+            # Create id and device indexes in all global catalogs.
+            expanded_indexes = {'id': 'field', 'device_id': 'field'}
+            expanded_indexes.update(indexes)
+            return cls.create_catalog(
+                context=dmd.Devices,
+                name='{}_{}Search'.format(cls.zenpack_name.replace('.', '_'), name),
+                indexes=expanded_indexes,
+                classname='{0}.{1}.{1}'.format(cls.zenpack_name, name))
+
+    @staticmethod
+    def create_catalog(context, name, indexes, classname):
+        """Return catalog. Create it first if necessary."""
+        zcatalog = getattr(context, name, None)
+        if not zcatalog:
+            from Products.ZCatalog.ZCatalog import manage_addZCatalog
+            manage_addZCatalog(context, name, name)
+            zcatalog = context._getOb(name)
+
+        if CatalogBase.create_catalog_indexes(zcatalog, indexes):
+            CatalogBase.reindex_catalog(context, zcatalog, classname)
+
+        return zcatalog
+
+    @staticmethod
+    def create_catalog_indexes(zcatalog, indexes):
+        """Return True if zcatalog indexes were changed."""
+        from Products.ZCatalog.Catalog import CatalogError
+
+        changed = False
+        catalog = zcatalog._catalog
+        index_factories = {
+            'field': makeFieldIndex,
+            'keyword': makeKeywordIndex,
+            }
+
+        for index_name, index_type in indexes.iteritems():
+            index_factory = index_factories.get(
+                index_type.lower(),
+                makeFieldIndex)
 
             try:
-                catalog.addIndex(propname, index_factory(propname))
-                catalog.addColumn(propname)
+                catalog.addIndex(index_name, index_factory(index_name))
+                catalog.addColumn(index_name)
             except CatalogError:
                 # Index already exists.
                 pass
             else:
-                # the device if it's a device scoped catalog, or dmd.Devices
-                # if it's a global scoped catalog.
-                context = zcatalog.getParentNode()
+                changed = True
 
-                # reindex all objects of this type so they are added to the
-                # catalog.
-                results = ICatalogTool(context).search(types=(classname,))
-                for result in results:
-                    try:
-                        new_obj = result.getObject()
-                    except Exception as e:
-                        LOG.error("Trying to index non-existent object %s", e)
-                        continue
-                    else:
-                        if hasattr(new_obj, 'index_object'):
-                            new_obj.index_object()
+        return changed
+
+    @staticmethod
+    def reindex_catalog(context, zcatalog, classname):
+        from Products.Zuul.interfaces import ICatalogTool
+
+        for result in ICatalogTool(context).search(types=(classname,)):
+            try:
+                obj = result.getObject()
+            except Exception as e:
+                LOG.warning("failed to index non-existent object: %s", e)
+            else:
+                zcatalog.catalog_object(obj, obj.getPrimaryId())
+
+    # Indexing and Unindexing ################################################
 
     def index_object(self, idxs=None):
         """Index in all configured catalogs."""
-        for catalog in self.get_catalogs():
+        for catalog in self.get_all_catalogs():
             if catalog:
                 catalog.catalog_object(self, self.getPrimaryId())
 
     def unindex_object(self):
         """Unindex from all configured catalogs."""
-        for catalog in self.get_catalogs():
+        for catalog in self.get_all_catalogs():
             if catalog:
                 catalog.uncatalog_object(self.getPrimaryId())
+
+    def device_id(self):
+        """Return associated device id, or empty string if n/a.
+
+        Required for inclusion in zenpacklib global catalogs.
+
+        """
+        try:
+            device = self.device()
+            return device.id
+        except Exception:
+            return ''
 
 
 class ModelBase(CatalogBase):
@@ -678,6 +663,49 @@ class DeviceBase(ModelBase):
 
     """
 
+    def getStatus(self, statusclass="/Status", **kwargs):
+        """Return status number for this device.
+
+        The status number is the number of critical events associated
+        with this device. This includes only events tagger with the
+        device's UUID, and not events affecting components of the
+        device.
+
+        None is returned when the device's status is unknown because it
+        isn't being monitored, or because there was an error retrieving
+        its events.
+
+        This method is overridden here to provide a simpler default
+        meaning for "down". By default any critical severity event that
+        is in either the new or acknowledged state in the /Status event
+        class and is tagged with the device's UUID indicates that the
+        device is down. An alternate event class (statusclass) can be
+        provided, which is what would be done by the device's
+        getPingStatus and getSnmpStatus methods.
+
+        A key different between this methods behavior vs. that of the
+        Device.getStatus method it overrides is that warning and error
+        events are not considered as affecting the device's status.
+
+        """
+        if not self.monitorDevice():
+            return None
+
+        zep = Zuul.getFacade("zep", self.dmd)
+        try:
+            event_filter = zep.createEventFilter(
+                tags=[self.getUUID()],
+                element_sub_identifier=[""],
+                severity=[SEVERITY_CRITICAL],
+                status=[STATUS_NEW, STATUS_ACKNOWLEDGED],
+                event_class=filter(None, [statusclass]))
+
+            result = zep.getEventSummaries(0, filter=event_filter, limit=0)
+        except Exception:
+            return None
+
+        return int(result['total'])
+
 
 class ComponentBase(ModelBase):
 
@@ -697,12 +725,10 @@ class ComponentBase(ModelBase):
             },),
         },)
 
-    _catalogs = {
+    _device_catalogs = {
         'ComponentBase': {
-            'indexes': {
-                'id': {'type': 'field'},
-                }
-            }
+            'id': 'field',
+            },
         }
 
     def device(self):
@@ -879,8 +905,25 @@ class ComponentBase(ModelBase):
 
         return faceting_relnames
 
-    def get_facets(self, root=None, streams=None, seen=None, path=None, recurse_all=False):
+    def get_facets(self, root=None, streams=None, seen=None, depth=0, path=None, recurse_all=False):
         """Generate non-containing related objects for faceting."""
+
+        if recurse_all:
+            # recurse_all is only used for list_paths to show all possible paths
+            # from this object to any other object, so in the interest of time
+            # and keeping noise to a minimum, don't bother traversing deeper
+            # than 15 levels.
+            if depth > 15:
+                return
+        else:
+            # in non-recurse_all mode, deep traverals only occur when an
+            # extra_paths expression directs it to keep going down a specific
+            # path.  It is assumed that this will generally be of limited depth
+            # anyway, but just in case, put an absolute limit on it, of the
+            # maximum depth supported by zenpacklib's device() method.
+            if depth > 200:
+                return
+
         if seen is None:
             seen = set()
 
@@ -910,35 +953,35 @@ class ComponentBase(ModelBase):
 
             # Always include directly-related objects.
             for obj in relobjs:
-                if obj in seen:
+                if (self.id, relname, obj.id) in seen:
+                    # avoid a cycle
                     continue
 
                 yield obj
-                seen.add(obj)
+                seen.add((self.id, relname, obj.id))
 
-            # If 'all' mode, just include indirectly-related objects as well, in
-            # an unfiltered manner.
-            if recurse_all:
-                for facet in obj.get_facets(root=root, seen=seen, path=path + [relname], recurse_all=True):
-                    yield facet
-                return
+                # If 'all' mode, just include indirectly-related objects as well, in
+                # an unfiltered manner.
+                if recurse_all:
+                    for facet in obj.get_facets(root=root, seen=seen, path=path, depth=depth+1, recurse_all=True):
+                        yield facet
 
-            # Otherwise, look at extra_path defined path pattern streams
-            for stream in streams:
-                recurse = any([pattern.match(relpath) for pattern in stream])
+                else:
+                    # Otherwise, look at extra_path defined path pattern streams
+                    for stream in streams:
+                        recurse = any([pattern.match(relpath) for pattern in stream])
 
-                LOG.log(9, "[%s] matching %s against %s: %s" % (root.meta_type, relpath, [x.pattern for x in stream], recurse))
+                        LOG.log(9, "[%s] matching %s against %s: %s" % (root.meta_type, relpath, [x.pattern for x in stream], recurse))
 
-                if not recurse:
-                    continue
-
-                for obj in relobjs:
-                    for facet in obj.get_facets(root=root, seen=seen, streams=[stream], path=path + [relname]):
-                        if facet in seen:
+                        if not recurse:
                             continue
 
-                        yield facet
-                        seen.add(facet)
+                        for facet in obj.get_facets(root=root, seen=seen, streams=[stream], path=path, depth=depth+1):
+                            if (self.id, relname, facet.id) in seen:
+                                # avoid a cycle
+                                continue
+                            yield facet
+                            seen.add((self.id, relname, facet.id))
 
     def rrdPath(self):
         """Return filesystem path for RRD files for this component.
@@ -966,7 +1009,7 @@ class ComponentBase(ModelBase):
     def getRRDTemplateName(self):
         """Return name of primary template to bind to this component."""
         if self._templates:
-            return self._templates[0]
+            return self._templates[-1]
 
         return ''
 
@@ -1114,6 +1157,37 @@ class ComponentFormBuilder(BaseComponentFormBuilder):
                         zenpack_id_prefix=self.zenpack_id_prefix)
                     item['renderer'] = renderer
 
+    def fields(self, fieldFilter=None):
+        """ override to ensure fields are inherited properly"""
+        d = {}
+
+        iface_fields = []
+        for iface in providedBy(self.context):
+            f = zope.schema.getFields(iface)
+            if f:
+                iface_fields.append(f)
+        # reverse so that subclasses processed last
+        iface_fields.reverse()
+
+        for f in iface_fields:
+            def _filter(item):
+                include = True
+                if fieldFilter:
+                    key=item[0]
+                    include = fieldFilter(key)
+                else:
+                    include = bool(item)
+                return include
+            for k,v in filter(_filter, f.iteritems()):
+                c = self._dict(v)
+                c['name'] = k
+                value =  getattr(self.context, k, None)
+                c['value'] = value() if callable(value) else value                    
+                if c['xtype'] in ('autoformcombo', 'itemselector'):
+                    c['values'] = self.vocabulary(v)
+                d[k] = c
+        return d
+
 
 class ClassProperty(property):
 
@@ -1201,20 +1275,32 @@ def DeviceTypeFactory(name, bases):
     return device_type
 
 
-Device = DeviceTypeFactory(
-    'Device', (BaseDevice,))
-
-
 def ComponentTypeFactory(name, bases):
     """Return a "ZenPackified" component class given bases tuple."""
     return ModelTypeFactory(name, (ComponentBase,) + bases)
 
 
-Component = ComponentTypeFactory(
-    'Component', (BaseDeviceComponent, BaseManagedEntity))
+# Model Extension Classes
+Component = ComponentTypeFactory('Component', (BaseDeviceComponent, BaseManagedEntity))
+CPU = ComponentTypeFactory('CPU', (BaseCPU,))
+Device = DeviceTypeFactory('Device', (BaseDevice,))
+ExpansionCard = ComponentTypeFactory('ExpansionCard', (BaseExpansionCard,))
+Fan = ComponentTypeFactory('Fan', (BaseFan,))
+FileSystem = ComponentTypeFactory('FileSystem', (BaseFileSystem,))
+HardDisk = ComponentTypeFactory('HardDisk', (BaseHardDisk,))
+HWComponent = ComponentTypeFactory('HWComponent', (BaseHWComponent,))
+IpInterface = ComponentTypeFactory('IpInterface', (BaseIpInterface,))
+IpRouteEntry = ComponentTypeFactory('IpRouteEntry', (BaseIpRouteEntry,))
+IpService = ComponentTypeFactory('IpService', (BaseIpService,))
+OSComponent = ComponentTypeFactory('OSComponent', (BaseOSComponent,))
+OSProcess = ComponentTypeFactory('OSProcess', (BaseOSProcess,))
+PowerSupply = ComponentTypeFactory('PowerSupply', (BasePowerSupply,))
+Service = ComponentTypeFactory('Service', (BaseService,))
+TemperatureSensor = ComponentTypeFactory('TemperatureSensor', (BaseTemperatureSensor,))
+WinService = ComponentTypeFactory('WinService', (BaseWinService,))
 
-HardwareComponent = ComponentTypeFactory(
-    'HardwareComponent', (BaseHWComponent,))
+# Backwards-compatibility aliases.
+HardwareComponent = HWComponent
 
 
 class IHardwareComponentInfo(IBaseComponentInfo):
@@ -1531,24 +1617,63 @@ class ZenPackSpec(Spec):
                         if 'schema' in relationships[relationship]:
                             raise ValueError("Class '%s': 'schema' may not be defined or modified in an individual class's relationship.  Use the zenpack's class_relationships instead." % classname)
 
-        for class_ in self.classes.values():
+        def find_relation_in_bases(bases, relname):
+            '''return inherited relationship spec'''
+            for base in bases:
+                base_cls = self.classes.get(base)
+                if relname in base_cls.relationships:
+                    return base_cls.relationships.get(relname)
+            return None
 
+        def get_bases(cls, bases=[]):
+            '''find all available base classes for this class'''
+            for base in cls.bases:
+                base_cls = self.classes.get(base)
+                if not base_cls:
+                    continue
+                if base not in bases:
+                    bases.append(base)
+                bases = get_bases(base_cls, bases)
+            return bases
+
+        for class_ in self.classes.values():
+            # list of all base classes for this class
+            bases = get_bases(class_, bases=[])
             # Link the appropriate predefined (class_relationships) schema into place on this class's relationships list.
             for rel in self.class_relationships:
-                if class_.name == rel.left_class:
-                    if rel.left_relname not in class_.relationships:
-                        class_.relationships[rel.left_relname] = ClassRelationshipSpec(class_, rel.left_relname)
-                    class_.relationships[rel.left_relname].schema = rel.left_schema
+                # handle both directions
+                for direction in ['left', 'right']:
+                    target_class = getattr(rel, '%s_class' % direction)
+                    target_relname = getattr(rel, '%s_relname' % direction)
+                    target_schema = getattr(rel, '%s_schema' % direction)
+                    # these are directly specified for the class in yaml
+                    if class_.name == target_class:
+                        if target_relname not in class_.relationships:
+                            class_.relationships[target_relname] = ClassRelationshipSpec(class_, target_relname)
+                        if not class_.relationships[target_relname].schema:
+                            class_.relationships[target_relname].schema = target_schema
+                    # look for relations inherited from base classes
+                    # go through these in order
+                    else:
+                        # these are in order from nearest to farthest
+                        for base in bases:
+                            if target_class == base:
+                                # see if we have an existing relspec
+                                found_rel = find_relation_in_bases(bases, target_relname)
+                                # we need to inherit in this case
+                                if found_rel:
+                                    if target_relname not in class_.relationships:
+                                        class_.relationships[target_relname] = found_rel
+                                    if not class_.relationships[target_relname].schema:
+                                        class_.relationships[target_relname].schema = target_schema
+                                    continue
 
-                if class_.name == rel.right_class:
-                    if rel.right_relname not in class_.relationships:
-                        class_.relationships[rel.right_relname] = ClassRelationshipSpec(class_, rel.right_relname)
-                    class_.relationships[rel.right_relname].schema = rel.right_schema
-
+        for class_ in self.classes.values():
             # Plumb _relations
             for relname, relationship in class_.relationships.iteritems():
                 if not relationship.schema:
-                    LOG.error("Class '%s': no relationship schema has been defined for relationship '%s'" % (class_.name, relname))
+                    LOG.error("Removing invalid display config for relationship %s from  %s.%s" % (relname, self.name, class_.name))
+                    class_.relationships.pop(relname)
                     continue
 
                 if relationship.schema.remoteClass in self.imported_classes.keys():
@@ -1562,7 +1687,12 @@ class ZenPackSpec(Spec):
                     remote_relname = relationship.zenrelations_tuple[0]  # products_zenmodel_device_device
 
                     if relname not in (x[0] for x in remoteClassObj._relations):
-                        remoteClassObj._relations += ((relname, remoteType(localType, modname, remote_relname)),)
+                        rel = ((relname, remoteType(localType, modname, remote_relname)),)
+                        # do this differently if it's on a ZPL-based class
+                        if hasattr(remoteClassObj, '_v_local_relations'):
+                            remoteClassObj._v_local_relations += rel
+                        else:
+                            remoteClassObj._relations += rel
 
                     remote_module_id = remoteClassObj.__module__
                     if relname not in self.NEW_RELATIONS[remote_module_id]:
@@ -2446,7 +2576,8 @@ class ClassSpec(Spec):
         properties = []
         relations = []
         templates = []
-        catalogs = {}
+        device_catalogs = {}
+        global_catalogs = {}
 
         # First inherit from bases.
         for base in self.resolved_bases:
@@ -2454,8 +2585,10 @@ class ClassSpec(Spec):
                 properties.extend(base._properties)
             if hasattr(base, '_templates'):
                 templates.extend(base._templates)
-            if hasattr(base, '_catalogs'):
-                catalogs.update(base._catalogs)
+            if hasattr(base, '_device_catalogs'):
+                device_catalogs.update(base._device_catalogs)
+            if hasattr(base, '_global_catalogs'):
+                global_catalogs.update(base._global_catalogs)
 
         # Add local properties and catalog indexes.
         for name, spec in self.properties.iteritems():
@@ -2469,7 +2602,7 @@ class ClassSpec(Spec):
                     if cached:
                         r = self.cacheRRDValue(datapoint, default=default)
                     else:
-                        r = self.getRRDValue(datapoint, default=default)
+                        r = self.getRRDValue(datapoint)
 
                     if r is not None:
                         if not math.isnan(float(r)):
@@ -2490,15 +2623,22 @@ class ClassSpec(Spec):
             if spec.ofs_dict:
                 properties.append(spec.ofs_dict)
 
-            pindexes = spec.catalog_indexes
-            if pindexes:
-                if self.name not in catalogs:
-                    catalogs[self.name] = {
-                        'indexes': {
-                            'id': {'type': 'field'},
-                        }
-                    }
-                catalogs[self.name]['indexes'].update(pindexes)
+            # Add class and instance catalogs.
+            for index_name, index_spec in spec.catalog_indexes.iteritems():
+                index_scope = index_spec.get('scope', 'device')
+                index_type = index_spec.get('type', 'field')
+
+                if index_scope in ('both', 'device'):
+                    if self.name in device_catalogs:
+                        device_catalogs[self.name][index_name] = index_type
+                    else:
+                        device_catalogs[self.name] = {index_name: index_type}
+
+                if index_scope in ('both', 'global'):
+                    if self.name in global_catalogs:
+                        global_catalogs[self.name][index_name] = index_type
+                    else:
+                        global_catalogs[self.name] = {index_name: index_type}
 
         # Add local relations.
         for name, spec in self.relationships.iteritems():
@@ -2516,7 +2656,8 @@ class ClassSpec(Spec):
         attributes['_properties'] = tuple(properties)
         attributes['_v_local_relations'] = tuple(relations)
         attributes['_templates'] = tuple(templates)
-        attributes['_catalogs'] = catalogs
+        attributes['_device_catalogs'] = device_catalogs
+        attributes['_global_catalogs'] = global_catalogs
 
         # Add Impact stuff.
         attributes['impacts'] = self.impacts
@@ -2560,6 +2701,10 @@ class ClassSpec(Spec):
         if not bases:
             if self.is_device:
                 bases = [IBaseDeviceInfo]
+            elif self.is_a(FileSystem):
+                bases = [IBaseFileSystemInfo]
+            elif self.is_a(HardDisk):
+                bases = [IBaseHardDiskInfo]
             elif self.is_component:
                 bases = [IBaseComponentInfo]
             elif self.is_hardware_component:
@@ -2572,9 +2717,9 @@ class ClassSpec(Spec):
         for spec in self.inherited_properties().itervalues():
             attributes.update(spec.iinfo_schemas)
 
-        for i, spec in enumerate(self.containing_components):
-            attr = relname_from_classname(spec.name)
-            attributes[attr] = schema.Entity(
+        for i, specs in enumerate(self.containing_spec_relations):
+            spec, relspec = specs
+            attributes[relspec.name] = schema.Entity(
                 title=_t(spec.label),
                 group="Relationships",
                 order=3 + i / 100.0)
@@ -2612,17 +2757,24 @@ class ClassSpec(Spec):
             if base_classname in self.zenpack.classes:
                 bases.append(self.zenpack.classes[base_classname].info_class)
 
+        attributes = {}
+
         if not bases:
             if self.is_device:
                 bases = [BaseDeviceInfo]
-            elif self.is_component:
+
+                # Override how status is determined for devices.
+                attributes["status"] = DeviceInfoStatusProperty()
+
+            elif self.is_a(FileSystem):
+                bases = [BaseFileSystemInfo]
+            elif self.is_component or self.is_a(HardDisk):
                 bases = [BaseComponentInfo]
             elif self.is_hardware_component:
                 bases = [HardwareComponentInfo]
             else:
                 bases = [InfoBase]
 
-        attributes = {}
         attributes.update({
             'class_label': ProxyProperty('class_label'),
             'class_plural_label': ProxyProperty('class_plural_label'),
@@ -2630,17 +2782,8 @@ class ClassSpec(Spec):
             'class_plural_short_label': ProxyProperty('class_plural_short_label')
         })
 
-        for spec in self.containing_components:
-            attr = None
-            for rel, rspec in self.relationships.items():
-                if rspec.remote_classname == spec.name:
-                    attr = rel
-                    continue
-
-            if not attr:
-                attr = relname_from_classname(spec.name)
-
-            attributes[attr] = RelationshipInfoProperty(attr)
+        for spec, relspec in self.containing_spec_relations:
+            attributes.update(relspec.info_properties)
 
         for spec in self.inherited_properties().itervalues():
             attributes.update(spec.info_properties)
@@ -2768,6 +2911,26 @@ class ClassSpec(Spec):
         return containing_specs
 
     @property
+    def containing_spec_relations(self):
+        """ Return iterable of containing component ClassSpec and RelationshipSpec instances.
+            Instances will be sorted shallow to deep.
+        """
+        containing_rels = []
+        for relname, relschema in self.model_schema_class._relations:
+            if not issubclass(relschema.remoteType, ToManyCont):
+                continue
+
+            remote_classname = relschema.remoteClass.split('.')[-1]
+            remote_spec = self.zenpack.classes.get(remote_classname)
+            relation_spec = self.relationships.get(relname)
+            if not remote_spec or remote_spec.is_device:
+                continue
+
+            containing_rels.extend(remote_spec.containing_spec_relations)
+            containing_rels.append((remote_spec, relation_spec))
+        return containing_rels
+
+    @property
     def faceting_components(self):
         """Return iterable of faceting component ClassSpec instances."""
         faceting_specs = []
@@ -2786,6 +2949,24 @@ class ClassSpec(Spec):
                     if class_spec and not class_spec.is_device:
                         faceting_specs.append(class_spec)
 
+        return faceting_specs
+
+    @property
+    def faceting_spec_relations(self):
+        """Return iterable of faceting component ClassSpec and RelationshipSpec instances."""
+        faceting_specs = []
+        for relname, relschema in self.model_class._relations:
+            if relname in FACET_BLACKLIST:
+                continue
+            if not issubclass(relschema.remoteType, ToMany):
+                continue
+            remote_classname = relschema.remoteClass.split('.')[-1]
+            remote_spec = self.zenpack.classes.get(remote_classname)
+            remote_relname = relschema.remoteName
+            if remote_spec:
+                for class_spec in [remote_spec] + remote_spec.subclass_specs():
+                    if class_spec and not class_spec.is_device:
+                        faceting_specs.append((class_spec, class_spec.relationships.get(remote_relname)))
         return faceting_specs
 
     @property
@@ -2813,14 +2994,10 @@ class ClassSpec(Spec):
             if r.grid_display is False:
                 filtered_relationships[r.remote_classname] = r
 
-        for spec in self.containing_components:
-            # grid_display=False
+        for spec, relspec in self.containing_spec_relations:
             if spec.name in filtered_relationships:
                 continue
-            fields.append(
-                "{{name: '{}'}}"
-                .format(
-                    relname_from_classname(spec.name)))
+            fields.append("{{name: '{}'}}".format(relspec.name))
 
         return fields
 
@@ -2837,8 +3014,7 @@ class ClassSpec(Spec):
             if r.grid_display is False:
                 filtered_relationships[r.remote_classname] = r
 
-        for spec in self.containing_components:
-            # grid_display=False
+        for spec, relspec in self.containing_spec_relations:
             if spec.name in filtered_relationships:
                 continue
 
@@ -2848,7 +3024,7 @@ class ClassSpec(Spec):
 
             column_fields = [
                 "id: '{}'".format(spec.name),
-                "dataIndex: '{}'".format(relname_from_classname(spec.name)),
+                "dataIndex: '{}'".format(relspec.name),
                 "header: _t('{}')".format(spec.short_label),
                 "width: {}".format(width),
                 "renderer: {}".format(renderer),
@@ -2971,33 +3147,58 @@ class ClassSpec(Spec):
     @property
     def subcomponent_nav_js_snippet(self):
         """Return subcomponent navigation JavaScript snippet."""
-        cases = []
-        for meta_type in self.filterable_by:
-            cases.append("case '{}': return true;".format(meta_type))
+        
+        def get_js_snippet(id, label, classes):
+            """return basic JS nav snippet"""
+            cases = []
+            for c in classes:
+                cases.append("case '{}': return true;".format(c))
+            if not cases:
+                return ''
+            return (
+                "Zenoss.nav.appendTo('Component', [{{\n"
+                "    id: 'component_{id}',\n"
+                "    text: _t('{label}'),\n"
+                "    xtype: '{meta_type}Panel',\n"
+                "    subComponentGridPanel: true,\n"
+                "    filterNav: function(navpanel) {{\n"
+                "        switch (navpanel.refOwner.componentType) {{\n"
+                "            {cases}\n"
+                "            default: return false;\n"
+                "        }}\n"
+                "    }},\n"
+                "    setContext: function(uid) {{\n"
+                "        ZC.{meta_type}Panel.superclass.setContext.apply(this, [uid]);\n"
+                "    }}\n"
+                "}}]);\n"
+                .format(meta_type=self.meta_type, id=id, label=label, cases=' '.join(cases)))
 
-        if not cases:
-            return ''
+        sections = {self.plural_short_label: []}
 
-        return (
-            "Zenoss.nav.appendTo('Component', [{{\n"
-            "    id: 'component_{meta_type}',\n"
-            "    text: _t('{plural_label}'),\n"
-            "    xtype: '{meta_type}Panel',\n"
-            "    subComponentGridPanel: true,\n"
-            "    filterNav: function(navpanel) {{\n"
-            "        switch (navpanel.refOwner.componentType) {{\n"
-            "            {cases}\n"
-            "            default: return false;\n"
-            "        }}\n"
-            "    }},\n"
-            "    setContext: function(uid) {{\n"
-            "        ZC.{meta_type}Panel.superclass.setContext.apply(this, [uid]);\n"
-            "    }}\n"
-            "}}]);\n"
-            .format(
-                meta_type=self.meta_type,
-                plural_label=self.plural_short_label,
-                cases=' '.join(cases)))
+        specs_rels = list(set(self.containing_spec_relations) | set(self.faceting_spec_relations))
+        specs_rels_dict = dict([(r[0].meta_type, r) for r in specs_rels])
+        filtered = list(specs_rels_dict.get(f) for f in self.filterable_by)
+
+        for spec, relation in filtered:
+            # default if no label specified
+            if not relation:
+                sections[self.plural_short_label].append(spec.meta_type)
+            else:
+                # also default if not labeled
+                if not relation.label:
+                    sections[self.plural_short_label].append(spec.meta_type)
+                else:
+                    # new snippet if relation labeled
+                    if relation.label not in sections:
+                        sections[relation.label] = []
+                    sections[relation.label].append(spec.meta_type)
+
+        snippets = []
+        for label, metatypes in sections.items():        
+            id = '_'.join(label.lower().split(' '))
+            snippets.append(get_js_snippet(id, label, metatypes))
+
+        return ''.join(snippets)
 
     @property
     def device_js_snippet(self):
@@ -3123,6 +3324,10 @@ class ClassPropertySpec(Spec):
         self.details_display = details_display
         self.grid_display = grid_display
         self.renderer = renderer
+
+        if not self.display:
+            self.details_display = False
+            self.grid_display = False
 
         # pick an appropriate default renderer for this property.
         if type_ == 'entity' and not self.renderer:
@@ -4756,6 +4961,32 @@ if YAML_INSTALLED:
 
         return severity
 
+    def format_message(e):
+        message = []
+
+        mark = e.context_mark or e.problem_mark
+        if mark:
+            position = "{}:{}:{}".format(mark.name, mark.line + 1, mark.column + 1)
+        else:
+            position = "[unknown]"
+        if e.context is not None:
+            message.append(e.context)
+
+        if e.problem is not None:
+            message.append(e.problem)
+
+        if e.note is not None:
+            message.append("(note: " + e.note + ")")
+
+        return "{}: {}".format(position, message)
+
+    def yaml_warning(loader, e):
+        # Given a MarkedYAMLError exception, either log or raise
+        # the error, depending on the 'fatal' argument.
+        pass
+        # commenting out for 1.1 release
+        # print format_message(e)
+
     def yaml_error(loader, e, exc_info=None):
         # Given a MarkedYAMLError exception, either log or raise
         # the error, depending on the 'fatal' argument.
@@ -4772,23 +5003,33 @@ if YAML_INSTALLED:
         if fatal:
             raise e
 
-        message = []
+        print format_message(e)
 
-        mark = e.context_mark or e.problem_mark
-        if mark:
-            position = "%s:%s:%s" % (mark.name, mark.line+1, mark.column+1)
-        else:
-            position = "[unknown]"
-        if e.context is not None:
-            message.append(e.context)
+    def verify_key(loader, cls, params, key, start_mark):
+        # always ok to use a param name (description, name, etc.)
+        if key in params.keys():
+            return True
 
-        if e.problem is not None:
-            message.append(e.problem)
+        # never use a python reserved word
+        if key in keyword.kwlist:
+            yaml_error(loader, yaml.constructor.ConstructorError(
+                None, None,
+                "Found reserved keyword '{}' while processing {}".format(key, cls.__name__),
+                start_mark))
+        elif key in ZENOSS_KEYWORDS.union(JS_WORDS):
+            # should be ok to use a zenoss word to define these
+            # some items, like sysUpTime are pretty common datapoints
+            if cls not in [RRDDatasourceSpec,
+                           RRDDatapointSpec,
+                           RRDTemplateSpec,
+                           GraphDefinitionSpec,
+                           GraphPointSpec]:
+                yaml_warning(loader, yaml.constructor.ConstructorError(
+                    None, None,
+                    "Found reserved keyword '{}' while processing {}".format(key, cls.__name__),
+                    start_mark))
 
-        if e.note is not None:
-            message.append("(note: " + e.note + ")")
-
-        print "%s: %s" % (position, ",".join(message))
+        return False
 
     def construct_specsparameters(loader, node, spectype):
         spec_class = {x.__name__: x for x in Spec.__subclasses__()}.get(spectype, None)
@@ -4807,10 +5048,12 @@ if YAML_INSTALLED:
                 node.start_mark))
             return
 
+        param_defs = spec_class.init_params()
         specs = OrderedDict()
         for spec_key_node, spec_value_node in node.value:
             try:
                 spec_key = str(loader.construct_scalar(spec_key_node))
+                verify_key(loader, spec_class, param_defs, spec_key, spec_key_node.start_mark)
             except yaml.MarkedYAMLError, e:
                 yaml_error(loader, e)
 
@@ -5031,6 +5274,7 @@ if YAML_INSTALLED:
         for key_node, value_node in node.value:
             yaml_key = str(loader.construct_scalar(key_node))
 
+            verify_key(loader, cls, param_defs, yaml_key, key_node.start_mark)
             if yaml_key not in param_name_map:
                 if extra_params:
                     # If an 'extra_params' parameter is defined for this spec,
@@ -5509,6 +5753,15 @@ def relationships_from_yuml(yuml):
     return classes
 
 
+def DeviceInfoStatusProperty():
+    """Return property for DeviceBaseInfo.status."""
+    def getter(self):
+        status = self._object.getStatus()
+        return None if status is None else status < 1
+
+    return property(getter)
+
+
 def MethodInfoProperty(method_name, entity=False):
     """Return a property with the Infos for object(s) returned by a method.
 
@@ -5726,7 +5979,12 @@ def apply_defaults(dictionary, default_defaults=None, leave_defaults=False):
             defaults = dictionary.pop('DEFAULTS')
         for k, v in dictionary.iteritems():
             dictionary[k] = dict(defaults, **v)
-
+            if 'extra_params' in  dictionary[k].keys():
+                extra_params = defaults.get('extra_params',{})
+                dictionary_params = dictionary[k]['extra_params']
+                for i, j in extra_params.items():
+                    if i not in dictionary_params.keys():
+                        dictionary_params[i] = j
 
 def get_symbol_name(*args):
     """Return fully-qualified symbol name given path args.
@@ -6545,6 +6803,7 @@ if __name__ == '__main__':
                                 break
                             if isinstance(obj, RelationshipBase):
                                 path.insert(0, obj.id)
+                        all_paths.add(component.meta_type + ":" + "/".join(path) + ":" + facet.meta_type)
                         included_paths.add(component.meta_type + ":" + "/".join(path) + ":" + facet.meta_type)
                         class_summary[component.meta_type].add(facet.meta_type)
 

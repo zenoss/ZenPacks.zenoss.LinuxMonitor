@@ -1,6 +1,6 @@
 ##############################################################################
 #
-# Copyright (C) Zenoss, Inc. 2016, all rights reserved.
+# Copyright (C) Zenoss, Inc. 2017, all rights reserved.
 #
 # This content is made available according to terms specified in
 # License.zenoss under the directory where your Zenoss product is installed.
@@ -16,13 +16,8 @@ from math import isnan
 
 from zExceptions import NotFound
 
-from Products.ZenModel.FileSystem import FileSystem as BaseFileSystem
 from Products.ZenUtils.FunctionCache import FunctionCache
-from Products.Zuul.decorators import info
-from Products.Zuul.form import schema
-from Products.Zuul.infos import ProxyProperty
 from Products.Zuul.catalog.interfaces import IIndexableWrapper
-from Products.Zuul.infos.component.filesystem import FileSystemInfo as BaseFileSystemInfo
 
 try:
     from Products.Zuul.catalog.global_catalog \
@@ -33,29 +28,39 @@ except ImportError:
 
     BaseFileSystemWrapper = ComponentWrapper
 
-from Products.Zuul.interfaces.component import IFileSystemInfo as IBaseFileSystemInfo
-from Products.Zuul.utils import ZuulMessageFactory as _t
 from ZenPacks.zenoss.LinuxMonitor.util import override_graph_labels, keyword_search
 
+from . import schema
 
-class FileSystem(BaseFileSystem):
 
-    """Model class for FileSystem.
-
-    Instances of this class get stored in ZODB.
+class FileSystem(schema.FileSystem):
 
     """
+    Model class for FileSystem.
+    Instances of this class get stored in ZODB.
+    """
 
-    class_label = "File System"
-    plural_class_label = "File Systems"
+    def getTotalBlocks(self):
 
-    meta_type = 'LinuxFileSystem'
+        availBlocks = self.cacheRRDValue('availBlocks', None)
+        usedBlocks = self.usedBlocks()
+        if availBlocks is not None and usedBlocks is not None:
+            nonRootTotalBlocks = availBlocks + usedBlocks
+            return nonRootTotalBlocks
 
-    server_name = None
+        offset = getattr(self.primaryAq(), 'zFileSystemSizeOffset', 1.0)
+        return int(self.totalBlocks) * offset
 
-    _properties = BaseFileSystem._properties + (
-        {'id': 'server_name', 'label': 'Server Name', 'type': 'string'},
-    )
+    def usedBlocks(self):
+        dskPercent = self.cacheRRDValue("dskPercent", None)
+        if dskPercent is not None and dskPercent != "Unknown" and not isnan(dskPercent):
+            return self.getTotalBlocks() * dskPercent / 100.0
+
+        blocks = self.cacheRRDValue('usedBlocks', None)
+        if blocks is not None and not isnan(blocks):
+            return long(blocks)
+        
+        return None
 
     def getTotalBlocks(self):
 
@@ -93,7 +98,7 @@ class FileSystem(BaseFileSystem):
                 return result.getObject()
             except Exception:
                 pass
-
+   
     def blockDevice(self):
         """Return the underlying HardDisk."""
         if not self.mount:
@@ -127,19 +132,25 @@ class FileSystem(BaseFileSystem):
 
         return self.device()
 
-    @FunctionCache("LinuxFileSystem_getRRDTemplateName", default_timeout=60)
-    def getRRDTemplateName(self):
+    def getRRDTemplates(self):
         """
-        Return name of monitoring template to bind to this component.
+        For NFS mounts replace general FileSystem template with NFS-specific one.
+        """
+        old_templates = super(FileSystem, self).getRRDTemplates()
 
-        Return non-existent template name if this FileSystem has external storage
-        to prevent monitoring for such component on Linux device or
-        returns the name of an appropriate template for this FileSystem otherwise.
-        """
-        storage_server = list(self.getStorageServer())
-        if storage_server:
-            return "FileSystem_NFS_Client"
-        return "FileSystem"
+        if self.type != 'nfs':
+            return old_templates
+
+        new_templates = []
+
+        for template in old_templates:
+            if 'FileSystem' in template.id and 'FileSystem_NFS_Client' not in template.id:
+                new_templates.append(self.getRRDTemplateByName(
+                    template.id.replace('FileSystem', 'FileSystem_NFS_Client')))
+            else:
+                new_templates.append(template)
+
+        return new_templates
 
     def getDefaultGraphDefs(self, drange=None):
         # Add and re-label graphs displayed in other components
@@ -160,18 +171,12 @@ class FileSystem(BaseFileSystem):
                 graphs.append(graph)
         return graphs
 
-    def getIconPath(self):
-        '''
-        Return the path to an icon for this component.
-        '''
-        return '/++resource++linux/img/file-system.png'
-
-    def getStorageServer(self):
+    def getStorageServers(self):
         """Generate objects for storage server for this FileSystem."""
-        device = self.device()
-        search_root = self.getDmdRoot('Devices').Storage
-
         try:
+            device = self.device()
+            search_root = self.getDmdRoot('Devices').Storage
+
             for filesystem in getStorageServerPaths(device, search_root):
                 filesystem = self.getObjByPath(filesystem)
                 if self.storageDevice in filesystem.storage_clients_list:
@@ -181,6 +186,36 @@ class FileSystem(BaseFileSystem):
             Pass if filesystem has been already deleted (NotFound)
             or if it is not a LinuxFileSystem instance (AttributeError).
             """
+            pass
+
+    def getStorageDevice(self):
+        """Get the storage device that contains this fs.
+
+           :return: Storage component
+           :rtype:  Component object
+        """
+        # Return self.type for non-storage type filesystems
+        if not self.blockDevice():
+            return self.type
+
+        # For network mounted servers
+        for server in self.getStorageServers():
+            return server
+
+        # The remainder should be HardDisk, LVM, or other block device
+        storagedevice = None
+        if self.logicalVolume():
+            storagedevice = self.logicalVolume()
+        elif self.blockDevice():
+            storagedevice = self.blockDevice()
+
+        return storagedevice
+
+    def capacity(self):
+        utilization = super(FileSystem, self).capacity()
+        if isinstance(utilization, (int, float)):
+            return '{} %'.format(utilization)
+        return utilization
 
 
 @FunctionCache("LinuxFileSystem_getStorageServerPaths", default_timeout=60)
@@ -198,74 +233,6 @@ def getStorageServerPaths(device, search_root):
             filesystem_servers.append(obj.getPrimaryUrlPath())
 
     return filesystem_servers
-
-
-class IFileSystemInfo(IBaseFileSystemInfo):
-
-    """IInfo interface for FileSystem.
-
-    This is used for JSON API definition. Fields described here are what will
-    appear on instance's component details panel.
-
-    """
-
-    logicalVolume = schema.Entity(
-        title=_t(u"LVM Logical Volume"),
-        group="Details",
-        readonly=True)
-
-    blockDevice = schema.Entity(
-        title=_t(u"Block Device"),
-        group="Details",
-        readonly=True)
-
-
-class FileSystemInfo(BaseFileSystemInfo):
-
-    """Info adapter for FileSystem.
-
-    This is used for API implementation and JSON serialization. Properties
-    implemented here will be available through the JSON API.
-
-    """
-
-    implements(IFileSystemInfo)
-
-    server_name = ProxyProperty('server_name')
-
-    @property
-    @info
-    def logicalVolume(self):
-        return self._object.logicalVolume()
-
-    @property
-    @info
-    def blockDevice(self):
-        return self._object.blockDevice()
-
-    @property
-    @info
-    def storageDevice(self):
-        storage = self._object.storageDevice
-        server_name = self._object.server_name
-        if server_name:
-            try:
-                storage = ':'.join(
-                    [server_name, storage.rsplit(':', 1)[1]]
-                )
-            except:
-                pass
-        for server in self._object.getStorageServer():
-            return"<a class='z-entity' href='{0}'>{1}</a>".format(
-                server.getPrimaryUrlPath(), storage)
-        if self._object.logicalVolume():
-            storagedevice = self._object.logicalVolume()
-        elif self._object.blockDevice():
-            storagedevice = self._object.blockDevice()
-        else:
-            return storage
-        return"<a class='z-entity' href='{0}'>{1}</a>".format(
-            storagedevice.getPrimaryUrlPath(), storagedevice.title)
 
 
 class FileSystemWrapper(BaseFileSystemWrapper):

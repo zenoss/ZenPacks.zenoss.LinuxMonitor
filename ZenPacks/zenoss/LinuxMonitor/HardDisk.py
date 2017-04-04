@@ -9,40 +9,20 @@
 
 import itertools
 
-from zope.interface import implements
-
-from Products.ZenModel.HardDisk import HardDisk as BaseHardDisk
 from Products.ZenUtils.Utils import prepId
-from Products.Zuul.decorators import info
-from Products.Zuul.form import schema
-from Products.Zuul.infos import ProxyProperty
-from Products.Zuul.infos.component import ComponentInfo
-from Products.Zuul.interfaces.component import IComponentInfo
-from Products.Zuul.utils import ZuulMessageFactory as _t
+from Products.Zuul.interfaces import ICatalogTool
+from Products.AdvancedQuery import Eq, Or
+
+from . import schema
 
 
-class HardDisk(BaseHardDisk):
+class HardDisk(schema.HardDisk):
 
     """Model class for HardDisk.
 
     Instances of this class get stored in ZODB.
 
     """
-
-    class_label = "Hard Disk"
-    class_plural_label = "Hard Disks"
-
-    meta_type = 'LinuxHardDisk'
-
-    size = None
-    major_minor = None
-    mount = None
-
-    _properties = BaseHardDisk._properties + (
-        {'id': 'size', 'label': 'Size', 'type': 'string'},
-        {'id': 'major_minor', 'label': 'Major:Minor', 'type': 'string'},
-        {'id': 'mount', 'label': 'Mount Point', 'type': 'string'},
-        )
 
     def filesystem(self):
         """Return filesystem mounting this disk."""
@@ -99,67 +79,16 @@ class HardDisk(BaseHardDisk):
         if lv:
             return lv
 
-    def getRRDTemplateName(self):
-        return "HardDisk"
+    def storage_disk_lun(self):
+        # return the UCS storage disk/virtual drive
+        # if disk_ids contains the IDs of disk/virtual drive
+        if self.disk_ids:
+            results = ICatalogTool(self.getDmdRoot('Devices')).search(
+                query=Or(*[Eq('searchKeywords', id)
+                           for id in self.disk_ids]))
 
-    def getIconPath(self):
-        '''
-        Return the path to an icon for this component.
-        '''
-        return '/++resource++linux/img/hard-disk.png'
-
-
-class IHardDiskInfo(IComponentInfo):
-
-    """IInfo interface for HardDisk.
-
-    This is used for JSON API definition. Fields described here are what will
-    appear on instance's component details panel.
-
-    """
-
-    size = schema.Int(
-        title=_t(u"Size"),
-        group="Details",
-        readonly=True)
-
-    major_minor = schema.Text(
-        title=_t(u"Major:Minor Number"),
-        group="Details",
-        readonly=True)
-
-    physicalVolume = schema.Entity(
-        title=_t(u"Physical Volume"),
-        group="Details",
-        readonly=True)
-
-
-class HardDiskInfo(ComponentInfo):
-
-    """Info adapter for HardDisk.
-
-    This is used for API implementation and JSON serialization. Properties
-    implemented here will be available through the JSON API.
-
-    """
-
-    implements(IHardDiskInfo)
-
-    size = ProxyProperty('size')
-    major_minor = ProxyProperty('major_minor')
-    mount = ProxyProperty('mount')
-
-    @property
-    @info
-    def filesystem(self):
-        return self._object.filesystem()
-
-    @property
-    @info
-    def physicalVolume(self):
-        return self._object.physicalVolume()
-
-    @property
-    @info
-    def logicalVolume(self):
-        return self._object.logicalVolume()
+            for brain in results:
+                try:
+                    yield brain.getObject()
+                except Exception:
+                    continue

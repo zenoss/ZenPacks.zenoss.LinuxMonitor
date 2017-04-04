@@ -3,13 +3,13 @@
 # or saved.  Do not modify them directly here.
 # NB: PACKAGES is deprecated
 NAME = "ZenPacks.zenoss.LinuxMonitor"
-VERSION = "2.1.3"
+VERSION = "2.2.0"
 AUTHOR = "Zenoss"
 LICENSE = ""
 NAMESPACE_PACKAGES = ['ZenPacks', 'ZenPacks.zenoss']
 PACKAGES = ['ZenPacks', 'ZenPacks.zenoss', 'ZenPacks.zenoss.LinuxMonitor']
 INSTALL_REQUIRES = []
-COMPAT_ZENOSS_VERS = ">=2.3.70"
+COMPAT_ZENOSS_VERS = ">=4.2"
 PREV_ZENPACK_NAME = ""
 # STOP_REPLACEMENTS
 ################################
