@@ -7,6 +7,12 @@ This ZenPack monitors the Linux Operating System.
 Releases
 --------
 
+.. _Version-2.2.0: http://wiki.zenoss.org/download/zenpacks/ZenPacks.zenoss.LinuxMonitor/2.2.0/ZenPacks.zenoss.LinuxMonitor-2.2.0.egg
+
+Version-2.2.0_
+   | Released on 2017/04/04
+   | Compatible with Zenoss 4.2 - 5.2
+
 .. _Version-2.1.3: http://wiki.zenoss.org/download/zenpacks/ZenPacks.zenoss.LinuxMonitor/2.1.3/ZenPacks.zenoss.LinuxMonitor-2.1.3.egg
 
 Version-2.1.3_
@@ -588,6 +594,9 @@ Changes
 
 2.2.0
 
+- Add disk id modeling for correlation with underlying hardware. (ZPS-510)
+- Add link to underlying hardware from disk details if possible. (ZPS-939)
+- Handle root filesystem reservation more like "df" command. (ZPS-1266)
 - Fix NFS filesystem monitoring not working as expected. (ZPS-1006)
 
 2.1.3
