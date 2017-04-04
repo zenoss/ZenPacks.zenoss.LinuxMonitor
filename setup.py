@@ -9,7 +9,7 @@ LICENSE = ""
 NAMESPACE_PACKAGES = ['ZenPacks', 'ZenPacks.zenoss']
 PACKAGES = ['ZenPacks', 'ZenPacks.zenoss', 'ZenPacks.zenoss.LinuxMonitor']
 INSTALL_REQUIRES = []
-COMPAT_ZENOSS_VERS = ">=2.3.70"
+COMPAT_ZENOSS_VERS = ">=4.2"
 PREV_ZENPACK_NAME = ""
 # STOP_REPLACEMENTS
 ################################
