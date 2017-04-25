@@ -7,6 +7,12 @@ This ZenPack monitors the Linux Operating System.
 Releases
 --------
 
+.. _Version-2.2.1: http://wiki.zenoss.org/download/zenpacks/ZenPacks.zenoss.LinuxMonitor/2.2.1/ZenPacks.zenoss.LinuxMonitor-2.2.1.egg
+
+Version-2.2.1_
+   | Released on 2017/04/24
+   | Compatible with Zenoss 4.2 - 5.2
+
 .. _Version-2.2.0: http://wiki.zenoss.org/download/zenpacks/ZenPacks.zenoss.LinuxMonitor/2.2.0/ZenPacks.zenoss.LinuxMonitor-2.2.0.egg
 
 Version-2.2.0_
@@ -591,6 +597,10 @@ The following flavors of Linux are supported
 
 Changes
 -------
+
+2.2.1
+
+- Improved OS Model parser for os_release modeler plugin. (ZPS-1177)
 
 2.2.0
 
