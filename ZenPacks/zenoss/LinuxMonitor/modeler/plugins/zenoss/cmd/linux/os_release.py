@@ -1,88 +1,11 @@
 ##############################################################################
 # 
-# Copyright (C) Zenoss, Inc. 2016 all rights reserved.
+# Copyright (C) Zenoss, Inc. 2016-2017 all rights reserved.
 # 
 # This content is made available according to terms specified in
 # License.zenoss under the directory where your Zenoss product is installed.
 # 
 ##############################################################################
-
-
-"""
-Ubuntu output:
-
-    DISTRIB_ID=Ubuntu
-    DISTRIB_RELEASE=14.04
-    DISTRIB_CODENAME=trusty
-    DISTRIB_DESCRIPTION="Ubuntu 14.04.1 LTS"
-    NAME="Ubuntu"
-    VERSION="14.04.1 LTS, Trusty Tahr"
-    ID=ubuntu
-    ID_LIKE=debian
-    PRETTY_NAME="Ubuntu 14.04.1 LTS"
-    VERSION_ID="14.04"
-    HOME_URL="http://www.ubuntu.com/"
-    SUPPORT_URL="http://help.ubuntu.com/"
-    BUG_REPORT_URL="http://bugs.launchpad.net/ubuntu/"
-
-
-Debian output:
-
-    PRETTY_NAME="Debian GNU/Linux 7 (wheezy)"
-    NAME="Debian GNU/Linux"
-    VERSION_ID="7"
-    VERSION="7 (wheezy)"
-    ID=debian
-    ANSI_COLOR="1;31"
-    HOME_URL="http://www.debian.org/"
-    SUPPORT_URL="http://www.debian.org/support/"
-    BUG_REPORT_URL="http://bugs.debian.org/"
-
-
-RedHat output:
-
-    NAME="Red Hat Enterprise Linux Server"
-    VERSION="7.2 (Maipo)"
-    ID="rhel"
-    ID_LIKE="fedora"
-    VERSION_ID="7.2"
-    PRETTY_NAME="Red Hat Enterprise Linux Server 7.2 (Maipo)"
-    ANSI_COLOR="0;31"
-    CPE_NAME="cpe:/o:redhat:enterprise_linux:7.2:GA:server"
-    HOME_URL="https://www.redhat.com/"
-    BUG_REPORT_URL="https://bugzilla.redhat.com/"
-
-    REDHAT_BUGZILLA_PRODUCT="Red Hat Enterprise Linux 7"
-    REDHAT_BUGZILLA_PRODUCT_VERSION=7.2
-    REDHAT_SUPPORT_PRODUCT="Red Hat Enterprise Linux"
-    REDHAT_SUPPORT_PRODUCT_VERSION="7.2"
-    Red Hat Enterprise Linux Server release 7.2 (Maipo)
-    Red Hat Enterprise Linux Server release 7.2 (Maipo)
-
-
-CentOS output:
-
-    CentOS Linux release 7.1.1503 (Core)
-    NAME="CentOS Linux"
-    VERSION="7 (Core)"
-    ID="centos"
-    ID_LIKE="rhel fedora"
-    VERSION_ID="7"
-    PRETTY_NAME="CentOS Linux 7 (Core)"
-    ANSI_COLOR="0;31"
-    CPE_NAME="cpe:/o:centos:centos:7"
-    HOME_URL="https://www.centos.org/"
-    BUG_REPORT_URL="https://bugs.centos.org/"
-
-    CENTOS_MANTISBT_PROJECT="CentOS-7"
-    CENTOS_MANTISBT_PROJECT_VERSION="7"
-    REDHAT_SUPPORT_PRODUCT="centos"
-    REDHAT_SUPPORT_PRODUCT_VERSION="7"
-
-    CentOS Linux release 7.1.1503 (Core)
-    CentOS Linux release 7.1.1503 (Core)
-
-"""
 
 
 __doc__ = """os_release
@@ -104,17 +27,63 @@ SUPPORTED_DISTROS = (
 )
 
 
-RE_DISTR = re.compile('(\w+(\s|/)){1,}(\d+(\.)?){1,}\s[A-Za-z()]+')
+RE_DISTR = re.compile('(?P<os>(\w+(\s|\/)){1,}(\d+(\.)?){1,}\s[A-Za-z()]+)')
+
+
+def combineNameAndVersion(results):
+    """Combine the OS Model name and version using the results.
+
+    Args:
+        results (list): Entries from *-release files to parse.
+
+    Returns:
+        list: Updated entries from the *-release files to parse.
+
+    """
+    lines = results.split('\n')
+    namePrefix = 'NAME='
+    versionPrefix = 'VERSION='
+    if namePrefix in results and versionPrefix in results:
+        nameAndVersion = ''
+        newLines = []
+        for line in lines:
+            if line.startswith(namePrefix):
+                name = line.replace(namePrefix, '').strip('"')
+                if name:
+                    nameAndVersion = name
+            elif nameAndVersion and line.startswith(versionPrefix):
+                version = line.replace(versionPrefix, '').strip('"')
+                if version:
+                    nameAndVersion = nameAndVersion + ' ' + version
+            elif line:
+                newLines.append(line)
+        if nameAndVersion:
+            nameAndVersion = 'NAME_AND_VERSION=' + nameAndVersion
+            newLines.insert(0, nameAndVersion)
+        lines = newLines
+    return lines
 
 
 def getOSModel(results):
-    for line in results.split('\n'):
+    """Get the OS Model name and version from the results.
+
+    Args:
+        results (list): Entries from the *-release files to parse.
+
+    Returns:
+        str: The OS Model name and version.
+
+    """
+    highPriorityFields = ('pretty_name', 'distrib_description')
+    lines = combineNameAndVersion(results)
+    for line in lines:
         fline = ''.join(line.split()).lower()
-        if fline and any((d in fline for d in SUPPORTED_DISTROS)):
-            if any([f in fline for f in ('pretty_name', 'distrib_description')]):
+        if fline and any((distro in fline for distro in SUPPORTED_DISTROS)):
+            if any([hpField in fline for hpField in highPriorityFields]):
                 return line.split('=')[1].strip('"')
-            elif RE_DISTR.match(line):
-                return line.strip()
+            match = RE_DISTR.search(line)
+            if match:
+                return match.group('os').strip()
 
 
 class os_release(LinuxCommandPlugin):
@@ -124,7 +93,21 @@ class os_release(LinuxCommandPlugin):
     compname = ''
 
     def process(self, device, results, log):
-        log.info("Processing the cat /etc/*-release info for device %s" % device.id)
+        """Determine the OS Model name and version from the results.
+
+        Args:
+            device (DeviceProxy): The modeled device proxy instance.
+            results (list): Entries from the *-release files to parse.
+            log (logging.Logger): ZenModeler Logger instance.
+
+        Returns:
+            ObjectMap: An object with the defined OS Model.
+
+        """
+        log.info(
+            "Processing the cat /etc/*-release info for device %s",
+            device.id)
+
         osModel = getOSModel(results) or "Unknown Linux"
 
         om = self.objectMap()
