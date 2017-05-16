@@ -600,6 +600,7 @@ Changes
 
 2.2.2
 
+- Fix query service overloading during Analytics ETL of Linux devices. (ZPS-1312)
 - Honor zFileSystemIgnoreTypes in zenoss.cmd.linux.df modeler plugin. (ZPS-1494)
 
 2.2.1
