@@ -7,16 +7,10 @@ This ZenPack monitors the Linux Operating System.
 Releases
 --------
 
-.. _Version-2.2.1: http://wiki.zenoss.org/download/zenpacks/ZenPacks.zenoss.LinuxMonitor/2.2.1/ZenPacks.zenoss.LinuxMonitor-2.2.1.egg
+.. _Version-2.2.2: http://wiki.zenoss.org/download/zenpacks/ZenPacks.zenoss.LinuxMonitor/2.2.2/ZenPacks.zenoss.LinuxMonitor-2.2.2.egg
 
-Version-2.2.1_
-   | Released on 2017/04/24
-   | Compatible with Zenoss 4.2 - 5.2
-
-.. _Version-2.2.0: http://wiki.zenoss.org/download/zenpacks/ZenPacks.zenoss.LinuxMonitor/2.2.0/ZenPacks.zenoss.LinuxMonitor-2.2.0.egg
-
-Version-2.2.0_
-   | Released on 2017/04/04
+Version-2.2.2_
+   | Released on 2017/05/16
    | Compatible with Zenoss 4.2 - 5.2
 
 .. _Version-2.1.3: http://wiki.zenoss.org/download/zenpacks/ZenPacks.zenoss.LinuxMonitor/2.1.3/ZenPacks.zenoss.LinuxMonitor-2.1.3.egg
@@ -597,6 +591,11 @@ The following flavors of Linux are supported
 
 Changes
 -------
+
+2.2.2
+
+- Fix query service overloading during Analytics ETL of Linux devices. (ZPS-1312)
+- Honor zFileSystemIgnoreTypes in zenoss.cmd.linux.df modeler plugin. (ZPS-1494)
 
 2.2.1
 

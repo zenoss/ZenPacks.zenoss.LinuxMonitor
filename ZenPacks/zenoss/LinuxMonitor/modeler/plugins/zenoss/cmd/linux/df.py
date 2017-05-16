@@ -17,8 +17,10 @@ class df(CommandPlugin):
     compname = "os"
     relname = "filesystems"
     modname = "ZenPacks.zenoss.LinuxMonitor.FileSystem"
-    deviceProperties = \
-        CommandPlugin.deviceProperties + ('zFileSystemMapIgnoreNames',)
+    deviceProperties = CommandPlugin.deviceProperties + (
+        'zFileSystemMapIgnoreNames',
+        'zFileSystemMapIgnoreTypes',
+        'zFileSystemSizeOffset',)
 
     oses = ['Linux', 'Darwin', 'SunOS', 'AIX']
 
@@ -28,6 +30,8 @@ class df(CommandPlugin):
     def process(self, device, results, log):
         log.info('Collecting filesystems for device %s' % device.id)
         skipfsnames = getattr(device, 'zFileSystemMapIgnoreNames', None)
+        skipfstypes = getattr(device, 'zFileSystemMapIgnoreTypes', None) or []
+        fs_offset = getattr(device, 'zFileSystemSizeOffset', 1.0)
         rm = self.relMap()
         rlines = results.split("\n")
         bline = ""
@@ -57,19 +61,41 @@ class df(CommandPlugin):
                     spline[0] = storage_device
 
             (om.storageDevice, om.type, tblocks, u, a, p, om.mount) = spline
+
+            # Ignore when path matches zFileSystemMapIgnoreNames.
+            ignore = False
             if skipfsnames and re.search(skipfsnames, om.mount):
+                log.info(
+                    "%s: skipping %s (zFileSystemMapIgnoreNames)",
+                    device.id,
+                    om.mount)
+
+                ignore = True
+
+            # Ignore when type matches zFileSystemIgnoreTypes.
+            for skipfstype in skipfstypes:
+                if skipfstype and re.search(skipfstype.strip(), om.type):
+                    log.info(
+                        "%s: skipping %s (zFileSystemIgnoreTypes)",
+                        device.id,
+                        om.mount)
+
+                    ignore = True
+
+            if ignore:
                 continue
 
-            if tblocks == "-":
-                om.totalBlocks = 0
-            else:
+            try:
+                total_blocks = long(tblocks)
+            except ValueError:
+                # total blocks may not be given
+                # so use (avail+used) divided by fs_offset (inverse of transform in getTotalBlocks()
                 try:
-                    om.totalBlocks = long(tblocks)
-                except ValueError:
-                    # Ignore this filesystem if what we thought was total
-                    # blocks isn't a number.
-                    continue
+                    total_blocks = (u + a) / fs_offset
+                except Exception:
+                    total_blocks = 0
 
+            om.totalBlocks = long(total_blocks)
             om.blockSize = 1024
             om.id = self.prepId(om.mount)
             om.title = om.mount
