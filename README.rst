@@ -598,6 +598,10 @@ The following flavors of Linux are supported
 Changes
 -------
 
+2.2.2
+
+- Honor zFileSystemIgnoreTypes in zenoss.cmd.linux.df modeler plugin. (ZPS-1494)
+
 2.2.1
 
 - Improved OS Model parser for os_release modeler plugin. (ZPS-1177)
