@@ -17,8 +17,10 @@ class df(CommandPlugin):
     compname = "os"
     relname = "filesystems"
     modname = "ZenPacks.zenoss.LinuxMonitor.FileSystem"
-    deviceProperties = \
-        CommandPlugin.deviceProperties + ('zFileSystemMapIgnoreNames', 'zFileSystemSizeOffset')
+    deviceProperties = CommandPlugin.deviceProperties + (
+        'zFileSystemMapIgnoreNames',
+        'zFileSystemMapIgnoreTypes',
+        'zFileSystemSizeOffset',)
 
     oses = ['Linux', 'Darwin', 'SunOS', 'AIX']
 
@@ -28,6 +30,7 @@ class df(CommandPlugin):
     def process(self, device, results, log):
         log.info('Collecting filesystems for device %s' % device.id)
         skipfsnames = getattr(device, 'zFileSystemMapIgnoreNames', None)
+        skipfstypes = getattr(device, 'zFileSystemMapIgnoreTypes', None) or []
         fs_offset = getattr(device, 'zFileSystemSizeOffset', 1.0)
         rm = self.relMap()
         rlines = results.split("\n")
@@ -58,7 +61,28 @@ class df(CommandPlugin):
                     spline[0] = storage_device
 
             (om.storageDevice, om.type, tblocks, u, a, p, om.mount) = spline
+
+            # Ignore when path matches zFileSystemMapIgnoreNames.
+            ignore = False
             if skipfsnames and re.search(skipfsnames, om.mount):
+                log.info(
+                    "%s: skipping %s (zFileSystemMapIgnoreNames)",
+                    device.id,
+                    om.mount)
+
+                ignore = True
+
+            # Ignore when type matches zFileSystemIgnoreTypes.
+            for skipfstype in skipfstypes:
+                if skipfstype and re.search(skipfstype.strip(), om.type):
+                    log.info(
+                        "%s: skipping %s (zFileSystemIgnoreTypes)",
+                        device.id,
+                        om.mount)
+
+                    ignore = True
+
+            if ignore:
                 continue
 
             try:
