@@ -592,6 +592,10 @@ The following flavors of Linux are supported
 Changes
 -------
 
+2.2.3
+
+- Use FileSystem_NFS_Client template for all NFS mounts (including nfs4). (ZPS-1495)
+
 2.2.2
 
 - Fix query service overloading during Analytics ETL of Linux devices. (ZPS-1312)
