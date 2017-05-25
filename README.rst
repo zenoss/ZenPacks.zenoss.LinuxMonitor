@@ -7,10 +7,10 @@ This ZenPack monitors the Linux Operating System.
 Releases
 --------
 
-.. _Version-2.2.2: http://wiki.zenoss.org/download/zenpacks/ZenPacks.zenoss.LinuxMonitor/2.2.2/ZenPacks.zenoss.LinuxMonitor-2.2.2.egg
+.. _Version-2.2.3: http://wiki.zenoss.org/download/zenpacks/ZenPacks.zenoss.LinuxMonitor/2.2.3/ZenPacks.zenoss.LinuxMonitor-2.2.3.egg
 
-Version-2.2.2_
-   | Released on 2017/05/16
+Version-2.2.3_
+   | Released on 2017/05/25
    | Compatible with Zenoss 4.2 - 5.2
 
 .. _Version-2.1.3: http://wiki.zenoss.org/download/zenpacks/ZenPacks.zenoss.LinuxMonitor/2.1.3/ZenPacks.zenoss.LinuxMonitor-2.1.3.egg
