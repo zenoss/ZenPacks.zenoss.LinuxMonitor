@@ -441,6 +441,7 @@ classes:
                 api_backendtype: method
                 grid_display: true
                 details_display: true
+                renderer: Zenoss.render.zenpacklib_ZenPacks_zenoss_LinuxMonitor_percentage
                 order: 4.5
 
         dynamicview_views: [service_view]
@@ -926,13 +927,17 @@ device_classes:
                             usedBlocks:
                                 rrdmin: 0
                                 aliases:
-                                    fs__pct: "${here/getTotalBlocks},/,100,*"
-                                    fs_used__pct: "${here/getTotalBlocks},/,100,*"
                                     fs_used__bytes: "${here/blockSize},*"
                                     usedFilesystemSpace__bytes: "${here/blockSize},*"
 
                             availBlocks:
                                 rrdmin: 0
+
+                            percentUsed:
+                                rrdmin: 0
+                                aliases:
+                                    fs__pct: ""
+                                    fs_used__pct: ""
 
                     idisk:
                         type: COMMAND
@@ -967,10 +972,10 @@ device_classes:
                 thresholds:
                     "90 percent used":
                         type: MinMaxThreshold
-                        maxval: "here.getTotalBlocks() * 0.90"
+                        maxval: "90"
                         eventClass: /Perf/Filesystem
                         dsnames:
-                            - disk_usedBlocks
+                            - disk_percentUsed
 
                 graphs:
                     Utilization:
@@ -980,8 +985,7 @@ device_classes:
 
                         graphpoints:
                             Used:
-                                dpName: disk_usedBlocks
-                                rpn: "${here/getTotalBlocks},/,100,*"
+                                dpName: disk_percentUsed
                                 format: "%7.2lf%%"
 
                     Usage:
@@ -1036,13 +1040,17 @@ device_classes:
                             usedBlocks:
                                 rrdmin: 0
                                 aliases:
-                                    fs__pct: "${here/getTotalBlocks},/,100,*"
-                                    fs_used__pct: "${here/getTotalBlocks},/,100,*"
                                     fs_used__bytes: "${here/blockSize},*"
                                     usedFilesystemSpace__bytes: "${here/blockSize},*"
 
                             availBlocks:
                                 rrdmin: 0
+
+                            percentUsed:
+                                rrdmin: 0
+                                aliases:
+                                    fs__pct: ""
+                                    fs_used__pct: ""
 
                     idisk:
                         type: COMMAND
@@ -1082,8 +1090,7 @@ device_classes:
 
                         graphpoints:
                             Used:
-                                dpName: disk_usedBlocks
-                                rpn: "${here/getTotalBlocks},/,100,*"
+                                dpName: disk_percentUsed
                                 format: "%7.2lf%%"
 
                     Usage:
