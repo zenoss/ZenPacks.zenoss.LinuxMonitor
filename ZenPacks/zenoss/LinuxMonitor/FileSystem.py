@@ -40,16 +40,42 @@ class FileSystem(schema.FileSystem):
     Instances of this class get stored in ZODB.
     """
 
-    def usedBlocks(self):
-        dskPercent = self.cacheRRDValue("dskPercent", None)
-        if dskPercent is not None and dskPercent != "Unknown" and not isnan(dskPercent):
-            return self.getTotalBlocks() * dskPercent / 100.0
+    def capacity(self):
+        return self.cacheRRDValue("disk_percentUsed")
 
-        blocks = self.cacheRRDValue('usedBlocks', None)
+    def getTotalBlocks(self):
+        """Return calculated total blocks.
+
+        Overridden here because zFileSystemSizeOffset is not applicable when
+        monitoring Linux devices via SSH because we have direct access to
+        "df" output which has already had any filesystem-specific
+        reservations considered.
+
+        """
+        return self.totalBlocks
+
+    def usedBlocks(self, default=None):
+        """Return number of used blocks.
+
+        Overridden here because we know the specific datapoint to check. This
+        spares the expense of looking for a variety of different datapoints in
+        the hopes that one is relevant.
+
+        """
+        blocks = self.cacheRRDValue('disk_usedBlocks', default)
         if blocks is not None and not isnan(blocks):
             return long(blocks)
 
-        return None
+    def availBlocks(self, default=None):
+        """Return number of available (free) blocks.
+
+        Overridden here because we know the disk_availBlocks datapoint will be
+        available.
+
+        """
+        blocks = self.cacheRRDValue('disk_availBlocks', default)
+        if blocks is not None and not isnan(blocks):
+            return long(blocks)
 
     def logicalVolume(self):
         """Return the underlying LogicalVolume."""
@@ -105,15 +131,18 @@ class FileSystem(schema.FileSystem):
         """
         old_templates = super(FileSystem, self).getRRDTemplates()
 
-        if self.type != 'nfs':
+        if self.type and not self.type.lower().startswith("nfs"):
             return old_templates
 
         new_templates = []
 
         for template in old_templates:
             if 'FileSystem' in template.id and 'FileSystem_NFS_Client' not in template.id:
-                new_templates.append(self.getRRDTemplateByName(
-                    template.id.replace('FileSystem', 'FileSystem_NFS_Client')))
+                nfs_template = self.getRRDTemplateByName(
+                    template.id.replace('FileSystem', 'FileSystem_NFS_Client'))
+
+                if nfs_template:
+                    new_templates.append(nfs_template)
             else:
                 new_templates.append(template)
 
@@ -177,12 +206,6 @@ class FileSystem(schema.FileSystem):
             storagedevice = self.blockDevice()
 
         return storagedevice
-
-    def capacity(self):
-        utilization = super(FileSystem, self).capacity()
-        if isinstance(utilization, (int, float)):
-            return '{} %'.format(utilization)
-        return utilization
 
 
 @FunctionCache("LinuxFileSystem_getStorageServerPaths", default_timeout=60)

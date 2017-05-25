@@ -318,7 +318,11 @@ class interfaces(LinuxCommandPlugin):
                 _ip = str(maddr.groups()[:1]).translate(None, '\(\)\', ')
                 _ip = _ip.split("/")
                 ip = _ip[0]
-                netmask = _ip[1]
+                try:
+                    netmask = _ip[1]
+                except IndexError:
+                    # tun interfaces omit netmask because they're always /32
+                    netmask = "32"
                 if not hasattr(iface, 'setIpAddresses'):
                     iface.setIpAddresses = []
                 iface.setIpAddresses.append("%s/%s" % (ip, netmask))

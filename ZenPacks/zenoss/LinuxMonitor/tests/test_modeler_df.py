@@ -48,7 +48,6 @@ class FileSystemModelerTests(unittest.TestCase):
         self.plugin = df()
         self.device = DeviceProxy()
         self.device.id = "test-FileSystemModeler"
-        self.device.zFileSystemSizeOffset = 1.0
         self.device.zFileSystemMapIgnoreNames = ""
         self.device.zFileSystemMapIgnoreTypes = []
 
