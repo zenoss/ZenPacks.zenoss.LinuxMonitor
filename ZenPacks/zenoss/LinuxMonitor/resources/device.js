@@ -5,5 +5,13 @@ Ext.apply(Zenoss.render, {
         }
 
         return obj;
+    },
+
+    zenpacklib_ZenPacks_zenoss_LinuxMonitor_percentage: function(value) {
+        if (value === "Unknown" || value < 0) {
+            return _t("Unknown");
+        } else {
+            return value + "%";
+        }
     }
 });
