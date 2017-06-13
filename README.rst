@@ -592,6 +592,10 @@ The following flavors of Linux are supported
 Changes
 -------
 
+2.2.4
+
+- Escape the commandTemplate expression for disk and idisk datasources to avoid TALES errors. (ZPS-1616)
+
 2.2.3
 
 - Use FileSystem_NFS_Client template for all NFS mounts (including nfs4). (ZPS-1495)
