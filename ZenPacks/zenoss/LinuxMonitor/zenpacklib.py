@@ -663,7 +663,7 @@ class DeviceBase(ModelBase):
 
     """
 
-    def getStatus(self, statusclass="/Status", **kwargs):
+    def getStatus(self, statusclass="/Status/*", **kwargs):
         """Return status number for this device.
 
         The status number is the number of critical events associated
