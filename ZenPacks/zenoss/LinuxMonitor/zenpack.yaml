@@ -582,21 +582,21 @@ device_classes:
                                 rrdmin: 0
                                 aliases:
                                     mem_buffers__bytes: ""
-                                    mem_buffers__pct: "${here/hw/totalMemory},/,*,100"
+                                    mem_buffers__pct: "${here/hw/totalMemory},/,100,*"
                                     memoryBuffered__bytes: ""
 
                             Cached:
                                 rrdmin: 0
                                 aliases:
                                     mem_cached__bytes: ""
-                                    mem_cached__pct: "${here/hw/totalMemory},/,*,100"
+                                    mem_cached__pct: "${here/hw/totalMemory},/,100,*"
                                     memoryCached__bytes: ""
 
                             MemFree:
                                 rrdmin: 0
                                 aliases:
                                     mem_free__bytes: ""
-                                    mem_free__pct: "${here/hw/totalMemory},/,*,100"
+                                    mem_free__pct: "${here/hw/totalMemory},/,100,*"
                                     memoryAvailable__bytes: ""
 
                             MemTotal:
@@ -621,7 +621,7 @@ device_classes:
                                 rrdmin: 0
                                 aliases:
                                     mem_swap_free__bytes: ""
-                                    mem_swap_free__pct: "${here/os/totalSwap},/,*,100"
+                                    mem_swap_free__pct: "${here/os/totalSwap},/,100,*"
                                     mem_swap_used__bytes: "${here/os/totalSwap},EXC,-,0,MAX"
                                     mem_swap_used__pct: "${here/os/totalSwap},/,1,-,100,*,ABS"
 
@@ -1222,7 +1222,7 @@ device_classes:
                                 rrdmin: 0
                                 aliases:
                                     lvm_pv_free__bytes: ""
-                                    lvm_pv_free__pct: "${here/pvsize},/,*,100"
+                                    lvm_pv_free__pct: "${here/pvsize},/,100,*"
                                     lvm_pv_used__bytes: "${here/pvsize},EXC,-,0,MAX"
                                     lvm_pv_used__pct: "${here/pvsize},/,1,-,100,*,ABS"
 
@@ -1305,7 +1305,7 @@ device_classes:
                                 rrdmin: 0
                                 aliases:
                                     lvm_vg_free__bytes: ""
-                                    lvm_vg_free__pct: "${here/vgsize},/,*,100"
+                                    lvm_vg_free__pct: "${here/vgsize},/,100,*"
                                     lvm_vg_used__bytes: "${here/vgsize},EXC,-,0,MAX"
                                     lvm_vg_used__pct: "${here/vgsize},/,1,-,100,*,ABS"
 
