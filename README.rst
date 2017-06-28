@@ -13,22 +13,6 @@ Version-2.2.5_
    | Released on 2017/07/XXXX
    | Compatible with Zenoss 4.2 - 5.2
 
-
-.. _Version-2.2.4: http://wiki.zenoss.org/download/zenpacks/ZenPacks.zenoss.LinuxMonitor/2.2.4/ZenPacks.zenoss.LinuxMonitor-2.2.4.egg
-
-Version-2.2.4_
-   | Released on 2017/06/13
-   | Compatible with Zenoss 4.2 - 5.2
-
-
-.. _Version-2.2.3: http://wiki.zenoss.org/download/zenpacks/ZenPacks.zenoss.LinuxMonitor/2.2.3/ZenPacks.zenoss.LinuxMonitor-2.2.3.egg
-
-Version-2.2.3_
-   | Released on 2017/05/25
-   | Compatible with Zenoss 4.2 - 5.2
-
-.. _Version-2.1.3: http://wiki.zenoss.org/download/zenpacks/ZenPacks.zenoss.LinuxMonitor/2.1.3/ZenPacks.zenoss.LinuxMonitor-2.1.3.egg
-
 Version-2.1.3_
    | Released on 2017/03/31
    | Compatible with Zenoss 4.2 - 5.2
@@ -608,7 +592,7 @@ Changes
 
 2.2.5
 
-- Correct processing of iproute interfaces. (ZPS-1695)
+- Fix modeler 'AttributeError: type' error when zInterfaceMapIgnoreTypes is set. (ZPS-1695)
 
 2.2.4
 
