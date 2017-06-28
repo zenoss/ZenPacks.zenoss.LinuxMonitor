@@ -142,7 +142,7 @@ from zope.viewlet.interfaces import IViewlet
 
 from zenoss.protocols.protobufs.zep_pb2 import (
     STATUS_NEW, STATUS_ACKNOWLEDGED,
-    SEVERITY_CRITICAL,
+    STATUS_SUPPRESSED, SEVERITY_CRITICAL,
     )
 
 
@@ -663,7 +663,7 @@ class DeviceBase(ModelBase):
 
     """
 
-    def getStatus(self, statusclass="/Status", **kwargs):
+    def getStatus(self, statusclass="/Status/*", **kwargs):
         """Return status number for this device.
 
         The status number is the number of critical events associated
@@ -697,7 +697,7 @@ class DeviceBase(ModelBase):
                 tags=[self.getUUID()],
                 element_sub_identifier=[""],
                 severity=[SEVERITY_CRITICAL],
-                status=[STATUS_NEW, STATUS_ACKNOWLEDGED],
+                status=[STATUS_NEW, STATUS_ACKNOWLEDGED, STATUS_SUPPRESSED],
                 event_class=filter(None, [statusclass]))
 
             result = zep.getEventSummaries(0, filter=event_filter, limit=0)

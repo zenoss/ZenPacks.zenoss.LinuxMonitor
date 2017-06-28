@@ -7,10 +7,10 @@ This ZenPack monitors the Linux Operating System.
 Releases
 --------
 
-.. _Version-2.2.3: http://wiki.zenoss.org/download/zenpacks/ZenPacks.zenoss.LinuxMonitor/2.2.3/ZenPacks.zenoss.LinuxMonitor-2.2.3.egg
+.. _Version-2.2.5: http://wiki.zenoss.org/download/zenpacks/ZenPacks.zenoss.LinuxMonitor/2.2.5/ZenPacks.zenoss.LinuxMonitor-2.2.5.egg
 
-Version-2.2.3_
-   | Released on 2017/05/25
+Version-2.2.5_
+   | Released on 2017/06/29
    | Compatible with Zenoss 4.2 - 5.2
 
 .. _Version-2.1.3: http://wiki.zenoss.org/download/zenpacks/ZenPacks.zenoss.LinuxMonitor/2.1.3/ZenPacks.zenoss.LinuxMonitor-2.1.3.egg
@@ -591,6 +591,11 @@ The following flavors of Linux are supported
 
 Changes
 -------
+
+2.2.5
+
+- Fix modeler 'AttributeError: type' error when zInterfaceMapIgnoreTypes is set. (ZPS-1695)
+- Fix RPN errors in aliases for memory, swap, and LVM (ZPS-757)
 
 2.2.4
 
