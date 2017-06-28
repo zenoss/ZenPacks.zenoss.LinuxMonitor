@@ -121,10 +121,17 @@ class interfaces(LinuxCommandPlugin):
     newifctype = re.compile(r"txqueuelen\s+\d+\s+\(([^)]+)\)")
 
     # variables for ip tool (ip addr)
-    ip_ifstart = re.compile(r"^(\d+):\s(\S+):\s(.*)mtu\s(\d+)(.*)")
-    ip_v4addr = re.compile(r"inet (\S+)")
-    ip_v6addr = re.compile(r"inet6 (\S+)")
-    ip_hwaddr = re.compile(r"link/(\S+)\s(\S+)")
+    ip_chunk = re.compile(r"(^\d+:\s\S+:.*mtu.+?\n" "(\s+.+\n)*)",re.MULTILINE)
+    ip_meta = re.compile(r"^(?P<ip_number>\d+):"               # Interface num +
+                          "\s(?P<ip_name>\S+)"                 # Interface name +
+                          ":\s+(?P<ip_flags>\S+)\s+"           # Flags +
+                          "mtu\s+(?P<ip_mtu>\d+)\s+.+\n"       # MTU
+                          "\s+link/(?P<ip_type>\S+)\s?"        # IF type +
+                          "((?P<ip_mac>\S+).*)?\n"             # MAC
+                          ".*",                                # Everything else
+                           re.MULTILINE)
+    ip4_addrs = re.compile(r"\s+inet\s(\S+).*\n", re.MULTILINE)
+    ip6_addrs = re.compile(r"\s+inet6\s(\S+).*\n", re.MULTILINE)
 
     def process(self, device, results, log):
         log.info('Modeler %s processing data for device %s', self.name(), device.id)
@@ -260,62 +267,70 @@ class interfaces(LinuxCommandPlugin):
         """
         Parse the output of the ip addr command.
         """
-        rlines = ifconfig.splitlines()
-        iface = None
-        for line in rlines:
-            # reset state to no interface
-            if not line.strip():
-                iface = None
+        for match in self.ip_chunk.finditer(ifconfig):
 
-            # new interface starting
-            miface = self.ip_ifstart.search(line)
-            if miface:
-                # start new interface and get name, type, and macaddress
-                iface = self.objectMap()
-                no, name, flags, mtu = miface.groups()[:4]
-                iface.interfaceName = name
-                iface.id = self.prepId(name)
-                dontCollectIntNames = getattr(device, 'zInterfaceMapIgnoreNames', None)
-                if dontCollectIntNames and re.search(dontCollectIntNames, iface.interfaceName):
-                    self.log.debug(
-                        "Interface %s matched the zInterfaceMapIgnoreNames zprop '%s'",
-                        iface.interfaceName,
-                        dontCollectIntNames)
+            meta = self.ip_meta.match(match.group())
+            if not meta:
+                continue
 
-                    continue
-
-                dontCollectIntTypes = getattr(device, 'zInterfaceMapIgnoreTypes', None)
-                if dontCollectIntTypes and re.search(dontCollectIntTypes, iface.type):
-                    self.log.debug(
-                        "Interface %s type %s matched the zInterfaceMapIgnoreTypes zprop '%s'",
-                        iface.interfaceName,
-                        iface.type,
-                        dontCollectIntTypes)
-
-                    continue
-
-                relMap.append(iface)
-
-                if "UP" in flags:
-                    iface.operStatus = 1
-                else:
-                    iface.operStatus = 2
-
-                if "LOWER_UP" in flags:
-                    iface.adminStatus = 1
-                else:
-                    iface.adminStatus = 2
-
-                if mtu:
-                    iface.mtu = int(mtu)
+            ip_name = meta.group('ip_name')
+            dontCollectIntNames = getattr(device, 'zInterfaceMapIgnoreNames', None)
+            if dontCollectIntNames and re.search(dontCollectIntNames, ip_name):
+                self.log.debug(
+                    "Interface %s matched the zInterfaceMapIgnoreNames zprop '%s'",
+                    ip_name,
+                    dontCollectIntNames)
 
                 continue
 
-            # get the IP addresses of an interface
-            maddr = self.ip_v4addr.search(line)
-            if maddr and iface:
-                # get IP address and netmask
-                _ip = str(maddr.groups()[:1]).translate(None, '\(\)\', ')
+            # Set the type adjustment
+            itype = meta.group('ip_type')
+            if itype.startswith("ether"):
+                itype = "ethernetCsmacd"
+            elif itype.startswith("loopback"):
+                itype = "Local Loopback"
+            ip_type = itype.strip()
+
+            dontCollectIntTypes = getattr(device, 'zInterfaceMapIgnoreTypes', None)
+            if dontCollectIntTypes and re.search(dontCollectIntTypes, ip_type):
+                self.log.debug(
+                    "Interface %s type %s matched the zInterfaceMapIgnoreTypes zprop '%s'",
+                    ip_name,
+                    ip_type,
+                    dontCollectIntTypes)
+
+                continue
+
+            # create the iface and populate the base metadata
+            iface = self.objectMap()
+            iface.interfaceName = ip_name
+            iface.type = ip_type
+            iface.id = self.prepId(ip_name)
+            iface.macaddress = meta.group('ip_mac')
+
+            # Set flags data
+            ip_flags = meta.group('ip_flags')
+            if "UP" in ip_flags:
+                iface.operStatus = 1
+            else:
+                iface.operStatus = 2
+
+            if "LOWER_UP" in ip_flags:
+                iface.adminStatus = 1
+            else:
+                iface.adminStatus = 2
+
+            ip_mtu = meta.group('ip_mtu')
+            if ip_mtu:
+                iface.mtu = int(ip_mtu)
+
+            # get the IP4 addresses of an interface
+            ip4_addrs = self.ip4_addrs.findall(match.group())
+            if ip4_addrs and not hasattr(iface, 'setIpAddresses'):
+                iface.setIpAddresses = []
+
+            for _ip in ip4_addrs:
+                _ip = _ip.translate(None, '\(\)\', ')
                 _ip = _ip.split("/")
                 ip = _ip[0]
                 try:
@@ -323,28 +338,17 @@ class interfaces(LinuxCommandPlugin):
                 except IndexError:
                     # tun interfaces omit netmask because they're always /32
                     netmask = "32"
-                if not hasattr(iface, 'setIpAddresses'):
-                    iface.setIpAddresses = []
                 iface.setIpAddresses.append("%s/%s" % (ip, netmask))
 
-            maddr = self.ip_v6addr.search(line)
-            if maddr and iface:
-                # get IP address
-                ip = maddr.groups()[0]
-                if not hasattr(iface, 'setIpAddresses'):
-                    iface.setIpAddresses = []
+            # Get the IP6 addresses
+            ip6_addrs = self.ip6_addrs.findall(match.group())
+            if ip6_addrs and not hasattr(iface, 'setIpAddresses'):
+                iface.setIpAddresses = []
+
+            for ip in ip6_addrs:
                 iface.setIpAddresses.append(ip)
 
-            # get macaddress
-            maddr = self.ip_hwaddr.search(line)
-            if maddr and iface:
-                iface.macaddress = maddr.groups()[1]
-                itype = maddr.groups()[0].replace("link/", "", 1)
-                if itype.startswith("ether"):
-                    itype = "ethernetCsmacd"
-                elif itype.startswith("loopback"):
-                    itype = "Local Loopback"
-                iface.type = itype.strip()
+            relMap.append(iface)
 
         return relMap
 
