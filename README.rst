@@ -592,6 +592,10 @@ The following flavors of Linux are supported
 Changes
 -------
 
+2.2.6
+
+- Fix issue with links between Linux and NetApp FileSystem components. (ZPS-1736)
+
 2.2.5
 
 - Fix modeler 'AttributeError: type' error when zInterfaceMapIgnoreTypes is set. (ZPS-1695)
