@@ -169,6 +169,8 @@ class FileSystem(schema.FileSystem):
 
     def getStorageServers(self):
         """Generate objects for storage server for this FileSystem."""
+        if self.type and not self.type.lower().startswith("nfs"):
+            return
         try:
             device = self.device()
             search_root = self.getDmdRoot('Devices').Storage
@@ -192,11 +194,10 @@ class FileSystem(schema.FileSystem):
         """
         # Return self.type for non-storage type filesystems
         if not self.blockDevice():
+            # For network mounted servers
+            for server in self.getStorageServers():
+                return server
             return self.type
-
-        # For network mounted servers
-        for server in self.getStorageServers():
-            return server
 
         # The remainder should be HardDisk, LVM, or other block device
         storagedevice = None
