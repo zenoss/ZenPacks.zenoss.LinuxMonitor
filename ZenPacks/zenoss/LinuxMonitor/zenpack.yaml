@@ -505,6 +505,7 @@ device_classes:
                         usessh: true
                         commandTemplate: "/usr/bin/env cat /proc/stat"
                         parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.cpu
+                        cycletime: 60
                         eventClass: /Ignore
                         severity: Clear
 
@@ -546,6 +547,7 @@ device_classes:
                         parser: uptime
                         eventClass: /Ignore
                         severity: Clear
+                        cycletime: 60
 
                         datapoints:
                             sysUpTime:
@@ -576,6 +578,7 @@ device_classes:
                         parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.mem
                         eventClass: /Ignore
                         severity: Clear
+                        cycletime: 60
 
                         datapoints:
                             Buffers:
@@ -637,6 +640,7 @@ device_classes:
                         parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.diskstats
                         eventClass: /Ignore
                         severity: Clear
+                        cycletime: 60
 
                         datapoints:
                             ssIORawReceived:
@@ -753,6 +757,72 @@ device_classes:
                                 format: "%7.2lf%s"
                                 color: 98df8a
 
+                thresholds:
+                    CPU Utilization Capacity:
+                        type: CapacityThreshold
+                        description: "capacity threshold for CPU Utilization"
+                        minval: 0
+                        maxval: 95
+                        eventClass: /Capacity
+                        enabled: true
+                        severity: 2
+                        aggregateFunction: "avg"
+                        pastData: 8
+                        pastDataUnits: 'hours'
+                        amountToPredict: 8
+                        amountToPredictUnits: 'hours'
+#                       projectionAlgorithm: 'polynomial'
+                        units: 'percent'
+                        total: '100'
+                        optional: true
+                        dsnames:
+                            - cpu_ssCpuUsedPerCpu
+                            - cpu_ssCpuUserPerCpu
+                            - cpu_ssCpuSystemPerCpu
+                            - cpu_ssCpuWaitPerCpu
+
+                    Memory Utilization Capacity:
+                        type: CapacityThreshold
+                        description: "capacity threshold for Memory Utilization"
+                        minval: 0
+                        maxval: 95
+                        eventClass: /Capacity
+                        enabled: true
+                        severity: 2
+                        aggregateFunction: "avg"
+                        pastData: "8"
+                        pastDataUnits: 'hours'
+                        amountToPredict: "8"
+                        amountToPredictUnits: 'hours'
+#                       projectionAlgorithm: 'polynomial'
+                        units: 'percent'
+                        total: '100'
+                        optional: true
+                        dsnames:
+                            - mem_MemUsedPercent
+
+                    Storage IO Throughput Capacity:
+                        type: CapacityThreshold
+                        description: "capacity threshold for Storage IO Throughput"
+                        minval: 0
+                        maxval: 95
+                        eventClass: /Capacity
+                        enabled: true
+                        severity: 2
+                        aggregateFunction: "avg"
+                        pastData: "8"
+                        pastDataUnits: 'hours'
+                        amountToPredict: "8"
+                        amountToPredictUnits: 'hours'
+#                       projectionAlgorithm: 'polynomial'
+                        units: 'percent'
+                        total: '100'
+                        optional: true
+                        dsnames:
+                            - io_ssIORawReceived
+                            - io_ssIORawSent
+
+
             ethernetCsmacd:
                 description: "Ethernet (and default) network interface monitoring for Linux via SSH."
                 targetPythonClass: Products.ZenModel.IpInterface
@@ -766,6 +836,7 @@ device_classes:
                         component: "${here/id}"
                         eventClass: /Ignore
                         severity: Clear
+                        cycletime: 60
 
                         datapoints:
                             ifInOctets:
@@ -847,6 +918,117 @@ device_classes:
                             - intf_ifInOctets
                             - intf_ifOutOctets
 
+                    "Data Throughput Violations":
+                        type: DurationThreshold
+                        description: "threshold for data throughput violations"
+                        explanation: "description not enough?"
+                        maxval: "10000000"
+                        eventClass: /Perf/Interface
+                        violationPercentage: 50
+                        enabled: true
+                        severity: 3
+                        resolution: "???"
+                        timePeriod: "1 hours"
+                        dsnames:
+                            - intf_ifInOctets
+                            - intf_ifOutOctets
+
+                    "Packet Throughput Violations":
+                        type: DurationThreshold
+                        description: "threshold for packet throughput violations"
+                        explanation: "description not enough?"
+                        maxval: "4000"
+                        eventClass: /Perf/Interface
+                        violationPercentage: 50
+                        enabled: true
+                        severity: 3
+                        resolution: "???"
+                        timePeriod: "1 hours"
+                        dsnames:
+                            - intf_ifInOctets
+                            - intf_ifOutOctets
+
+                    Data Throughput Predictive:
+                        type: PredictiveThreshold
+                        description: "predictive threshold for data throughput"
+                        minval: 3000000
+                        maxval: 880000000
+                        eventClass: /Capacity
+                        enabled: true
+                        severity: 2
+                        aggregateFunction: "max"
+                        pastData: 8
+                        pastDataUnits: 'hours'
+                        amountToPredict: 8
+                        amountToPredictUnits: 'hours'
+#                       projectionAlgorithm: 'polynomial'
+                        dsnames:
+                            - intf_ifInOctets
+                            - intf_ifOutOctets
+
+                    Packet Throughput Predictive:
+                        type: PredictiveThreshold
+                        description: "Predictive threshold for packet throughput"
+                        minval: 2000
+                        maxval: 6500
+                        eventClass: /Capacity
+                        enabled: true
+                        severity: 2
+                        aggregateFunction: "avg"
+                        pastData: "8"
+                        pastDataUnits: 'hours'
+                        amountToPredict: "8"
+                        amountToPredictUnits: 'hours'
+#                       projectionAlgorithm: 'polynomial'
+                        dsnames:
+                            - intf_ifInPackets
+                            - intf_ifOutPackets
+
+                    Data Throughput Capacity:
+                        type: CapacityThreshold
+                        description: "capacity threshold for Data Throughput"
+                        minval: 3000000
+                        maxval: 880000000
+                        eventClass: /Capacity
+                        enabled: true
+                        severity: 2
+                        aggregateFunction: "max"
+                        pastData: 8
+                        pastDataUnits: 'hours'
+                        amountToPredict: 8
+                        amountToPredictUnits: 'hours'
+#                       projectionAlgorithm: 'polynomial'
+                        units: 'bits/sec'
+                        total: '10000000000'
+                        used: '20000000'
+                        optional: true
+                        dsnames:
+                            - intf_ifInOctets
+                            - intf_ifOutOctets
+
+                    Packet Throughput Capacity:
+                        type: CapacityThreshold
+                        description: "capacity threshold for Packet Throughput"
+                        minval: 2000
+                        maxval: 6500
+                        eventClass: /Capacity
+                        enabled: true
+                        severity: 2
+                        aggregateFunction: "avg"
+                        pastData: "8"
+                        pastDataUnits: 'hours'
+                        amountToPredict: "8"
+                        amountToPredictUnits: 'hours'
+#                       projectionAlgorithm: 'polynomial'
+                        units: 'bytes/sec'
+                        total: 'x'
+                        used: 'y'
+                        optional: true
+                        dsnames:
+                            - intf_ifInPackets
+                            - intf_ifOutPackets
+
+
                 graphs:
                     Data Throughput:
                         units: bits/sec
@@ -922,6 +1104,7 @@ device_classes:
                         component: "${here/id}"
                         eventClass: /Ignore
                         severity: Clear
+                        cycletime: 60
 
                         datapoints:
                             usedBlocks:
@@ -947,6 +1130,7 @@ device_classes:
                         component: "${here/id}"
                         eventClass: /Ignore
                         severity: Clear
+                        cycletime: 60
 
                         datapoints:
                             percentInodesUsed:
@@ -974,6 +1158,25 @@ device_classes:
                         type: MinMaxThreshold
                         maxval: "90"
                         eventClass: /Perf/Filesystem
+                        dsnames:
+                            - disk_percentUsed
+
+                    DiskUsed Capacity:
+                        type: CapacityThreshold
+                        description: "capacity threshold for Disk percent used"
+                        minval: 0
+                        maxval: 95
+                        eventClass: /Capacity
+                        enabled: true
+                        severity: 2
+                        aggregateFunction: "max"
+                        pastData: 8
+                        pastDataUnits: 'hours'
+                        amountToPredict: 8
+                        amountToPredictUnits: 'hours'
+#                       projectionAlgorithm: 'polynomial'
+                        units: 'percent'
+                        optional: true
                         dsnames:
                             - disk_percentUsed
 
