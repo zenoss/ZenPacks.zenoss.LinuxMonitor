@@ -13,7 +13,7 @@ from Products.ZenUtils.IpUtil import getHostByName
 
 class df(CommandPlugin):
     maptype = "FilesystemMap"
-    command = '/bin/df -PTk'
+    command = 'export PATH=$PATH:/bin:/sbin:/usr/bin:/usr/sbin; if command -v timeout > /dev/null 2>&1; then timeout 30 /usr/bin/env df -PTk; else /usr/bin/env df -PTk; fi'
     compname = "os"
     relname = "filesystems"
     modname = "ZenPacks.zenoss.LinuxMonitor.FileSystem"
