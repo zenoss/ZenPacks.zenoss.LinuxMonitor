@@ -595,6 +595,7 @@ Changes
 2.2.6
 
 - Fix issue with links between Linux and NetApp FileSystem components. (ZPS-1736)
+- Prevent the creation of orphaned processes when an NFS mount becomes unavailable. (ZPS-1499)
 
 2.2.5
 
@@ -608,7 +609,6 @@ Changes
 2.2.3
 
 - Use FileSystem_NFS_Client template for all NFS mounts (including nfs4). (ZPS-1495)
-- Prevent the creation of orphaned processes when an NFS mount becomes unavailable. (ZPS-1499)
 - Fix "IndexError" when modeling tun interfaces. (ZPS-971)
 - Add percentUsed datapoint for filesystems. Use for UI and events. (ZPS-1545)
 

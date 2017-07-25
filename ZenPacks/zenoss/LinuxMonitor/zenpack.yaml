@@ -917,7 +917,7 @@ device_classes:
                     disk:
                         type: COMMAND
                         usessh: true
-                        commandTemplate: "/usr/bin/env df -kP"
+                        commandTemplate: "/usr/bin/env df -klP"
                         parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.df
                         component: "${here/id}"
                         eventClass: /Ignore
@@ -942,7 +942,7 @@ device_classes:
                     idisk:
                         type: COMMAND
                         usessh: true
-                        commandTemplate: "/usr/bin/env df -ikP"
+                        commandTemplate: "/usr/bin/env df -iklP"
                         parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.dfi
                         component: "${here/id}"
                         eventClass: /Ignore
