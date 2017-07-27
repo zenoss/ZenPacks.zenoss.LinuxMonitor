@@ -1,7 +1,12 @@
 Ext.apply(Zenoss.render, {
     zenpacklib_ZenPacks_zenoss_LinuxMonitor_fileSystemStorageDevice: function(obj, metaData, record, rowIndex, colIndex) {
         if (typeof(obj) == "object") {
-            return Zenoss.render.zenpacklib_ZenPacks_zenoss_LinuxMonitor_entityLinkFromGrid(obj, metaData, record, rowIndex, colIndex);
+            var sameDevice = new RegExp("^" + this.uid).test(obj.uid);
+            if (sameDevice) {
+                return Zenoss.render.zenpacklib_ZenPacks_zenoss_LinuxMonitor_entityLinkFromGrid(obj, metaData, record, rowIndex, colIndex);
+            } else{
+                return Zenoss.render.link(obj);
+            }
         }
 
         return obj;
