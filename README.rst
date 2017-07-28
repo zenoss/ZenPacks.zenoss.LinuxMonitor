@@ -605,6 +605,7 @@ Changes
 - Fix issue with links between Linux and NetApp FileSystem components. (ZPS-1736)
 - Prevent the creation of orphaned processes when an NFS mount becomes unavailable. (ZPS-1499)
 - Document support for RHEL 7, Ubuntu 16.04 LTS, and Debian 8. (ZPS-1820)
+- Fix spurious warnings in zencommand log when monitoring NFS mounted filesystems. (ZPS-1823)
 
 2.2.5
 
