@@ -607,6 +607,7 @@ Changes
 - Document support for RHEL 7, Ubuntu 16.04 LTS, and Debian 8. (ZPS-1820)
 - Fix spurious warnings in zencommand log when monitoring NFS mounted filesystems. (ZPS-1823)
 - Calculate memory utilization using "MemAvailable" when possible. (ZPS-1144)
+- Fix 0.0% utilization in Windows filesystem threshold event summaries. (ZPS-1844)
 
 2.2.5
 
