@@ -10,6 +10,8 @@
 
 {'foo': dict(MemTotal=2075652*1024,
            MemFree=720956*1024,
+           MemUsed=1387208704,
+           MemUsedPercent=65.2660465241765,
            Buffers=152440*1024,
            Cached=452440*1024,
            SwapTotal=2031608*1024,

@@ -22,6 +22,7 @@ if os.path.isdir(skinsDir):
 CFG = zenpacklib.load_yaml()
 
 from . import schema
+from . import transforms
 
 
 class ZenPack(schema.ZenPack):
@@ -41,6 +42,8 @@ class ZenPack(schema.ZenPack):
                                "for the LinuxMonitor ZenPack"]))
         except AttributeError:
             pass
+
+        transforms.install_transforms(app.zport.dmd)
 
     def register_devtype(self, dmd, deviceclass, description, protocol):
         try:

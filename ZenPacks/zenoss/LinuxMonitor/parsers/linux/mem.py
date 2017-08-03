@@ -26,7 +26,8 @@ class mem(CommandParser):
         data = [line.split(':', 1) for line in cmd.result.output.splitlines()]
 
         # For derivatives we always need to consider some keys.
-        desiredKeys = frozenset(datapointMap.keys() + ["MemFree", "MemTotal"])
+        desiredKeys = frozenset(
+            datapointMap.keys() + ["MemFree", "MemTotal", "MemAvailable"])
 
         # Extract values from data. Convert values to bytes.
         values = {}
