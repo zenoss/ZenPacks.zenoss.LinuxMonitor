@@ -188,7 +188,8 @@ allow the **zenmonitor** user to run the commands.
         Cmnd_Alias ZENOSS_SVC_CMDS = /bin/systemctl list-units *, \
             /bin/systemctl status *, /sbin/initctl list, /sbin/service --status-all, \
             /usr/sbin/dmidecode
-        zenmonitor ALL=(ALL) NOPASSWD: ZENOSS_LVM_CMDS, ZENOSS_SVC_CMDS
+        Cmnd_Alias ZENOSS_NET_CMDS = /bin/dmesg
+        zenmonitor ALL=(ALL) NOPASSWD: ZENOSS_LVM_CMDS, ZENOSS_SVC_CMDS, ZENOSS_NET_CMDS
 
    - Save, ensuring all paths for these commands are correct
 
@@ -599,6 +600,10 @@ Linux.
 
 Changes
 -------
+
+2.2.7
+
+- Allow for restricted dmesg access in Debian9. (ZPS-1933)
 
 2.2.6
 

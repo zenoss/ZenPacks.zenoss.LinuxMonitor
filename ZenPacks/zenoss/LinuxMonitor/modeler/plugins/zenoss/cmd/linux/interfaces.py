@@ -103,7 +103,7 @@ class interfaces(LinuxCommandPlugin):
                    echo "No ifconfig or ip utilities were found."; exit 127; \
                fi \
                && echo __COMMAND__ \
-               && /bin/dmesg \
+               && (/bin/dmesg || sudo -n /bin/dmesg || true) 2> /dev/null \
                && echo __COMMAND__ \
                && head /sys/class/net/*/speed 2>&1'
 
