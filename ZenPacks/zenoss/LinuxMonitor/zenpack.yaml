@@ -761,8 +761,8 @@ device_classes:
                     CPU Utilization Capacity:
                         type: CapacityThreshold
                         description: "capacity threshold for CPU Utilization"
-                        minval: 0
-                        maxval: 95
+                        minval: 5
+                        maxval: 55
                         eventClass: /Capacity
                         enabled: true
                         severity: 2
@@ -784,8 +784,8 @@ device_classes:
                     Memory Utilization Capacity:
                         type: CapacityThreshold
                         description: "capacity threshold for Memory Utilization"
-                        minval: 0
-                        maxval: 95
+                        minval: 5
+                        maxval: 55
                         eventClass: /Capacity
                         enabled: true
                         severity: 2
@@ -805,7 +805,7 @@ device_classes:
                         type: CapacityThreshold
                         description: "capacity threshold for Storage IO Throughput"
                         minval: 0
-                        maxval: 95
+                        maxval: 15
                         eventClass: /Capacity
                         enabled: true
                         severity: 2
@@ -951,7 +951,7 @@ device_classes:
                     Data Throughput Predictive:
                         type: PredictiveThreshold
                         description: "predictive threshold for data throughput"
-                        minval: 3000000
+                        minval: 300000
                         maxval: 880000000
                         eventClass: /Capacity
                         enabled: true
@@ -987,8 +987,8 @@ device_classes:
                     Data Throughput Capacity:
                         type: CapacityThreshold
                         description: "capacity threshold for Data Throughput"
-                        minval: 3000000
-                        maxval: 880000000
+                        minval: 3
+                        maxval: 25
                         eventClass: /Capacity
                         enabled: true
                         severity: 2
@@ -1009,8 +1009,8 @@ device_classes:
                     Packet Throughput Capacity:
                         type: CapacityThreshold
                         description: "capacity threshold for Packet Throughput"
-                        minval: 2000
-                        maxval: 6500
+                        minval: 5
+                        maxval: 65
                         eventClass: /Capacity
                         enabled: true
                         severity: 2
@@ -1164,8 +1164,8 @@ device_classes:
                     DiskUsed Capacity:
                         type: CapacityThreshold
                         description: "capacity threshold for Disk percent used"
-                        minval: 0
-                        maxval: 95
+                        minval: 5
+                        maxval: 35
                         eventClass: /Capacity
                         enabled: true
                         severity: 2
