@@ -603,7 +603,7 @@ Changes
 
 2.2.7
 
-- Allow for restricted dmesg access in Debian9. (ZPS-1933)
+- Allow for restricted dmesg access in Debian 9 and SUSE 12. (ZPS-1933, ZPS-550)
 
 2.2.6
 
