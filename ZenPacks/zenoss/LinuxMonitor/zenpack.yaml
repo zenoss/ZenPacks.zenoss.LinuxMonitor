@@ -771,19 +771,15 @@ device_classes:
                         pastDataUnits: 'hours'
                         amountToPredict: 8
                         amountToPredictUnits: 'hours'
-#                       projectionAlgorithm: 'polynomial'
+                        projectionAlgorithm: 'polynomial'
                         units: 'percent'
                         total: '100'
                         optional: true
-                        dsnames:
-                            - cpu_ssCpuUsedPerCpu
-                            - cpu_ssCpuUserPerCpu
-                            - cpu_ssCpuSystemPerCpu
-                            - cpu_ssCpuWaitPerCpu
+                        dsnames: [cpu_ssCpuUsedPerCpu]
 
-                    Memory Utilization Capacity:
+                    Memory Utilization Capacity MemUsed:
                         type: CapacityThreshold
-                        description: "capacity threshold for Memory Utilization"
+                        description: "capacity threshold for Memory Utilization MemUsed"
                         minval: 5
                         maxval: 55
                         eventClass: /Capacity
@@ -794,18 +790,18 @@ device_classes:
                         pastDataUnits: 'hours'
                         amountToPredict: "8"
                         amountToPredictUnits: 'hours'
-#                       projectionAlgorithm: 'polynomial'
+                        projectionAlgorithm: 'polynomial'
                         units: 'percent'
                         total: '100'
                         optional: true
                         dsnames:
-                            - mem_MemUsedPercent
+                            - mem_MemUsed
 
-                    Storage IO Throughput Capacity:
+                    Memory Utilization Capacity MemUsedPercent:
                         type: CapacityThreshold
-                        description: "capacity threshold for Storage IO Throughput"
-                        minval: 0
-                        maxval: 15
+                        description: "capacity threshold for Memory Utilization MemUsedPercent"
+                        minval: 5
+                        maxval: 55
                         eventClass: /Capacity
                         enabled: true
                         severity: 2
@@ -814,14 +810,12 @@ device_classes:
                         pastDataUnits: 'hours'
                         amountToPredict: "8"
                         amountToPredictUnits: 'hours'
-#                       projectionAlgorithm: 'polynomial'
+                        projectionAlgorithm: 'polynomial'
                         units: 'percent'
                         total: '100'
                         optional: true
                         dsnames:
-                            - io_ssIORawReceived
-                            - io_ssIORawSent
-
+                            - mem_MemUsedPercent
 
             ethernetCsmacd:
                 description: "Ethernet (and default) network interface monitoring for Linux via SSH."
@@ -914,9 +908,7 @@ device_classes:
                         type: MinMaxThreshold
                         maxval: "(here.speed or 1e12) / 8 * .75"
                         eventClass: /Perf/Interface
-                        dsnames:
-                            - intf_ifInOctets
-                            - intf_ifOutOctets
+                        dsnames: [intf_ifInOctets, intf_ifOutOctets]
 
                     "Data Throughput Violations":
                         type: DurationThreshold
@@ -929,9 +921,7 @@ device_classes:
                         severity: 3
                         resolution: "???"
                         timePeriod: "1 hours"
-                        dsnames:
-                            - intf_ifInOctets
-                            - intf_ifOutOctets
+                        dsnames: [intf_ifInOctets, intf_ifOutOctets]
 
                     "Packet Throughput Violations":
                         type: DurationThreshold
@@ -944,13 +934,11 @@ device_classes:
                         severity: 3
                         resolution: "???"
                         timePeriod: "1 hours"
-                        dsnames:
-                            - intf_ifInOctets
-                            - intf_ifOutOctets
+                        dsnames: [intf_ifInPackets, intf_ifOutPackets]
 
-                    Data Throughput Predictive:
+                    Data Throughput Predictive Rx:
                         type: PredictiveThreshold
-                        description: "predictive threshold for data throughput"
+                        description: "predictive threshold for data throughput Rx"
                         minval: 300000
                         maxval: 880000000
                         eventClass: /Capacity
@@ -961,14 +949,30 @@ device_classes:
                         pastDataUnits: 'hours'
                         amountToPredict: 8
                         amountToPredictUnits: 'hours'
-#                       projectionAlgorithm: 'polynomial'
+                        projectionAlgorithm: 'polynomial'
                         dsnames:
                             - intf_ifInOctets
+
+                    Data Throughput Predictive Tx:
+                        type: PredictiveThreshold
+                        description: "predictive threshold for data throughput Tx"
+                        minval: 300000
+                        maxval: 880000000
+                        eventClass: /Capacity
+                        enabled: true
+                        severity: 2
+                        aggregateFunction: "max"
+                        pastData: 8
+                        pastDataUnits: 'hours'
+                        amountToPredict: 8
+                        amountToPredictUnits: 'hours'
+                        projectionAlgorithm: 'polynomial'
+                        dsnames:
                             - intf_ifOutOctets
 
-                    Packet Throughput Predictive:
+                    Packet Throughput Predictive Rx:
                         type: PredictiveThreshold
-                        description: "Predictive threshold for packet throughput"
+                        description: "Predictive threshold for packet throughput Rx"
                         minval: 2000
                         maxval: 6500
                         eventClass: /Capacity
@@ -979,14 +983,30 @@ device_classes:
                         pastDataUnits: 'hours'
                         amountToPredict: "8"
                         amountToPredictUnits: 'hours'
-#                       projectionAlgorithm: 'polynomial'
+                        projectionAlgorithm: 'polynomial'
                         dsnames:
                             - intf_ifInPackets
+
+                    Packet Throughput Predictive Tx:
+                        type: PredictiveThreshold
+                        description: "Predictive threshold for packet throughput Tx"
+                        minval: 2000
+                        maxval: 6500
+                        eventClass: /Capacity
+                        enabled: true
+                        severity: 2
+                        aggregateFunction: "avg"
+                        pastData: "8"
+                        pastDataUnits: 'hours'
+                        amountToPredict: "8"
+                        amountToPredictUnits: 'hours'
+                        projectionAlgorithm: 'polynomial'
+                        dsnames:
                             - intf_ifOutPackets
 
-                    Data Throughput Capacity:
+                    Data Throughput Capacity Rx:
                         type: CapacityThreshold
-                        description: "capacity threshold for Data Throughput"
+                        description: "capacity threshold for Data Throughput Rx"
                         minval: 3
                         maxval: 25
                         eventClass: /Capacity
@@ -997,18 +1017,38 @@ device_classes:
                         pastDataUnits: 'hours'
                         amountToPredict: 8
                         amountToPredictUnits: 'hours'
-#                       projectionAlgorithm: 'polynomial'
+                        projectionAlgorithm: 'polynomial'
                         units: 'bits/sec'
                         total: '10000000000'
                         used: '20000000'
                         optional: true
                         dsnames:
                             - intf_ifInOctets
+
+                    Data Throughput Capacity Tx:
+                        type: CapacityThreshold
+                        description: "capacity threshold for Data Throughput Tx"
+                        minval: 3
+                        maxval: 25
+                        eventClass: /Capacity
+                        enabled: true
+                        severity: 2
+                        aggregateFunction: "max"
+                        pastData: 8
+                        pastDataUnits: 'hours'
+                        amountToPredict: 8
+                        amountToPredictUnits: 'hours'
+                        projectionAlgorithm: 'polynomial'
+                        units: 'bits/sec'
+                        total: '10000000000'
+                        used: '20000000'
+                        optional: true
+                        dsnames:
                             - intf_ifOutOctets
 
-                    Packet Throughput Capacity:
+                    Packet Throughput Capacity Rx:
                         type: CapacityThreshold
-                        description: "capacity threshold for Packet Throughput"
+                        description: "capacity threshold for Packet Throughput Rx"
                         minval: 5
                         maxval: 65
                         eventClass: /Capacity
@@ -1019,13 +1059,33 @@ device_classes:
                         pastDataUnits: 'hours'
                         amountToPredict: "8"
                         amountToPredictUnits: 'hours'
-#                       projectionAlgorithm: 'polynomial'
+                        projectionAlgorithm: 'polynomial'
                         units: 'bytes/sec'
                         total: 'x'
                         used: 'y'
                         optional: true
                         dsnames:
                             - intf_ifInPackets
+
+                    Packet Throughput Capacity Tx:
+                        type: CapacityThreshold
+                        description: "capacity threshold for Packet Throughput Tx"
+                        minval: 5
+                        maxval: 65
+                        eventClass: /Capacity
+                        enabled: true
+                        severity: 2
+                        aggregateFunction: "avg"
+                        pastData: "8"
+                        pastDataUnits: 'hours'
+                        amountToPredict: "8"
+                        amountToPredictUnits: 'hours'
+                        projectionAlgorithm: 'polynomial'
+                        units: 'bytes/sec'
+                        total: 'x'
+                        used: 'y'
+                        optional: true
+                        dsnames:
                             - intf_ifOutPackets
 
 
@@ -1161,11 +1221,11 @@ device_classes:
                         dsnames:
                             - disk_percentUsed
 
-                    DiskUsed Capacity:
+                    DiskUsed Capacity Used Blocks:
                         type: CapacityThreshold
-                        description: "capacity threshold for Disk percent used"
+                        description: "capacity threshold for Disk used blocks"
                         minval: 5
-                        maxval: 35
+                        maxval: 25
                         eventClass: /Capacity
                         enabled: true
                         severity: 2
@@ -1174,11 +1234,28 @@ device_classes:
                         pastDataUnits: 'hours'
                         amountToPredict: 8
                         amountToPredictUnits: 'hours'
-#                       projectionAlgorithm: 'polynomial'
+                        projectionAlgorithm: 'polynomial'
                         units: 'percent'
                         optional: true
-                        dsnames:
-                            - disk_percentUsed
+                        dsnames: [disk_usedBlocks]
+
+                    DiskUsed Capacity Used Percent:
+                        type: CapacityThreshold
+                        description: "capacity threshold for Disk percent used"
+                        minval: 5
+                        maxval: 25
+                        eventClass: /Capacity
+                        enabled: true
+                        severity: 2
+                        aggregateFunction: "max"
+                        pastData: 8
+                        pastDataUnits: 'hours'
+                        amountToPredict: 8
+                        amountToPredictUnits: 'hours'
+                        projectionAlgorithm: 'polynomial'
+                        units: 'percent'
+                        optional: true
+                        dsnames: [disk_percentUsed]
 
                 graphs:
                     Utilization:
