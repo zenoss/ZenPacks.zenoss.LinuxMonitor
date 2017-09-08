@@ -910,32 +910,6 @@ device_classes:
                         eventClass: /Perf/Interface
                         dsnames: [intf_ifInOctets, intf_ifOutOctets]
 
-                    "Data Throughput Violations":
-                        type: DurationThreshold
-                        description: "threshold for data throughput violations"
-                        explanation: "description not enough?"
-                        maxval: "10000000"
-                        eventClass: /Perf/Interface
-                        violationPercentage: 50
-                        enabled: true
-                        severity: 3
-                        resolution: "???"
-                        timePeriod: "1 hours"
-                        dsnames: [intf_ifInOctets, intf_ifOutOctets]
-
-                    "Packet Throughput Violations":
-                        type: DurationThreshold
-                        description: "threshold for packet throughput violations"
-                        explanation: "description not enough?"
-                        maxval: "4000"
-                        eventClass: /Perf/Interface
-                        violationPercentage: 50
-                        enabled: true
-                        severity: 3
-                        resolution: "???"
-                        timePeriod: "1 hours"
-                        dsnames: [intf_ifInPackets, intf_ifOutPackets]
-
                     Data Throughput Predictive Rx:
                         type: PredictiveThreshold
                         description: "predictive threshold for data throughput Rx"
@@ -1221,24 +1195,6 @@ device_classes:
                         dsnames:
                             - disk_percentUsed
 
-                    DiskUsed Capacity Used Blocks:
-                        type: CapacityThreshold
-                        description: "capacity threshold for Disk used blocks"
-                        minval: 5
-                        maxval: 25
-                        eventClass: /Capacity
-                        enabled: true
-                        severity: 2
-                        aggregateFunction: "max"
-                        pastData: 8
-                        pastDataUnits: 'hours'
-                        amountToPredict: 8
-                        amountToPredictUnits: 'hours'
-                        projectionAlgorithm: 'polynomial'
-                        units: 'percent'
-                        optional: true
-                        dsnames: [disk_usedBlocks]
-
                     DiskUsed Capacity Used Percent:
                         type: CapacityThreshold
                         description: "capacity threshold for Disk percent used"
@@ -1256,6 +1212,24 @@ device_classes:
                         units: 'percent'
                         optional: true
                         dsnames: [disk_percentUsed]
+
+                    DiskUsed Capacity Used Blocks:
+                        type: CapacityThreshold
+                        description: "capacity threshold for Disk block used"
+                        minval: 5
+                        maxval: 25
+                        eventClass: /Capacity
+                        enabled: true
+                        severity: 2
+                        aggregateFunction: "max"
+                        pastData: 8
+                        pastDataUnits: 'hours'
+                        amountToPredict: 8
+                        amountToPredictUnits: 'hours'
+                        projectionAlgorithm: 'polynomial'
+                        units: 'percent'
+                        optional: true
+                        dsnames: [disk_usedBlocks]
 
                 graphs:
                     Utilization:
