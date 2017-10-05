@@ -452,6 +452,24 @@ classes:
                 - getStorageServers
 
 
+    Interface:
+        base: [Products.ZenModel.IpInterface.IpInterface]
+        meta_type: IpInterface
+        label: Interface
+        monitoring_templates: [ethernetCsmacd]
+
+        properties:
+            datapointOperStatus:
+                grid_display: false
+                datapoint: intf_ifOperStatus
+                datapoint_cached: true
+
+            datapointAdminStatus:
+                grid_display: false
+                datapoint: intf_ifAdminStatus
+                datapoint_cached: true
+
+
 class_relationships:
     - LinuxDevice 1:MC VolumeGroup
     - LinuxDevice 1:MC PhysicalVolume
@@ -837,6 +855,18 @@ device_classes:
                                 rrdmin: 0
                                 aliases:
                                     if_sent_dropped__persec: ""
+
+                            ifOperStatus:
+                                rrdtype: GAUGE
+                                rrdmin: 0
+                                aliases:
+                                    if_oper_status: ""
+
+                            ifAdminStatus:
+                                rrdtype: GAUGE
+                                rrdmin: 0
+                                aliases:
+                                    if_admin_status: ""
 
                 thresholds:
                     "75 percent utilization":

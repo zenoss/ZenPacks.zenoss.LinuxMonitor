@@ -69,6 +69,7 @@ A command parser.
 
 """
 
+import re
 
 from Products.ZenRRD.ComponentCommandParser import ComponentCommandParser
 
@@ -134,9 +135,52 @@ class ifconfig(ComponentCommandParser):
         if not result.values:
             self._setScanConfig(AltScanConfig)
             super(ifconfig, self).processResults(cmd, result)
+            self.find_status(cmd, result)
+        else:
+            self.find_status(cmd, result)
 
     def _setScanConfig(self, config):
         self.componentSplit = config.componentSplit
         self.componentScanner = config.componentScanner
         self.scanners = config.scanners
         self.componentScanValue = config.componentScanValue
+
+    def find_status(self, cmd, result):
+        """Parser the results to check AdminStatus and OperStatus of interface and pass on the datapoint values."""
+
+        # Search flags for operational and admins statuses
+        flags = re.compile(r'\<(?P<flags>.*?)\>')
+
+        ifs = {}
+        for dp in cmd.points:
+            dp.component = dp.data['componentScanValue']
+            points = ifs.setdefault(dp.component, {})
+            points[dp.id] = dp
+        adminStatus = points.get('ifAdminStatus')
+        operStatus = points.get('ifOperStatus')
+        # Split command output into parts (typically lines)
+        parts = cmd.result.output.split(self.componentSplit)
+
+        for part in parts:
+            # Does this part (eg line) contain a component or not?
+            match = re.search(self.componentScanner, part)
+            if not match:
+                continue
+
+            # Search for the componentScanner regex 'component' item
+            component = match.groupdict()['component'].strip()
+            if component != cmd.component:
+                continue
+            match = flags.findall(part)
+            if match:
+                if 'RUNNING' in match[0] or 'LOWER_UP' in match[0]:
+                    result.values.append((adminStatus, 1.0))
+                else:
+                    result.values.append((adminStatus, 2.0))
+
+                if 'UP' in match[0].replace('LOWER_UP', ''):
+                    result.values.append((operStatus, 1.0))
+                else:
+                    result.values.append((operStatus, 2.0))
+
+        return result

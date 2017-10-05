@@ -86,7 +86,7 @@ class interfaces(LinuxCommandPlugin):
 
     compname = "os"
     relname = "interfaces"
-    modname = "Products.ZenModel.IpInterface"
+    modname = "ZenPacks.zenoss.LinuxMonitor.Interface"
 
     deviceProperties = LinuxCommandPlugin.deviceProperties + (
         'zInterfaceMapIgnoreNames',

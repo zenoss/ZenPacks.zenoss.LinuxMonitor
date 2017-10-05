@@ -600,6 +600,10 @@ Linux.
 Changes
 -------
 
+2.3.0
+
+- Add monitoring operational and administrative statuses for Interface components. (ZEN-25293)
+
 2.2.6
 
 - Fix issue with links between Linux and NetApp FileSystem components. (ZPS-1736)

@@ -12,6 +12,12 @@
         factory=".FileSystem.FileSystemWrapper"
         />
 
+    <adapter
+        factory=".info.InterfaceInfo"
+        for=".Interface.Interface"
+        provides=".interfaces.IInterfaceInfo"
+        />
+
     <!-- Impact -->
     <configure zcml:condition="installed ZenPacks.zenoss.Impact">
         <include package="ZenPacks.zenoss.Impact" file="meta.zcml"/>
