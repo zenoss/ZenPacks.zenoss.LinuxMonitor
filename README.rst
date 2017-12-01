@@ -7,11 +7,11 @@ This ZenPack monitors the Linux Operating System.
 Releases
 --------
 
-.. _Version-2.2.5: http://wiki.zenoss.org/download/zenpacks/ZenPacks.zenoss.LinuxMonitor/2.2.5/ZenPacks.zenoss.LinuxMonitor-2.2.5.egg
+.. _Version-2.2.7: http://wiki.zenoss.org/download/zenpacks/ZenPacks.zenoss.LinuxMonitor/2.2.7/ZenPacks.zenoss.LinuxMonitor-2.2.7.egg
 
-Version-2.2.5_
-   | Released on 2017/06/29
-   | Compatible with Zenoss 4.2 - 5.2
+Version-2.2.7_
+   | Released on 2017/12/01
+   | Compatible with Zenoss 4.2.5 - 6.0
 
 .. _Version-2.1.3: http://wiki.zenoss.org/download/zenpacks/ZenPacks.zenoss.LinuxMonitor/2.1.3/ZenPacks.zenoss.LinuxMonitor-2.1.3.egg
 
@@ -188,7 +188,8 @@ allow the **zenmonitor** user to run the commands.
         Cmnd_Alias ZENOSS_SVC_CMDS = /bin/systemctl list-units *, \
             /bin/systemctl status *, /sbin/initctl list, /sbin/service --status-all, \
             /usr/sbin/dmidecode
-        zenmonitor ALL=(ALL) NOPASSWD: ZENOSS_LVM_CMDS, ZENOSS_SVC_CMDS
+        Cmnd_Alias ZENOSS_NET_CMDS = /bin/dmesg
+        zenmonitor ALL=(ALL) NOPASSWD: ZENOSS_LVM_CMDS, ZENOSS_SVC_CMDS, ZENOSS_NET_CMDS
 
    - Save, ensuring all paths for these commands are correct
 
@@ -599,6 +600,10 @@ Linux.
 
 Changes
 -------
+
+2.2.7
+
+- Allow for restricted dmesg access in Debian 9 and SUSE 12. (ZPS-1933, ZPS-550)
 
 2.2.6
 
