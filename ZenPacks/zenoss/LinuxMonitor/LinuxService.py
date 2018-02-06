@@ -15,7 +15,7 @@ All custom behavior for Linux OS Service is defined here.
 """
 
 
-schema = CFG.zenpack_module.schema
+from . import schema
 
 
 class LinuxService(schema.LinuxService):

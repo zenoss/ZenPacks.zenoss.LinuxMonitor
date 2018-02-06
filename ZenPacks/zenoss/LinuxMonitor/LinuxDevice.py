@@ -7,7 +7,7 @@
 #
 ##############################################################################
 
-schema = CFG.zenpack_module.schema
+from . import schema
 
 
 class LinuxDevice(schema.LinuxDevice):

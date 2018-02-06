@@ -13,7 +13,7 @@ Linux Volume Manager
 PhysicalVolume class override
 '''
 
-schema = CFG.zenpack_module.schema
+from . import schema
 from ZenPacks.zenoss.LinuxMonitor.util import override_graph_labels
 
 
