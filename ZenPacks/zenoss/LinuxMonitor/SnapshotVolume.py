@@ -12,7 +12,7 @@ from zope.interface import implements
 from Products.ZenUtils.Utils import prepId
 from ZenPacks.zenoss.LinuxMonitor.util import override_graph_labels
 
-from . import schema
+schema = CFG.zenpack_module.schema
 
 try:
     from ZenPacks.zenoss.OpenStackInfrastructure.interfaces \

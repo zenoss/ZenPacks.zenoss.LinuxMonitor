@@ -13,7 +13,7 @@ from Products.ZenUtils.Utils import prepId
 from Products.Zuul.interfaces import ICatalogTool
 from Products.AdvancedQuery import Eq, Or
 
-from . import schema
+schema = CFG.zenpack_module.schema
 
 
 class HardDisk(schema.HardDisk):

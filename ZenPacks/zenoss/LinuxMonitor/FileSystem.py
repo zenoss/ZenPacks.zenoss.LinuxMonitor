@@ -30,7 +30,7 @@ except ImportError:
 
 from ZenPacks.zenoss.LinuxMonitor.util import override_graph_labels, keyword_search
 
-from . import schema
+schema = CFG.zenpack_module.schema
 
 
 class FileSystem(schema.FileSystem):
