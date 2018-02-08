@@ -198,7 +198,10 @@ class interfaces(LinuxCommandPlugin):
                     ip, netmask = maddr.groups()[:2]
                 else:
                     ip, netmask = maddr.groups()[2:]
-                netmask = self.maskToBits(netmask)
+                try:
+                    netmask = self.maskToBits(netmask)
+                except ValueError:
+                    return relMap
                 if not hasattr(iface, 'setIpAddresses'):
                     iface.setIpAddresses = []
                 iface.setIpAddresses.append("%s/%s" % (ip, netmask))
