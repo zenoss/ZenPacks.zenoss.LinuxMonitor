@@ -607,6 +607,7 @@ Changes
 2.3.0
 
 - The zenoss.cmd.linux.rpm modeler plugin is now disabled by default. (ZPS-1603)
+- Converted to use zenpacklib v2
 
 2.2.7
 
