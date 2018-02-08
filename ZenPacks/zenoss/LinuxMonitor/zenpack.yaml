@@ -479,7 +479,6 @@ device_classes:
                 - zenoss.cmd.linux.netstat_an
                 - zenoss.cmd.linux.netstat_rn
                 - zenoss.cmd.linux.process
-                - zenoss.cmd.linux.rpm
                 - zenoss.cmd.linux.sudo_dmidecode
                 - zenoss.cmd.linux.os_release
                 - zenoss.cmd.linux.os_service

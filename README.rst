@@ -296,6 +296,10 @@ Modeler Plugins
 -  zenoss.cmd.linux.os\_release
 -  zenoss.cmd.linux.os\_service
 
+.. Note::
+   As of version 2.3.0 the zenoss.cmd.linux.rpm modeler plugin is disabled by
+   default.
+
 Monitoring Templates
 
 -  Device (in /Devices/Server/SSH/Linux)
@@ -600,6 +604,9 @@ Linux.
 
 Changes
 -------
+2.3.0
+
+- The zenoss.cmd.linux.rpm modeler plugin is now disabled by default. (ZPS-1603)
 
 2.2.7
 
