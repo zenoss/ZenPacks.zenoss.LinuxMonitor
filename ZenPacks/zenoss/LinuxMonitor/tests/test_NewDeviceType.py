@@ -15,7 +15,7 @@ import unittest
 from Products.DataCollector.plugins.DataMaps import ObjectMap, RelationshipMap
 from Products.ZenModel.Device import Device
 
-from .. import zenpacklib
+from ZenPacks.zenoss.ZenPackLib import zenpacklib
 from .. import ZenPack
 from ..LinuxDevice import LinuxDevice
 from ..migrate.NewDeviceType import NewDeviceType

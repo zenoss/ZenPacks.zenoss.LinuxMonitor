@@ -7,6 +7,13 @@ This ZenPack monitors the Linux Operating System.
 Releases
 --------
 
+.. _Version-2.3.0: http://wiki.zenoss.org/download/zenpacks/ZenPacks.zenoss.LinuxMonitor/2.3.0/ZenPacks.zenoss.LinuxMonitor-2.3.0.egg
+
+Version-2.3.0_
+   | Released on TODO
+   | Compatible with Zenoss 4.2.5 - 6.1
+   | Requires `ZenPackLib ZenPack </product/zenpacks/zenpacklib>`_
+
 .. _Version-2.2.7: http://wiki.zenoss.org/download/zenpacks/ZenPacks.zenoss.LinuxMonitor/2.2.7/ZenPacks.zenoss.LinuxMonitor-2.2.7.egg
 
 Version-2.2.7_
@@ -608,6 +615,7 @@ Changes
 
 - The zenoss.cmd.linux.rpm modeler plugin is now disabled by default. (ZPS-1603)
 - Fix netmask as hex parsing and KeyError when meminfo is absent. (ZPS-2462)
+- Added ZenPackLib requirement. (ZPS-3000)
 
 2.2.7
 

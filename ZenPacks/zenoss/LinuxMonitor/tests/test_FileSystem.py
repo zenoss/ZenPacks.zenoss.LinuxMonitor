@@ -9,7 +9,7 @@
 
 from Products.ZenModel.RRDTemplate import manage_addRRDTemplate
 
-from .. import zenpacklib
+from ZenPacks.zenoss.ZenPackLib import zenpacklib
 from ..FileSystem import FileSystem
 
 zenpacklib.enableTesting()
