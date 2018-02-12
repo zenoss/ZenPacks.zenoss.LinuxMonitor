@@ -614,6 +614,7 @@ Changes
 2.3.0
 
 - The zenoss.cmd.linux.rpm modeler plugin is now disabled by default. (ZPS-1603)
+- Fix netmask as hex parsing and KeyError when meminfo is absent. (ZPS-2462)
 - Added ZenPackLib requirement. (ZPS-3000)
 
 2.2.7
