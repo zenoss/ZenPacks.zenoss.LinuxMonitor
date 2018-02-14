@@ -13,6 +13,7 @@ Determine kernel information from the /etc/issue file.
 """
 
 from Products.DataCollector.plugins.CollectorPlugin import CommandPlugin
+from Products.ZenUtils.Utils import prepId
 
 
 class alt_kernel_name(CommandPlugin):
@@ -40,9 +41,10 @@ Kernel \r on an \m
         for line in results.split('\n'):
                 if not line.startswith("#"):
                         fixed_res += line
-        results = fixed_res                
+        results = fixed_res
         om = self.objectMap()
-        om.setOSProductKey = results
+        # Make sure OSProductKey is a valid id
+        om.setOSProductKey = prepId(results)
         log.debug("setOSProductKey = %s", om.setOSProductKey)
 
         return om

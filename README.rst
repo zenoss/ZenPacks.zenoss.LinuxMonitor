@@ -304,8 +304,11 @@ Modeler Plugins
 -  zenoss.cmd.linux.os\_service
 
 .. Note::
-   As of version 2.3.0 the zenoss.cmd.linux.rpm modeler plugin is disabled by
-   default.
+   * As of version 2.3.0 the zenoss.cmd.linux.rpm modeler plugin is disabled by
+     default.
+
+   * If /etc/issue has been changed and a banner has been added then the modeler
+     plugin zenoss.cmd.linux.alt\_kernel\_name may need to be disabled.
 
 Monitoring Templates
 
