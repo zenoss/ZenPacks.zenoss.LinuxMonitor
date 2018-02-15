@@ -471,7 +471,6 @@ device_classes:
             zCollectorPlugins:
                 - zenoss.cmd.uname
                 - zenoss.cmd.linux.df
-                - zenoss.cmd.linux.alt_kernel_name
                 - zenoss.cmd.linux.cpuinfo
                 - zenoss.cmd.linux.interfaces
                 - zenoss.cmd.linux.lvm
