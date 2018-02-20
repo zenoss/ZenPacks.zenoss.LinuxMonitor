@@ -305,7 +305,8 @@ Modeler Plugins
 
 .. Note::
    As of version 2.3.0 the zenoss.cmd.linux.rpm and zenoss.cmd.linux.alt\_kernel\_name
-   modeler plugins are disabled by default.
+   modeler plugins are disabled by default. It is recommended you disable the modeler plugin
+   zenoss.cmd.linux.alt\_kernel\_name if you have a customized etc/issue file.
 
 Monitoring Templates
 
