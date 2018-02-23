@@ -12,13 +12,14 @@ Modeler plugin
 
     Commands:
 
-       'export PATH=$PATH:/bin:/sbin:/usr/bin:/usr/sbin; '
-       'for file_list in `ls /var/lib/dpkg/info/*.list`; '
-       'do stat_result=$(stat --format=%Y "$file_list"); '
-       'printf "%s %s\n"_field:$(basename $file_list .list) "_field:$stat_result"; '
-       'done; '
-       'dpkg-query -W -f=\'_field:${Package}_field:${Version}_field:${Maintainer}_field:${Description}\n\' '
-
+      'export PATH=$PATH:/bin:/sbin:/usr/bin:/usr/sbin; '
+      'if command -v dpkg; then '
+      'for file_list in `ls /var/lib/dpkg/info/*.list`; '
+      'do stat_result=$(stat --format=%Y "$file_list"); '
+      'printf "%s %s\n"_field:$(basename $file_list .list) "_field:$stat_result"; '
+      'done; '
+      'dpkg-query -W -f=\'_field:${Package}_field:${Version}_field:${Maintainer}_field:${Description}\n\'; '
+      'fi '
 
     Properties:
 
@@ -97,11 +98,13 @@ class dpkg(SoftwareCommandPlugin):
     """
 
     command = ('export PATH=$PATH:/bin:/sbin:/usr/bin:/usr/sbin; '
+               'if command -v dpkg; then '
                'for file_list in `ls /var/lib/dpkg/info/*.list`; '
                'do stat_result=$(stat --format=%Y "$file_list"); '
                'printf "%s %s\n"_field:$(basename $file_list .list) "_field:$stat_result"; '
                'done; '
-               'dpkg-query -W -f=\'_field:${Package}_field:${Version}_field:${Maintainer}_field:${Description}\n\' '
+               'dpkg-query -W -f=\'_field:${Package}_field:${Version}_field:${Maintainer}_field:${Description}\n\'; '
+               'fi '
               )
     def __init__(self):
         """
