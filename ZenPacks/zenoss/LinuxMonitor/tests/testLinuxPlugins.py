@@ -33,7 +33,7 @@ class testPlugins(BasePluginsTestCase):
         Test all of the plugins that have test data files in the data
         directory.
         """
-        Plugins = [cpuinfo, alt_kernel_name, sudo_dmidecode, lvm, df]
+        Plugins = [rpm, cpuinfo, alt_kernel_name, sudo_dmidecode, lvm, df]
         datadir = "%s/plugindata/" % os.path.dirname(__file__)
         self._testDataFiles(datadir, Plugins)
 

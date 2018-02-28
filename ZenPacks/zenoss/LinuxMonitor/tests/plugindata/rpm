@@ -1,0 +1,29 @@
+export PATH=$PATH:/bin:/sbin:/usr/bin:/usr/sbin; `which rpm || echo true` -qa --qf "%{NAME}__FIELD__%{VERSION}__FIELD__%{RELEASE}__FIELD__%{INSTALLTIME}__FIELD__%{VENDOR}__FIELD__%{SUMMARY}\n"; echo "_SPLIT_"; if command -v dpkg dpkg >/dev/null 2>&1; then for file_list in `ls /var/lib/dpkg/info/*.list`; do stat_result=$(stat --format=%Y "$file_list"); printf "_field:%s_field:%s\n" "$(basename $file_list .list)" "$stat_result"; done; dpkg-query -W -f='_field:${Package}_field:${Version}_field:${Maintainer}_field:${Description}\n'; fi
+libxkbfile__FIELD__1.0.9__FIELD__3.el7__FIELD__1503516137__FIELD__Red Hat, Inc.__FIELD__X.Org X11 libxkbfile runtime library
+libvirt-gobject__FIELD__1.0.0__FIELD__1.el7__FIELD__1503516319__FIELD__Red Hat, Inc.__FIELD__libvirt object APIs for managing virtualization hosts
+audit-libs__FIELD__2.7.6__FIELD__3.el7__FIELD__1503516056__FIELD__Red Hat, Inc.__FIELD__Dynamic library for libaudit
+_SPLIT_
+_field:xz-utils_field:1456156132
+_field:zlib1g:amd64_field:1429704124
+_field:xz-utils_field:5.1.1alpha+20120614-2ubuntu2_field:Ubuntu Developers <ubuntu-devel-discuss@lists.ubuntu.com>_field:XZ-format compression utilities
+ XZ is the successor to the Lempel-Ziv/Markov-chain Algorithm
+ compression format, which provides memory-hungry but powerful
+ compression (often better than bzip2) and fast, easy decompression.
+ .
+ This package provides the command line tools for working with XZ
+ compression, including xz, unxz, xzcat, xzgrep, and so on. They can
+ also handle the older LZMA format, and if invoked via appropriate
+ symlinks will emulate the behavior of the commands in the lzma
+ package.
+ .
+ The XZ format is similar to the older LZMA format but includes some
+ improvements for general use:
+ .
+  * 'file' magic for detecting XZ files;
+  * crc64 data integrity check;
+  * limited random-access reading support;
+  * improved support for multithreading (not used in xz-utils);
+  * support for flushing the encoder.
+_field:zlib1g_field:1:1.2.8.dfsg-2ubuntu1_field:Ubuntu Developers <ubuntu-devel-discuss@lists.ubuntu.com>_field:compression library - runtime
+ zlib is a library implementing the deflate compression method found
+ in gzip and PKZIP.  This package includes the shared library.

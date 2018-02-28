@@ -299,7 +299,6 @@ Modeler Plugins
 -  zenoss.cmd.linux.netstat\_rn
 -  zenoss.cmd.linux.process
 -  zenoss.cmd.linux.rpm
--  zenoss.cmd.linux.dpkg
 -  zenoss.cmd.linux.sudo\_dmidecode
 -  zenoss.cmd.linux.os\_release
 -  zenoss.cmd.linux.os\_service
@@ -619,7 +618,7 @@ Changes
 - Fix netmask as hex parsing and KeyError when meminfo is absent. (ZPS-2462)
 - Added ZenPackLib requirement. (ZPS-3000)
 - Fix custom banner errors and disabled zenoss.cmd.linux.alt\_kernel\_name modeler plugin by default. (ZPS-2998)
-- Add dpkg modeler plugin for getting installed software on Debian. (ZPS-1474)
+- Add dpkg support to zenoss.cmd.linux.rpm modeler plugin. (ZPS-1474)
 
 2.2.7
 
