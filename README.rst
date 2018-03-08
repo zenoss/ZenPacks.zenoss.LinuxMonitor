@@ -1,4 +1,3 @@
-
 Linux Monitor Zenpack
 =====================
 
@@ -116,8 +115,7 @@ OS Processes
     Severity
 
 OS Services
-    Attributes: Name, Loaded Status, Active Status, Main PID, Processes,
-    Description
+    Attributes: Name, Description
 
 .. Note::
    On some Linux flavors some fields (Loaded Status, Processes,
@@ -320,6 +318,7 @@ Monitoring Templates
 -  VolumeGroup (in /Devices/Server/SSH/Linux)
 -  LogicalVolume (in /Devices/Server/SSH/Linux)
 -  OSProcess (in /Devices/Server/SSH/Linux)
+-  OSService (in /Devices/Server/SSH/Linux)
 
 Monitoring Templates
 --------------------
@@ -540,6 +539,12 @@ OSProcess (in /Devices/Server/SSH/Linux)
    -  CPU Utilization
    -  Memory Usage
 
+OSService (in /Devices/Server/SSH/Linux)
+
+-  Data Points
+
+   -  status
+
 Service Impact
 --------------
 
@@ -618,6 +623,7 @@ Changes
 - Fix netmask as hex parsing and KeyError when meminfo is absent. (ZPS-2462)
 - Added ZenPackLib requirement. (ZPS-3000)
 - Fix custom banner errors and disabled zenoss.cmd.linux.alt\_kernel\_name modeler plugin by default. (ZPS-2998)
+- Support OS Service Monitoring for RHEL-5 (SystemV) and  RHEL-7 (SystemD)(ZPS-2181, ZPS-1508)
 
 2.2.7
 
@@ -720,4 +726,3 @@ Changes
 -  Added Dynamic View Support
 -  Completely replaces EnterpriseLinux ZenPack
 -  Many other smaller improvements.
-

@@ -6,6 +6,14 @@ zProperties:
         type: boolean
         default: false
 
+    zLinuxServicesModeled:
+        category: Linux
+        type: lines
+
+    zLinuxServicesNotModeled:
+        category: Linux
+        type: lines
+
 classes:
     DEFAULTS:
         base: [zenpacklib.Component]
@@ -28,27 +36,10 @@ classes:
     LinuxService:
         label: OS Service
         properties:
-            loaded_status:
-                label: Loaded Status
-                order: 1.1
-
-            active_status:
-                label: Active Status
-                order: 1.2
-
-            main_pid:
-                label: Main PID
-                type: int
-                order: 1.3
-
-            processes:
-                label: Processes
-                type: lines
-                order: 1.4
-
             description:
                 label: Description
-                order: 1.5
+                content_width: 250
+                order: 1.2
 
         dynamicview_views: [service_view]
         dynamicview_weight: 30
@@ -1196,6 +1187,26 @@ device_classes:
                                 dpName: ps_mem
                                 format: "%7.2lf%s"
 
+            OSService:
+                description: "Linux service monitoring via SSH."
+                targetPythonClass: ZenPacks.zenoss.LinuxMonitor.LinuxService
+
+                datasources:
+                    service:
+                        type: COMMAND
+                        usessh: true
+                        commandTemplate: "/bin/sh -c 'export PATH=$$PATH:/bin:/sbin:/usr/bin:/usr/sbin; if command -v systemctl > /dev/null 2>&1; then echo \"SYSTEMD\"; sudo systemctl list-units -t service --all --no-page --no-legend | sed /not-found/d | cut -d\" \" -f1 | xargs -n 1 sudo systemctl status -l -n 0 2>&1 || true; elif command -v service >/dev/null 2>&1; then echo \"SYSTEMV\"; sudo service --status-all 2>&1 || true; else echo \"UNKNOWN\"; exit 127; fi'"
+                        parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.service
+                        component: "${here/id}"
+                        eventClass: /Status
+                        severity: Warning
+
+                        datapoints:
+                            status:
+                                rrdmin: 0
+                                aliases:
+                                    service_status: ""
+
             PhysicalVolume:
                 description: "Linux LVM physical volume monitoring via SSH."
                 targetPythonClass: ZenPacks.zenoss.LinuxMonitor.PhysicalVolume
@@ -1565,3 +1576,11 @@ device_classes:
                                 dpName: diskstats_msDoingIOWeighted
                                 rpn: "10,/"
                                 format: "%7.2lf%%"
+
+event_classes:
+    /Status:
+        remove: false
+        mappings:
+            linux-services:
+                eventClassKey: linux-services
+                sequence: 100
