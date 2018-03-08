@@ -152,7 +152,6 @@ RE_UPSTART_SERVICE = re.compile('(?P<title>[A-Za-z0-9\-\.]+)\s'
 RE_SYSTEMV_SERVICE = re.compile('(?P<title>[A-Za-z0-9_\-\.\s:]+)'
                                 '((\s|:)\(pid\s+(?P<main_pid>\d+)\))?'
                                 '\sis\s(?P<active_status>[\w\s]+)')
-RE_PROCESS = re.compile('(?<=Process:\s)(\d+\s\w+=\S+\s([A-z\-=]+\s)*\(\S+\s\S+\))')
 
 
 def systemd_getServices(services):
@@ -169,13 +168,24 @@ def systemd_getServices(services):
         return re.sub(ur'\u25cf', '\n', uServices).splitlines()
     else:
         uServices = unicode('\n'.join(services), 'utf-8')
-        return re.sub(r'\n([\s\w])', '\\1',uServices).splitlines()
+        return re.sub(r'\n([\s\w])', '\\1', uServices).splitlines()
 
 
-def systemd_getProcesses(line):
-    matches = RE_PROCESS.findall(line)
-    if matches:
-        return zip(*matches)[0]
+def check_services_modeled(device, title):
+    # Return True is service is to be modeled
+    for name in getattr(device, 'zLinuxServicesNotModeled', []):
+        if re.match(name, title):
+            return False
+
+    # Regex '.*' or empty list will model all services by default
+    zLinuxServicesModeled = getattr(device, 'zLinuxServicesModeled', ['.*'])
+    if not len(zLinuxServicesModeled):
+        zLinuxServicesModeled.append('.*')
+
+    for name in zLinuxServicesModeled:
+        if re.match(name, title):
+            return True
+    return False
 
 
 SERVICE_MAP = {
@@ -183,7 +193,6 @@ SERVICE_MAP = {
         'regex': RE_SYSTEMD_SERVICE,
         'functions': {
             'services': systemd_getServices,
-            'processes': systemd_getProcesses
         }
     },
     'UPSTART': {
@@ -197,7 +206,8 @@ SERVICE_MAP = {
 
 
 class os_service(LinuxCommandPlugin):
-
+    requiredProperties = ('zLinuxServicesModeled', 'zLinuxServicesNotModeled')
+    deviceProperties = LinuxCommandPlugin.deviceProperties + requiredProperties
     command = ('export PATH=$PATH:/bin:/sbin:/usr/bin:/usr/sbin; '
                'if command -v systemctl >/dev/null 2>&1; then '
                 'echo "SYSTEMD"; '
@@ -217,22 +227,29 @@ class os_service(LinuxCommandPlugin):
     relname = 'linuxServices'
     modname = 'ZenPacks.zenoss.LinuxMonitor.LinuxService'
 
-    def populateRelMap(self, rm, services, regex, getProcesses, log):
+    def populateRelMap(self, rm, device, services, regex, log):
         for line in services:
             line = line.strip()
             match = regex.match(line)
             if match:
                 groupdict = match.groupdict()
                 title = groupdict.get('title')
+
+                # Check zProperties for services to be modeled
+                if not check_services_modeled(device, title):
+                    continue
+
+                # For SYSTEMD, only model services that are loaded
+                loaded_status_string = groupdict.get('loaded_status', '')
+                if loaded_status_string:
+                    loaded_status = loaded_status_string.strip().split()[0]
+                    if loaded_status != 'loaded':
+                        continue
+
                 om = self.objectMap()
                 om.id = self.prepId(title)
                 om.title = title
-                om.loaded_status = groupdict.get('loaded_status')
-                om.active_status = groupdict.get('active_status')
-                om.main_pid = groupdict.get('main_pid')
                 om.description = groupdict.get('description', '').strip()
-                om.processes = getProcesses(line) if callable(getProcesses) \
-                    else groupdict.get('processes')
                 rm.append(om)
             else:
                 log.debug("Unmapped in populateRelMap(): %s", line)
@@ -244,14 +261,12 @@ class os_service(LinuxCommandPlugin):
         services = results.splitlines()
         initService = SERVICE_MAP.get(services[0])
         if initService:
-            processesFunc = None
             services = services[1:]
             regex = initService.get('regex')
             functions = initService.get('functions')
             if functions:
                 services = functions.get('services')(services)
-                processesFunc = functions.get('processes')
-            self.populateRelMap(rm, services, regex, processesFunc, log)
+            self.populateRelMap(rm, device, services, regex, log)
             log.debug("Init service: %s, Relationship: %s", initService, rm.relname)
         else:
             log.info("Can not parse OS services, init service is unknown!")
