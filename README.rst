@@ -274,11 +274,52 @@ as devices with the following command.
 
    zenbatchload <filename>
 
+Modeling and Monitoring OS Services
+-----------------------------------
+The Linux OS services are modeled using the *zenoss.cmd.linux.os_service*
+modeler plugin. The following systems are supported:
+
+- systemd (RHEL 7)
+- upstart (RHEL 6)
+- systemV (RHEL 5 and earlier)
+
+Version 2.3.0 supports monitoring of the status of **systemd** and **systemV**
+system services. The zProperties *zLinuxServicesModeled* and
+*zLinuxServicesNotModeled* restrict the services that are modeled and thereby
+monitored.
+
++------------------------------+----------------------------------------------+
+| Name                         | Description                                  |
++==============================+==============================================+
+| zLinuxServicesModeled        | Accepts regular expressions that             |
+|                              | matches one or more services to model        |
++------------------------------+----------------------------------------------+
+| zLinuxServicesNotModeled     | Accepts regular expressions that             |
+|                              | matches one or more services to not model    |
++------------------------------+----------------------------------------------+
+
+Only *loaded* services are modeled. By default, both zProperties are empty. An
+empty value in ``zLinuxServiceModeled`` is treated as ``.*`` regex and models
+all loaded services. Both the zProperties can support multiple regex
+expressions when separated on new lines. The *OSService* monitoring template
+generates events on every collection cycle for a service that is down. The
+events are automatically cleared if the service is up again.
+
+.. Note::
+   ``zLinuxServicesNotModeled`` overrules ``zLinuxServicesModeled``. If a
+   service name matches regexes in both zProperties, the service will not
+   modeled.
+
 Installed Items
 ---------------
 
 Installing this ZenPack will add the following items to your Zenoss
 system.
+
+Configuration Properties
+
+- zLinuxServicesModeled
+- zLinuxServicesNotModeled
 
 Device Classes
 
