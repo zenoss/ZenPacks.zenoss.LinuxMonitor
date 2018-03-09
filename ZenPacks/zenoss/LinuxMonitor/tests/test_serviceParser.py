@@ -137,12 +137,14 @@ class ServiceParserTests(BaseTestCase):
         # Test Event is Down
         result = ParsedResults()
         self.cmd.component = 'abrt-oops'
+        self.cmd.points[0]['data']['id'] = 'abrt-oops'
         service().processResults(self.cmd, result)
         self.assertEqual(result.events[0]['summary'], 'OS Service is down')
 
         # Test Event is Up
         result = ParsedResults()
         self.cmd.component = 'abrt-ccpp'
+        self.cmd.points[0]['data']['id'] = 'abrt-ccpp'
         service().processResults(self.cmd, result)
         self.assertEqual(result.events[0]['summary'], 'OS Service is up')
 
@@ -152,12 +154,14 @@ class ServiceParserTests(BaseTestCase):
         # Test Event is Down
         result = ParsedResults()
         self.cmd.component = 'httpd'
+        self.cmd.points[0]['data']['id'] = 'httpd'
         service().processResults(self.cmd, result)
         self.assertEqual(result.events[0]['summary'], 'OS Service is down')
 
         # Test Event is Up
         result = ParsedResults()
         self.cmd.component = 'irqbalance'
+        self.cmd.points[0]['data']['id'] = 'irqbalance'
         service().processResults(self.cmd, result)
         self.assertEqual(result.events[0]['summary'], 'OS Service is up')
 
