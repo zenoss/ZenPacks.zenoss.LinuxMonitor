@@ -12,6 +12,12 @@
         factory=".FileSystem.FileSystemWrapper"
         />
 
+    <adapter
+        provides="Products.Zuul.catalog.interfaces.IIndexableWrapper"
+        for=".HardDisk.HardDisk"
+        factory=".HardDisk.HardDiskIndexableWrapper"
+        />
+
     <!-- Impact -->
     <configure zcml:condition="installed ZenPacks.zenoss.Impact">
         <include package="ZenPacks.zenoss.Impact" file="meta.zcml"/>

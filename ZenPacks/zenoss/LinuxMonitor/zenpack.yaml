@@ -352,6 +352,7 @@ classes:
                 - impacted_object
             impacted_by:
                 - device
+                - storage_disk_lun
 
     FileSystem:
         label: File System
