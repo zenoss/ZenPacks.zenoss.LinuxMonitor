@@ -17,6 +17,8 @@ ON_STATUS = ['active', 'running']
 
 
 class service(CommandParser):
+    def dataForParser(self, context, datapoint):
+        return dict(id=context.name())
 
     def processResults(self, cmd, result):
 
@@ -25,6 +27,7 @@ class service(CommandParser):
 
         log.debug(cmd.result.output)
 
+        # Parse service string from output and find if systemd or systemV
         services = cmd.result.output.splitlines()
         initService = SERVICE_MAP.get(services[0])
 
@@ -37,31 +40,35 @@ class service(CommandParser):
         functions = initService.get('functions')
         if functions:
             services = functions.get('services')(services)
-
+        # Init default values for 'active' clear event
         status_value = 1    # Status On/Active
         severity = 0        # Clear
         event_status = 'up'
+        name = cmd.component
+        # Get comp name over id (id does not have special chars like '@')
+        for dp in cmd.points:
+            if 'status' in dp.id:
+                name = dp.data['id']
+        # Look through services for service match
         for line in services:
             line = line.strip()
             match = regex.match(line)
-
             if not match:
                 continue
 
             groupdict = match.groupdict()
             title = groupdict.get('title')
-
-            if cmd.component != title:
+            if name != title:
                 continue
 
             active_status = groupdict.get('active_status')
             status_string = active_status.split()[0]
-
+            # Check if status is active or running
             if status_string not in ON_STATUS:
                 status_value = 0    # STATUS OFF/INACTIVE
                 severity = cmd.severity
                 event_status = 'down'
-
+            # Send a event if down, else clear events
             result.events.append({
                 'device': cmd.deviceConfig.device,
                 'component': cmd.component,
