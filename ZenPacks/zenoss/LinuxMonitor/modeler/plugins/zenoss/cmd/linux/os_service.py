@@ -55,6 +55,11 @@ Systemd output('systemctl list-units -t service --all --no-page --no-legend | cu
        display-manager.service
        Loaded: not-found (Reason: No such file or directory)
        Active: inactive (dead)
+     kdump.service - Crash recovery kernel arming
+       Loaded: loaded (/usr/lib/systemd/system/kdump.service; disabled; vendor preset: enabled)
+       Active: failed (Result: exit-code) since Tue 2018-03-06 12:05:18 CST; 2 days ago
+       Process: 32754 ExecStart=/usr/bin/kdumpctl start (code=exited, status=1/FAILURE)
+       Main PID: 32754 (code=exited, status=1/FAILURE)
     ...
 
 
@@ -143,7 +148,7 @@ RE_SYSTEMD_SERVICE = re.compile(
                         'Loaded:\s(?P<loaded_status>\w.+\))\s+'          # loaded status
                         '(Drop-In:(?P<drop_in>\s/\w[\w./].+)\s+)?'       # optional Drop-In
                         'Active:\s+'
-                        '(?P<active_status>\w+\s\(\w+\)(\ssince.+ago)?)' # active status
+                        '(?P<active_status>\w+\s\([\w:\s-]+\)(\ssince.+ago)?)' # active status
                         '(.+Main\sPID:\s(?P<main_pid>\d+))?'             # optional sevicepid
                         '.*')
 RE_UPSTART_SERVICE = re.compile('(?P<title>[A-Za-z0-9\-\.]+)\s'
