@@ -31,11 +31,11 @@ class ZenPack(schema.ZenPack):
         'zLinuxServicesModeled': {
             'type': 'lines',
             'description': 'Sets regular expressions of services to model',
-            'label': 'Linux Services Modeled'},
+            'label': 'Regex expressions to model services'},
         'zLinuxServicesNotModeled': {
             'type': 'lines',
             'description': 'Sets regular expressions of services to not model',
-            'label': 'Linux Services Not Modeled'},
+            'label': 'Regex expressions to ignore services from modeling'},
     }
 
     def install(self, app):
