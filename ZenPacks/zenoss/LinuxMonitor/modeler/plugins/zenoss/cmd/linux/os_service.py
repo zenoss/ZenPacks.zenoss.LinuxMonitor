@@ -171,21 +171,45 @@ def systemd_getServices(services):
         return re.sub(r'\n([\s\w])', '\\1', uServices).splitlines()
 
 
-def check_services_modeled(device, title):
-    # Return True is service is to be modeled
-    for name in getattr(device, 'zLinuxServicesNotModeled', []):
+def check_services_modeled(model_list, ignore_list, title):
+    # Return False if service is not to be modeled
+    for name in ignore_list:
         if re.match(name, title):
             return False
 
-    # Regex '.*' or empty list will model all services by default
-    zLinuxServicesModeled = getattr(device, 'zLinuxServicesModeled', ['.*'])
-    if not len(zLinuxServicesModeled):
-        zLinuxServicesModeled.append('.*')
-
-    for name in zLinuxServicesModeled:
+    for name in model_list:
         if re.match(name, title):
             return True
     return False
+
+
+def validate_modeling_regex(device, log):
+    # Validate Regex and return valid expressions
+    model_list, ignore_list = [], []
+
+    zLinuxServicesModeled = getattr(device, 'zLinuxServicesModeled', [])
+    # Regex '.*' or empty list will model all services by default
+    if not len(zLinuxServicesModeled):
+        model_list.append('.*')
+    # Make list for services to be modeled
+    for name in zLinuxServicesModeled:
+        try:
+            re.compile(name)
+            model_list.append(name)
+        except:
+            log.warn('Ignoring "{}" in zLinuxServicesModeled. '
+                     'Invalid Regular Expression.'.format(name))
+
+    # Make list for services to be ignored
+    for name in getattr(device, 'zLinuxServicesNotModeled', []):
+        try:
+            re.compile(name)
+            ignore_list.append(name)
+        except:
+            log.warn('Ignoring "{}" in zLinuxServicesNotModeled. '
+                     'Invalid Regular Expression.'.format(name))
+
+    return model_list, ignore_list
 
 
 SERVICE_MAP = {
@@ -227,7 +251,8 @@ class os_service(LinuxCommandPlugin):
     relname = 'linuxServices'
     modname = 'ZenPacks.zenoss.LinuxMonitor.LinuxService'
 
-    def populateRelMap(self, rm, device, services, regex, log):
+    def populateRelMap(self, rm, model_list, ignore_list, services, regex,
+                       log):
         for line in services:
             line = line.strip()
             match = regex.match(line)
@@ -236,7 +261,7 @@ class os_service(LinuxCommandPlugin):
                 title = groupdict.get('title')
 
                 # Check zProperties for services to be modeled
-                if not check_services_modeled(device, title):
+                if not check_services_modeled(model_list, ignore_list, title):
                     continue
 
                 # For SYSTEMD, only model services that are loaded
@@ -246,6 +271,7 @@ class os_service(LinuxCommandPlugin):
                     if loaded_status != 'loaded':
                         continue
 
+                # create relmaps
                 om = self.objectMap()
                 om.id = self.prepId(title)
                 om.title = title
@@ -258,6 +284,8 @@ class os_service(LinuxCommandPlugin):
     def process(self, device, results, log):
         log.info("Processing the OS Service info for device %s", device.id)
         rm = self.relMap()
+        # validate regex and log warning message for invalid regex
+        model_list, ignore_list = validate_modeling_regex(device, log)
         services = results.splitlines()
         initService = SERVICE_MAP.get(services[0])
         if initService:
@@ -266,8 +294,10 @@ class os_service(LinuxCommandPlugin):
             functions = initService.get('functions')
             if functions:
                 services = functions.get('services')(services)
-            self.populateRelMap(rm, device, services, regex, log)
-            log.debug("Init service: %s, Relationship: %s", initService, rm.relname)
+            self.populateRelMap(rm, model_list, ignore_list,
+                                services, regex, log)
+            log.debug("Init service: %s, Relationship: %s", initService,
+                      rm.relname)
         else:
             log.info("Can not parse OS services, init service is unknown!")
 
