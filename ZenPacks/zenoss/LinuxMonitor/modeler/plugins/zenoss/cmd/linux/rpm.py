@@ -13,11 +13,6 @@ Modeler plugin
     Commands:
 
         "rpm -qa --qf <query format>"
-        "if command -v dpkg dpkg >/dev/null 2>&1; then "
-        "for file_list in `ls /var/lib/dpkg/info/*.list`; "
-        "do stat_result=$(stat --format=%Y "$file_list"); "
-        "printf "_field:%s_field:%s\\n" "$(basename $file_list .list)" "$stat_result"; "
-        "done;"
         "dpkg-query -W -f = <query format>"
 
     Properties:
@@ -124,10 +119,10 @@ class rpm(SoftwareCommandPlugin):
     """
 
     command = ( 'export PATH=$PATH:/bin:/sbin:/usr/bin:/usr/sbin; '
-                '`which rpm || echo true` -qa --qf "%{NAME}__FIELD__%{VERSION}__FIELD__%{RELEASE}__FIELD__%{INSTALLTIME}__FIELD__%{VENDOR}__FIELD__%{SUMMARY}\\n"; '
+                '$(which rpm || echo true) -qa --qf "%{NAME}__FIELD__%{VERSION}__FIELD__%{RELEASE}__FIELD__%{INSTALLTIME}__FIELD__%{VENDOR}__FIELD__%{SUMMARY}\\n"; '
                 'echo "_SPLIT_"; '
-                'if command -v dpkg dpkg >/dev/null 2>&1; then '
-                'for file_list in `ls /var/lib/dpkg/info/*.list`; '
+                'if command -v dpkg >/dev/null 2>&1; then '
+                'for file_list in $(ls /var/lib/dpkg/info/*.list); '
                 'do stat_result=$(stat --format=%Y "$file_list"); '
                 'printf "_field:%s_field:%s\\n" "$(basename $file_list .list)" "$stat_result"; '
                 'done; '
