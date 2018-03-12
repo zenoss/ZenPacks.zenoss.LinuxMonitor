@@ -1,13 +1,21 @@
-export PATH=/bin:/sbin:/usr/bin:/usr/sbin; lsblk -rb 2>&1; sudo pvs --units b --nosuffix -o pv_name,pv_fmt,pv_attr,pv_size,pv_free,pv_uuid,vg_name 2>&1; sudo vgs --units b --nosuffix -o vg_name,vg_attr,vg_size,vg_free,vg_uuid 2>&1; sudo lvs --units b --nosuffix -o lv_name,vg_name,lv_attr,lv_size,lv_uuid,origin 2>&1; echo "DISK_BY_ID  LINK" 2>&1; find /dev/disk/by-id -type l ! -name "*-part*" -printf "%P %l\n" 2>&1
+export PATH=/bin:/sbin:/usr/bin:/usr/sbin; lsblk -rb 2>&1;
+ sudo pvs --units b --nosuffix -o pv_name,pv_fmt,pv_attr,pv_size,pv_free,pv_uuid,vg_name 2>&1;
+ sudo vgs --units b --nosuffix -o vg_name,vg_attr,vg_size,vg_free,vg_uuid 2>&1;
+ if command -v thin_check >/dev/null 2>&1; then
+ sudo lvs --separator ' '  --units b --nosuffix -o lv_name,vg_name,lv_attr,lv_size,lv_uuid,origin,lv_metadata_size,pool_lv; else
+ sudo lvs --separator ' '  --units b --nosuffix -o lv_name,vg_name,lv_attr,lv_size,lv_uuid,origin; fi;
+ echo "DISK_BY_ID  LINK" 2>&1; find /dev/disk/by-id -type l ! -name "*-part*" -printf "%P %l\n" 2>&1
+___HOST_OUTPUT___
 NAME MAJ:MIN RM SIZE RO TYPE MOUNTPOINT
 sda 8:0 0 21474836480 0 disk
 PV         Fmt  Attr PSize       PFree      PV UUID                                VG
 /dev/sda5  lvm2 a-   53427044352   33554432 keTXxa-Jlrw-0FJS-b2ye-iP15-fgsF-KavDVv qa-ubuntu-12
 VG           Attr   VSize       VFree      VG UUID
 lvmserver    wz--n- 30056382464 2139095040 RRYHWp-twqJ-x89e-1WXs-iDFu-R2EE-5KPL4d
-LV             VG           Attr   LSize       LV UUID                                Origin
-share           lvmserver    -wi-ao 10737418240 SBIYpJ-Xgcr-0nlT-ModL-aqev-1L2T-rQgZUX
-share-snapshot lvmserver    swi-a-  2147483648 LnFf8w-BUSe-1JNo-9Y07-Colf-ztAX-N8ih65 share
+LV VG Attr LSize LV UUID Origin MSize Pool
+share lvmserver -wi-ao 10737418240 SBIYpJ-Xgcr-0nlT-ModL-aqev-1L2T-rQgZUX
+share-snapshot lvmserver swi-a- 2147483648 LnFf8w-BUSe-1JNo-9Y07-Colf-ztAX-N8ih65 share
+pool lvmserver twi-aotz-- 1073741824 Je2mF8-V0q3-CXVX-6p21-eBAD-VMPt-pEOczH  4194304
 DISK_BY_ID  LINK
 ata-3.14159 ../../sda
 scsi-3.14159 ../../sda
