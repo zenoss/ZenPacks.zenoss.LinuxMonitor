@@ -18,13 +18,13 @@ serviced serviced-pool 4.94   0.56
 
 """
 import logging
-log = logging.getLogger("zen.lvsthin")
+log = logging.getLogger("zen.poolstats")
 
 from Products.ZenRRD.CommandParser import CommandParser
 from Products.ZenUtils.Utils import prepId
 
 
-class lvsthin(CommandParser):
+class poolstats(CommandParser):
 
 
     def dataForParser(self, context, dp):

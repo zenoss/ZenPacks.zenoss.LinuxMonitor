@@ -46,7 +46,7 @@ Features
 
 -  Monitors multiple Linux flavors and versions
 -  OpenStack LVM volume integration
--  Monitors LVM Physical Volumes, Volume Groups, and Logical Volumes
+-  Monitors LVM Physical Volumes, Volume Groups, Thin Pools and Logical Volumes
 -  Block Device monitoring
 -  Service Monitoring via Sysvinit, Systemd, Upstart
 -  Root Cause Analysis with Impact Support
@@ -108,6 +108,11 @@ Volume Groups
 Logical Volumes
     Attributes: Name, Volume Group, Size, Block Device, File System,
     Active, Snapshot Volumes
+    Relations: Volume Groups, Thin Pools
+
+Thin Pools
+    Attributes: Name, Volume Group, Size, Block Device, File System,
+    Active, Metadata Size
     Relations: Volume Groups
 
 OS Processes
@@ -341,6 +346,7 @@ Modeler Plugins
 -  zenoss.cmd.linux.sudo\_dmidecode
 -  zenoss.cmd.linux.os\_release
 -  zenoss.cmd.linux.os\_service
+-  zenoss.cmd.linux.poolstats
 
 .. Note::
    As of version 2.3.0 the zenoss.cmd.linux.rpm and zenoss.cmd.linux.alt\_kernel\_name
@@ -360,6 +366,7 @@ Monitoring Templates
 -  LogicalVolume (in /Devices/Server/SSH/Linux)
 -  OSProcess (in /Devices/Server/SSH/Linux)
 -  OSService (in /Devices/Server/SSH/Linux)
+-  ThinPool (in /Devices/Server/SSH/Linux)
 
 Monitoring Templates
 --------------------
@@ -562,6 +569,23 @@ LogicalVolume (in /Devices/Server/SSH/Linux)
 
    -  *None*
 
+   LogicalVolume (in /Devices/Server/SSH/Linux)
+
+   -  Data Points
+
+      -  state
+      -  health
+      -  percentDataUsed
+      -  percentMetaDataUsed
+
+   -  Thresholds
+
+      -  90 percent used
+
+   -  Graphs
+
+      -  Pool Utilization
+
 OSProcess (in /Devices/Server/SSH/Linux)
 
 -  Data Points
@@ -604,7 +628,9 @@ Service Impact Relationships
 -  LogicalVolume is impacted by VolumeGroup or HardDisk;
 -  SnapshotVolume is impacted by LogicalVolume or HardDisk;
 -  FileSystem is impacted by SnapshotVolume or LogicalVolume or HardDisk
-   or LinuxDevice
+   or LinuxDevice or ThinPool
+-  ThinPool is impacted by VolumeGroup or HardDisk or logicalVolume;
+
 
 Daemons
 -------
@@ -665,7 +691,7 @@ Changes
 - Added ZenPackLib requirement. (ZPS-3000)
 - Fix custom banner errors and disabled zenoss.cmd.linux.alt\_kernel\_name modeler plugin by default. (ZPS-2998)
 - Support OS Service Monitoring for RHEL-5 (SystemV) and  RHEL-7 (SystemD)(ZPS-2181, ZPS-1508)
-
+- Add thin pool monitoring. (ZPS-2494)
 2.2.7
 
 - Allow for restricted dmesg access in Debian 9 and SUSE 12. (ZPS-1933, ZPS-550)

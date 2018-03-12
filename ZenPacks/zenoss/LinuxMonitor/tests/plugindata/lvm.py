@@ -42,7 +42,16 @@
              'title': 'share',
              'uuid': 'SBIYpJ-Xgcr-0nlT-ModL-aqev-1L2T-rQgZUX',
              'vgname': 'lvmserver'}, },
-
+        {'lv-lvmserver_pool':
+            {'attributes': ['thin pool','writeable','inherited','active','open','thin'],
+             'id': 'lv-lvmserver_pool',
+             'lvsize': 1073741824,
+             'modname': 'ZenPacks.zenoss.LinuxMonitor.ThinPool',
+             'metadatasize': '4194304',
+             'relname': 'thinPools',
+             'title': 'pool',
+             'uuid': 'Je2mF8-V0q3-CXVX-6p21-eBAD-VMPt-pEOczH',
+             'vgname': 'lvmserver'}, },
         {'lv-lvmserver_share-snapshot':
             {'attributes': ['snapshot', 'writeable', 'inherited', 'active'],
              'id': 'lv-lvmserver_share-snapshot',
@@ -52,15 +61,5 @@
              'relname': 'snapshotVolumes',
              'title': 'share-snapshot',
              'uuid': 'LnFf8w-BUSe-1JNo-9Y07-Colf-ztAX-N8ih65',
-             'vgname': 'lvmserver'}, },
-        {'lv-lvmserver_pool':
-            {'attributes': ['thin pool','writeable','inherited','active','open','thin'],
-             'id': 'lv-lvmserver_pool',
-             'lvsize': 1073741824,
-             'modname': 'ZenPacks.zenoss.LinuxMonitor.ThinPool',
-             'lv_metadata_size': '4194304',
-             'relname': 'thinPools',
-             'title': 'pool',
-             'uuid': 'Je2mF8-V0q3-CXVX-6p21-eBAD-VMPt-pEOczH',
              'vgname': 'lvmserver'}, },
     ]}

@@ -146,6 +146,7 @@ classes:
         dynamicview_relations:
             impacts:
                 - logicalVolumes
+                - thinPools
             impacted_by:
                 - physicalVolumes
 
@@ -1653,7 +1654,7 @@ device_classes:
                         type: COMMAND
                         usessh: true
                         commandTemplate: "/usr/bin/env sudo lvs --noheadings -o vg_name,lv_name,data_percent,metadata_percent"
-                        parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.lvsthin
+                        parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.poolstats
                         component: "${here/id}"
                         eventClass: /Ignore
                         severity: Clear
