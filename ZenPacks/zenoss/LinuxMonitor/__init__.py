@@ -26,6 +26,17 @@ from . import transforms
 
 
 class ZenPack(schema.ZenPack):
+    """ZenPack class override"""
+    packZProperties_data = {
+        'zLinuxServicesModeled': {
+            'type': 'lines',
+            'description': 'Sets regular expressions of services to model',
+            'label': 'Regex expressions to model services'},
+        'zLinuxServicesNotModeled': {
+            'type': 'lines',
+            'description': 'Sets regular expressions of services to not model',
+            'label': 'Regex expressions to ignore services from modeling'},
+    }
 
     def install(self, app):
         super(ZenPack, self).install(app)

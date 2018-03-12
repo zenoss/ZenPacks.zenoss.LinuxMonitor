@@ -1,6 +1,6 @@
 ##############################################################################
 #
-# Copyright (C) Zenoss, Inc. 2016, all rights reserved.
+# Copyright (C) Zenoss, Inc. 2016, 2018, all rights reserved.
 #
 # This content is made available according to terms specified in
 # License.zenoss under the directory where your Zenoss product is installed.
@@ -9,9 +9,14 @@
 
 import itertools
 
+from zope.component import adapts
+from zope.interface import implements
+
 from Products.ZenUtils.Utils import prepId
-from Products.Zuul.interfaces import ICatalogTool
-from Products.AdvancedQuery import Eq, Or
+from Products.Zuul.catalog.interfaces import IIndexableWrapper
+from Products.Zuul.catalog.global_catalog import ComponentWrapper
+
+from ZenPacks.zenoss.LinuxMonitor.util import keyword_search
 
 from . import schema
 
@@ -80,15 +85,40 @@ class HardDisk(schema.HardDisk):
             return lv
 
     def storage_disk_lun(self):
-        # return the UCS storage disk/virtual drive
-        # if disk_ids contains the IDs of disk/virtual drive
+        """Return a generator of the storage disks/virtual drives based on disk_ids."""
+        keywords = set()
         if self.disk_ids:
-            results = ICatalogTool(self.getDmdRoot('Devices')).search(
-                query=Or(*[Eq('searchKeywords', id)
-                           for id in self.disk_ids]))
+            for disk_id in self.disk_ids:
+                # Add disk_id to keywords to save compatibility with UCS storage
+                keywords.add(disk_id)
 
-            for brain in results:
-                try:
-                    yield brain.getObject()
-                except Exception:
-                    continue
+                ldisk_id = disk_id.lower()
+                if ldisk_id.startswith('wwn-0x'):
+                    keywords.add(
+                        'has-target-wwn:{}'.format(ldisk_id.lstrip('wwn-0x'))
+                    )
+        for obj in keyword_search(self.getDmdRoot('Devices'), keywords):
+            yield obj
+
+
+class HardDiskIndexableWrapper(ComponentWrapper):
+    implements(IIndexableWrapper)
+    adapts(HardDisk)
+
+    def searchKeywordsForChildren(self):
+        """Return tuple of search keywords for HardDisk objects."""
+        keywords = set()
+        disk_ids = self._context.disk_ids
+
+        if disk_ids:
+            for disk_id in disk_ids:
+                ldisk_id = disk_id.lower()
+                if ldisk_id.startswith('wwn-0x'):
+                    # add uses-target-wwn keyword to make it possible to find
+                    # this HardDisk from an appropriate storage provider
+                    keywords.add(
+                        'uses-target-wwn:{}'.format(ldisk_id.lstrip('wwn-0x'))
+                    )
+
+        return (super(HardDiskIndexableWrapper, self).searchKeywordsForChildren() +
+                tuple(keywords))
