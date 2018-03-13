@@ -42,9 +42,9 @@
              'title': 'share',
              'uuid': 'SBIYpJ-Xgcr-0nlT-ModL-aqev-1L2T-rQgZUX',
              'vgname': 'lvmserver'}, },
-        {'lv-lvmserver_pool':
+        {'tp-lvmserver_pool':
             {'attributes': ['thin pool','writeable','inherited','active','open','thin'],
-             'id': 'lv-lvmserver_pool',
+             'id': 'tp-lvmserver_pool',
              'lvsize': 1073741824,
              'modname': 'ZenPacks.zenoss.LinuxMonitor.ThinPool',
              'metadatasize': '4194304',

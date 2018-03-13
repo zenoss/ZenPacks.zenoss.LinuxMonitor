@@ -21,11 +21,8 @@ import logging
 log = logging.getLogger("zen.poolstats")
 
 from Products.ZenRRD.CommandParser import CommandParser
-from Products.ZenUtils.Utils import prepId
-
 
 class poolstats(CommandParser):
-
 
     def dataForParser(self, context, dp):
         """Add additional data to dp for the processResults method.
@@ -40,7 +37,6 @@ class poolstats(CommandParser):
             }
 
     def processResults(self, cmd, result):
-
 
         for dp in cmd.points:
 

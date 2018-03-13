@@ -7,8 +7,6 @@
 #
 ##############################################################################
 
-from zope.interface import implements
-
 from Products.ZenUtils.Utils import prepId
 from ZenPacks.zenoss.LinuxMonitor.util import override_graph_labels
 
@@ -44,7 +42,6 @@ class ThinPool(schema.ThinPool):
     def getDefaultGraphDefs(self, drange=None):
         # Add and re-label graphs displayed in other components
         graphs = super(ThinPool, self).getDefaultGraphDefs(drange)
-
         vg = self.volumeGroup()
         if vg:
             vgGraphs = override_graph_labels(vg, drange)
@@ -59,9 +56,7 @@ class ThinPool(schema.ThinPool):
 
     def getGraphObjects(self):
         graphs = super(ThinPool, self).getGraphObjects()
-
         graphs.extend(self.volumeGroup().getGraphObjects())
-
         bd = self.blockDevice()
         if bd:
             graphs.extend(bd.getGraphObjects())
