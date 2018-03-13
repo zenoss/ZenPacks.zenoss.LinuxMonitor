@@ -368,7 +368,7 @@ class lvm(CommandPlugin):
             lv_om.relname = 'snapshotVolumes'
             lv_om.modname = 'ZenPacks.zenoss.LinuxMonitor.SnapshotVolume'
         elif columns['lv_metadata_size']:
-            lv_om.id = 'tp-{}'.format(self.prepId(columns['vg_name'])+'_'+self.prepId(columns['pool_lv']))
+            lv_om.id = 'tp-{}'.format(self.prepId(columns['vg_name'])+'_'+self.prepId(columns['lv_name']))
             lv_om.metadatasize = columns['lv_metadata_size']
             lv_om.relname = 'thinPools'
             lv_om.modname = 'ZenPacks.zenoss.LinuxMonitor.ThinPool'
