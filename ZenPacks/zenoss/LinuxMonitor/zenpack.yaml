@@ -1196,7 +1196,20 @@ device_classes:
                     service:
                         type: COMMAND
                         usessh: true
-                        commandTemplate: "/bin/sh -c 'export PATH=$$PATH:/bin:/sbin:/usr/bin:/usr/sbin; if command -v systemctl > /dev/null 2>&1; then echo \"SYSTEMD\"; sudo systemctl list-units -t service --all --no-page --no-legend | sed /not-found/d | cut -d\" \" -f1 | xargs -n 1 sudo systemctl status -l -n 0 2>&1 || true; elif command -v service >/dev/null 2>&1; then echo \"SYSTEMV\"; sudo service --status-all 2>&1 || true; else echo \"UNKNOWN\"; exit 127; fi'"
+                        # Check for systemd, upstart and systemv for services
+                        commandTemplate: >
+                                           /bin/sh -c 'export PATH=$$PATH:/bin:/sbin:/usr/bin:/usr/sbin;
+                                           if command -v systemctl > /dev/null 2>&1;
+                                           then echo "SYSTEMD";
+                                           sudo systemctl list-units -t service --all --no-page --no-legend |
+                                           sed /not-found/d | cut -d" " -f1 | xargs -n 1 sudo systemctl status -l -n 0 2>&1 || true;
+                                           elif command -v initctl >/dev/null 2>&1;
+                                           then echo "UPSTART"; sudo initctl list 2>&1 || true;
+                                           elif command -v service >/dev/null 2>&1;
+                                           then echo "SYSTEMV"; sudo service --status-all 2>&1 || true;
+                                           else echo "UNKNOWN";
+                                           exit 127;
+                                           fi'
                         parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.service
                         component: "${here/id}"
                         eventClass: /Status
