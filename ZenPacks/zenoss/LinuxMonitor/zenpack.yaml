@@ -1202,7 +1202,7 @@ device_classes:
                                            if command -v systemctl > /dev/null 2>&1;
                                            then echo "SYSTEMD";
                                            sudo systemctl list-units -t service --all --no-page --no-legend |
-                                           sed /not-found/d | cut -d" " -f1 | xargs -n 1 sudo systemctl status -l -n 0 2>&1 || true;
+                                           sed "/not-found/d ; s/\s.*$$//" | xargs -n 1 sudo systemctl status -l -n 0 2>&1 || true;
                                            elif command -v initctl >/dev/null 2>&1;
                                            then echo "UPSTART"; sudo initctl list 2>&1 || true;
                                            elif command -v service >/dev/null 2>&1;

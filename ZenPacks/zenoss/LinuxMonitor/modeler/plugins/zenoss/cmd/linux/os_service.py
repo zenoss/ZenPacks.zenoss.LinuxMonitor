@@ -258,6 +258,7 @@ class os_service(LinuxCommandPlugin):
 
     def populateRelMap(self, rm, model_list, ignore_list, services, regex,
                        log):
+        title_list = []
         for line in services:
             line = line.strip()
             match = regex.match(line)
@@ -276,12 +277,18 @@ class os_service(LinuxCommandPlugin):
                     if loaded_status != 'loaded':
                         continue
 
+                # Check for duplicates (systemV shows duplicates e.g. Firewall)
+                if title in title_list:
+                    continue
+
                 # create relmaps
                 om = self.objectMap()
                 om.id = self.prepId(title)
                 om.title = title
                 om.description = groupdict.get('description', '').strip()
                 rm.append(om)
+                # Add service to title_list to check for duplicates later
+                title_list.append(title)
             else:
                 log.debug("Unmapped in populateRelMap(): %s", line)
                 continue
