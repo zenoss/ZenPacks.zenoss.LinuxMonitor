@@ -42,7 +42,16 @@
              'title': 'share',
              'uuid': 'SBIYpJ-Xgcr-0nlT-ModL-aqev-1L2T-rQgZUX',
              'vgname': 'lvmserver'}, },
-
+        {'tp-lvmserver_pool':
+            {'attributes': ['thin pool','writeable','inherited','active','open','thin'],
+             'id': 'tp-lvmserver_pool',
+             'lvsize': 1073741824,
+             'modname': 'ZenPacks.zenoss.LinuxMonitor.ThinPool',
+             'metadatasize': '4194304',
+             'relname': 'thinPools',
+             'title': 'pool',
+             'uuid': 'Je2mF8-V0q3-CXVX-6p21-eBAD-VMPt-pEOczH',
+             'vgname': 'lvmserver'}, },
         {'lv-lvmserver_share-snapshot':
             {'attributes': ['snapshot', 'writeable', 'inherited', 'active'],
              'id': 'lv-lvmserver_share-snapshot',

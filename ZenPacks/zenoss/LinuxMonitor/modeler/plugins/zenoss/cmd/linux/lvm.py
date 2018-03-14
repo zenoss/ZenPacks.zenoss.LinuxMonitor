@@ -1,6 +1,6 @@
 ##############################################################################
 #
-# Copyright (C) Zenoss, Inc. 2015, all rights reserved.
+# Copyright (C) Zenoss, Inc. 2018, all rights reserved.
 #
 # This content is made available according to terms specified in
 # License.zenoss under the directory where your Zenoss product is installed.
@@ -92,7 +92,9 @@ class lvm(CommandPlugin):
                'lsblk -rb 2>&1; '
                'sudo pvs --units b --nosuffix -o pv_name,pv_fmt,pv_attr,pv_size,pv_free,pv_uuid,vg_name 2>&1; '
                'sudo vgs --units b --nosuffix -o vg_name,vg_attr,vg_size,vg_free,vg_uuid 2>&1; '
-               'sudo lvs --units b --nosuffix -o lv_name,vg_name,lv_attr,lv_size,lv_uuid,origin 2>&1; '
+               'if command -v thin_check >/dev/null 2>&1; then '
+               '''sudo lvs --separator ' '  --units b --nosuffix -o lv_name,vg_name,lv_attr,lv_size,lv_uuid,origin,lv_metadata_size,pool_lv; else '''
+               '''sudo lvs --separator ' '  --units b --nosuffix -o lv_name,vg_name,lv_attr,lv_size,lv_uuid,origin; fi; '''
                'echo "DISK_BY_ID  LINK" 2>&1; '
                'find /dev/disk/by-id -type l ! -name "*-part*" -printf "%P %l\\n" 2>&1'
                )
@@ -137,7 +139,9 @@ class lvm(CommandPlugin):
             '\s*(?P<lv_attr>\S+)'
             '\s*(?P<lv_size>\d+)'
             '\s*(?P<lv_uuid>\S+)'
-            '\s*(?P<origin>\S*)')
+            '\s?(?P<origin>\S*)'
+            '\s?(?P<lv_metadata_size>\d*)'
+            '\s?(?P<pool_lv>\S*)')
         by_id_re = re.compile(
             '(?P<disk_id>\S+)'            # the id label
             '\s*\.\./\.\./'               # the ../../ prefix to the link
@@ -222,7 +226,7 @@ class lvm(CommandPlugin):
             if hasattr(hd_om, 'disk_ids'):
                 for id in hd_om.disk_ids:
                     if id.startswith('wwn-0x') and len(id) == 38:
-                        # add 30 bytes of likely uuid to disk_ids 
+                        # add 30 bytes of likely uuid to disk_ids
                         # to simplify uuid search on CiscoUCS side
                         # because Windows hard disk would chop off
                         # the first 2 bytes
@@ -258,6 +262,7 @@ class lvm(CommandPlugin):
 
         for vg_om in vg_maps:
             lv_vg_oms = []
+            tp_vg_oms = []
             compname = 'volumeGroups/' + vg_om.id
             for lv_om in lv_maps:
                 if lv_om.vgname == vg_om.title:
@@ -275,12 +280,20 @@ class lvm(CommandPlugin):
                         # device block not found
                         log.debug('device block {} not found for logical volume {} in volume group {}'
                                   .format(lv_om.vgname+'-'+lv_om.title, lv_om.title, lv_om.vgname))
-                    lv_vg_oms.append(lv_om)
+                    if  lv_om.modname == 'ZenPacks.zenoss.LinuxMonitor.ThinPool':
+                        tp_vg_oms.append(lv_om)
+                    else:
+                        lv_vg_oms.append(lv_om)
             maps.append(RelationshipMap(
                 relname="logicalVolumes",
                 compname=compname,
                 modname="ZenPacks.zenoss.LinuxMonitor.LogicalVolume",
                 objmaps=lv_vg_oms))
+            maps.append(RelationshipMap(
+                relname="thinPools",
+                compname=compname,
+                modname="ZenPacks.zenoss.LinuxMonitor.ThinPool",
+                objmaps=tp_vg_oms))
 
             for lv_om in lv_maps:
                 if lv_om.vgname == vg_om.title:
@@ -354,7 +367,16 @@ class lvm(CommandPlugin):
             lv_om.origin = columns['origin']
             lv_om.relname = 'snapshotVolumes'
             lv_om.modname = 'ZenPacks.zenoss.LinuxMonitor.SnapshotVolume'
+        elif columns['lv_metadata_size']:
+            lv_om.id = 'tp-{}'.format(self.prepId(columns['vg_name'])+'_'+self.prepId(columns['lv_name']))
+            lv_om.metadatasize = columns['lv_metadata_size']
+            lv_om.relname = 'thinPools'
+            lv_om.modname = 'ZenPacks.zenoss.LinuxMonitor.ThinPool'
         else:
+            if columns['pool_lv']:
+                lv_om.set_thinPool = 'tp-{}'.format(self.prepId(columns['vg_name'])+'_'+self.prepId(columns['pool_lv']))
+            else:
+                lv_om.set_thinPool = ''
             lv_om.relname = 'logicalVolumes'
             lv_om.modname = 'ZenPacks.zenoss.LinuxMonitor.LogicalVolume'
         return lv_om
