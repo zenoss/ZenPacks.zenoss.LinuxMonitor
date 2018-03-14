@@ -61,6 +61,29 @@ Condition: start condition failed at Tue 2017-09-05 14:52:44 CDT; 6 months 0 day
            \xe2\x94\x94\xe2\x94\x80703 /usr/sbin/alsactl -s -n 19 -c -E ALSA_CONFIG_PATH=/etc/alsa/alsactl.conf --initfile=/lib/alsa/init/00main rdaemon
 Unit apparmor.service could not be found."""
 
+UPSTART_OUTPUT = """UPSTART
+    rc stop/waiting
+    tty (/dev/tty3) start/running, process 1474
+    tty (/dev/tty2) start/running, process 1472
+    tty (/dev/tty1) start/running, process 1470
+    tty (/dev/tty6) start/running, process 1480
+    tty (/dev/tty5) start/running, process 1478
+    tty (/dev/tty4) start/running, process 1476
+    plymouth-shutdown stop/waiting
+    control-alt-delete stop/waiting
+    readahead-collector stop/waiting
+    kexec-disable stop/waiting
+    quit-plymouth stop/waiting
+    rcS stop/waiting
+    prefdm stop/waiting
+    init-system-dbus stop/waiting
+    readahead stop/waiting
+    splash-manager stop/waiting
+    start-ttys stop/waiting
+    readahead-disable-services stop/waiting
+    rcS-sulogin stop/waiting
+    serial stop/waiting"""
+
 SYSTEMV_OUTPUT = """SYSTEMV
     htcacheclean is stopped
     httpd is stopped
@@ -105,10 +128,12 @@ class ServiceModelerTests(unittest.TestCase):
         self.device.zLinuxServicesNotModeled = []
 
     def test_zLinuxServicesModeled(self):
-        # Test with default/blank value
+        # Test with default/blank value for systemd, upstart and systemv
         self.device.zLinuxServicesModeled = []
         rm = self.plugin.process(self.device, SYSTEMD_OUTPUT, LOG)
         self.assertEqual(len(rm[0].maps), 7)
+        rm = self.plugin.process(self.device, UPSTART_OUTPUT, LOG)
+        self.assertEqual(len(rm[0].maps), 21)
         rm = self.plugin.process(self.device, SYSTEMV_OUTPUT, LOG)
         self.assertEqual(len(rm[0].maps), 21)
 
@@ -116,12 +141,25 @@ class ServiceModelerTests(unittest.TestCase):
         self.device.zLinuxServicesModeled = ['^abrt.*']
         rm = self.plugin.process(self.device, SYSTEMD_OUTPUT, LOG)
         self.assertEqual(len(rm[0].maps), 5)
+        rm = self.plugin.process(self.device, UPSTART_OUTPUT, LOG)
+        self.assertEqual(len(rm[0].maps), 0)
+        rm = self.plugin.process(self.device, SYSTEMV_OUTPUT, LOG)
+        self.assertEqual(len(rm[0].maps), 0)
+
+        # Test with UPSTART services with regex
+        self.device.zLinuxServicesModeled = ['^tty.*']
+        rm = self.plugin.process(self.device, SYSTEMD_OUTPUT, LOG)
+        self.assertEqual(len(rm[0].maps), 0)
+        rm = self.plugin.process(self.device, UPSTART_OUTPUT, LOG)
+        self.assertEqual(len(rm[0].maps), 6)
         rm = self.plugin.process(self.device, SYSTEMV_OUTPUT, LOG)
         self.assertEqual(len(rm[0].maps), 0)
 
         # Test with SYSTEMD services with regex
         self.device.zLinuxServicesModeled = ['^rpc.*']
         rm = self.plugin.process(self.device, SYSTEMD_OUTPUT, LOG)
+        self.assertEqual(len(rm[0].maps), 0)
+        rm = self.plugin.process(self.device, UPSTART_OUTPUT, LOG)
         self.assertEqual(len(rm[0].maps), 0)
         rm = self.plugin.process(self.device, SYSTEMV_OUTPUT, LOG)
         self.assertEqual(len(rm[0].maps), 4)
@@ -131,6 +169,8 @@ class ServiceModelerTests(unittest.TestCase):
         self.device.zLinuxServicesNotModeled = []
         rm = self.plugin.process(self.device, SYSTEMD_OUTPUT, LOG)
         self.assertEqual(len(rm[0].maps), 7)
+        rm = self.plugin.process(self.device, UPSTART_OUTPUT, LOG)
+        self.assertEqual(len(rm[0].maps), 21)
         rm = self.plugin.process(self.device, SYSTEMV_OUTPUT, LOG)
         self.assertEqual(len(rm[0].maps), 21)
 
@@ -138,6 +178,17 @@ class ServiceModelerTests(unittest.TestCase):
         self.device.zLinuxServicesNotModeled = ['^abrt.*']
         rm = self.plugin.process(self.device, SYSTEMD_OUTPUT, LOG)
         self.assertEqual(len(rm[0].maps), 2)
+        rm = self.plugin.process(self.device, UPSTART_OUTPUT, LOG)
+        self.assertEqual(len(rm[0].maps), 21)
+        rm = self.plugin.process(self.device, SYSTEMV_OUTPUT, LOG)
+        self.assertEqual(len(rm[0].maps), 21)
+
+        # Test with UPSTART services with regex
+        self.device.zLinuxServicesNotModeled = ['^tty.*']
+        rm = self.plugin.process(self.device, SYSTEMD_OUTPUT, LOG)
+        self.assertEqual(len(rm[0].maps), 7)
+        rm = self.plugin.process(self.device, UPSTART_OUTPUT, LOG)
+        self.assertEqual(len(rm[0].maps), 15)
         rm = self.plugin.process(self.device, SYSTEMV_OUTPUT, LOG)
         self.assertEqual(len(rm[0].maps), 21)
 
@@ -145,5 +196,7 @@ class ServiceModelerTests(unittest.TestCase):
         self.device.zLinuxServicesNotModeled = ['^rpc.*']
         rm = self.plugin.process(self.device, SYSTEMD_OUTPUT, LOG)
         self.assertEqual(len(rm[0].maps), 7)
+        rm = self.plugin.process(self.device, UPSTART_OUTPUT, LOG)
+        self.assertEqual(len(rm[0].maps), 21)
         rm = self.plugin.process(self.device, SYSTEMV_OUTPUT, LOG)
         self.assertEqual(len(rm[0].maps), 17)

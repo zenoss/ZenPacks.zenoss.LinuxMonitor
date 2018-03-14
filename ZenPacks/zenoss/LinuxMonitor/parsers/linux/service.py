@@ -13,7 +13,9 @@ from ZenPacks.zenoss.LinuxMonitor.modeler.plugins.zenoss.cmd.linux.os_service \
 
 log = logging.getLogger("zen.command.parsers.service")
 
-ON_STATUS = ['active', 'running']
+ON_STATUS = ['active',                  # Systemd status up
+             'start/running',           # Upstart status up
+             'running']                 # SystemV status up
 
 
 class service(CommandParser):
@@ -77,7 +79,7 @@ class service(CommandParser):
                 'eventClassKey': "{}|{}".format("linux-services",
                                                 cmd.component),
                 'summary': 'OS Service is {}'.format(event_status),
-                'message': '{} is {}'.format(title, active_status)
+                'message': active_status
                 })
             break
 

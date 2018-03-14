@@ -283,8 +283,8 @@ modeler plugin. The following systems are supported:
 - upstart (RHEL 6)
 - systemV (RHEL 5 and earlier)
 
-Version 2.3.0 supports monitoring of the status of **systemd** and **systemV**
-system services. The zProperties *zLinuxServicesModeled* and
+Version 2.3.0 supports monitoring of the status of **systemd**, **upstart**
+and **systemV** system services. The zProperties *zLinuxServicesModeled* and
 *zLinuxServicesNotModeled* restrict the services that are modeled and thereby
 monitored.
 
@@ -664,8 +664,8 @@ Changes
 - Fix netmask as hex parsing and KeyError when meminfo is absent. (ZPS-2462)
 - Added ZenPackLib requirement. (ZPS-3000)
 - Fix custom banner errors and disabled zenoss.cmd.linux.alt\_kernel\_name modeler plugin by default. (ZPS-2998)
+- Support OS Service Monitoring for RHEL-5 (SystemV), RHEL-6 (Upstart) and  RHEL-7 (Systemd)(ZPS-2722)
 - Add dpkg support to zenoss.cmd.linux.rpm modeler plugin. (ZPS-1474)
-- Support OS Service Monitoring for RHEL-5 (SystemV) and  RHEL-7 (SystemD)(ZPS-2181, ZPS-1508)
 
 2.2.7
 
