@@ -573,18 +573,18 @@ ThinPool (in /Devices/Server/SSH/Linux)
 
 -  Data Points
 
-  -  state
-  -  health
-  -  percentDataUsed
-  -  percentMetaDataUsed
+   -  state
+   -  health
+   -  percentDataUsed
+   -  percentMetaDataUsed
 
 -  Thresholds
 
-  -  90 percent used
+   -  90 percent used
 
 -  Graphs
 
-  -  Pool Utilization
+   -  Pool Utilization
 
 OSProcess (in /Devices/Server/SSH/Linux)
 
