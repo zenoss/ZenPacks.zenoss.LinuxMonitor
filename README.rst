@@ -103,7 +103,7 @@ Physical Volumes
 
 Volume Groups
     Attributes: Name, Size, Free, % Util, Snapshot Volumes, Logical
-    Volumes, Physical Volumes
+    Volumes, Physical Volumes, Thin Pools
 
 Logical Volumes
     Attributes: Name, Volume Group, Size, Block Device, File System,
@@ -569,22 +569,22 @@ LogicalVolume (in /Devices/Server/SSH/Linux)
 
    -  *None*
 
-   LogicalVolume (in /Devices/Server/SSH/Linux)
+ ThinPool (in /Devices/Server/SSH/Linux)
 
-   -  Data Points
+ -  Data Points
 
-      -  state
-      -  health
-      -  percentDataUsed
-      -  percentMetaDataUsed
+    -  state
+    -  health
+    -  percentDataUsed
+    -  percentMetaDataUsed
 
-   -  Thresholds
+ -  Thresholds
 
-      -  90 percent used
+    -  90 percent used
 
-   -  Graphs
+ -  Graphs
 
-      -  Pool Utilization
+    -  Pool Utilization
 
 OSProcess (in /Devices/Server/SSH/Linux)
 
@@ -692,6 +692,7 @@ Changes
 - Fix custom banner errors and disabled zenoss.cmd.linux.alt\_kernel\_name modeler plugin by default. (ZPS-2998)
 - Support OS Service Monitoring for RHEL-5 (SystemV) and  RHEL-7 (SystemD)(ZPS-2181, ZPS-1508)
 - Add thin pool monitoring. (ZPS-2494)
+
 2.2.7
 
 - Allow for restricted dmesg access in Debian 9 and SUSE 12. (ZPS-1933, ZPS-550)
