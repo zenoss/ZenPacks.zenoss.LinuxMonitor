@@ -151,9 +151,9 @@ RE_SYSTEMD_SERVICE = re.compile(
                         '(?P<active_status>\w+\s\([\w:\s-]+\)(\ssince.+ago)?)' # active status
                         '(.+Main\sPID:\s(?P<main_pid>\d+))?'             # optional sevicepid
                         '.*')
-RE_UPSTART_SERVICE = re.compile('(?P<title>[A-Za-z0-9\-\.]+)\s'
-                                '(?P<active_status>[\w/]+)'
-                                '(.\sprocess\s(?P<main_pid>\d+))?')
+RE_UPSTART_SERVICE = re.compile('(?P<title>[\w\-]+(\s\([\w\/]+\))?)\s'   # service title
+                                '(?P<active_status>[\w\/]+)'             # active status
+                                '(.\sprocess\s(?P<main_pid>\d+))?')      # active status if exists
 RE_SYSTEMV_SERVICE = re.compile('(?P<title>[A-Za-z0-9_\-\.\s:]+)'
                                 '((\s|:)\(pid\s+(?P<main_pid>\d+)\))?'
                                 '\sis\s(?P<active_status>[\w\s]+)')

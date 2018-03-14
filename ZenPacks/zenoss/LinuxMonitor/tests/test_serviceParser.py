@@ -62,6 +62,29 @@ Condition: start condition failed at Tue 2017-09-05 14:52:44 CDT; 6 months 0 day
            \xe2\x94\x94\xe2\x94\x80703 /usr/sbin/alsactl -s -n 19 -c -E ALSA_CONFIG_PATH=/etc/alsa/alsactl.conf --initfile=/lib/alsa/init/00main rdaemon
 Unit apparmor.service could not be found."""
 
+UPSTART_OUTPUT = """UPSTART
+    rc stop/waiting
+    tty (/dev/tty3) start/running, process 1474
+    tty (/dev/tty2) start/running, process 1472
+    tty (/dev/tty1) start/running, process 1470
+    tty (/dev/tty6) start/running, process 1480
+    tty (/dev/tty5) start/running, process 1478
+    tty (/dev/tty4) start/running, process 1476
+    plymouth-shutdown stop/waiting
+    control-alt-delete stop/waiting
+    readahead-collector stop/waiting
+    kexec-disable stop/waiting
+    quit-plymouth stop/waiting
+    rcS stop/waiting
+    prefdm stop/waiting
+    init-system-dbus stop/waiting
+    readahead stop/waiting
+    splash-manager stop/waiting
+    start-ttys stop/waiting
+    readahead-disable-services stop/waiting
+    rcS-sulogin stop/waiting
+    serial stop/waiting"""
+
 SYSTEMV_OUTPUT = """SYSTEMV
     htcacheclean is stopped
     httpd is stopped
@@ -148,7 +171,24 @@ class ServiceParserTests(BaseTestCase):
         service().processResults(self.cmd, result)
         self.assertEqual(result.events[0]['summary'], 'OS Service is up')
 
-    def test_SystemDEvents(self):
+    def test_UpstartEvents(self):
+        self.cmd.result.output = UPSTART_OUTPUT
+
+        # Test Event is Down
+        result = ParsedResults()
+        self.cmd.component = 'plymouth-shutdown'
+        self.cmd.points[0]['data']['id'] = 'plymouth-shutdown'
+        service().processResults(self.cmd, result)
+        self.assertEqual(result.events[0]['summary'], 'OS Service is down')
+
+        # Test Event is Up
+        result = ParsedResults()
+        self.cmd.component = 'tty (_dev_tty6)'
+        self.cmd.points[0]['data']['id'] = 'tty (/dev/tty6)'
+        service().processResults(self.cmd, result)
+        self.assertEqual(result.events[0]['summary'], 'OS Service is up')
+
+    def test_SystemVEvents(self):
         self.cmd.result.output = SYSTEMV_OUTPUT
 
         # Test Event is Down
