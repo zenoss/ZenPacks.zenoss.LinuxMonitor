@@ -664,6 +664,7 @@ Changes
 - Fix netmask as hex parsing and KeyError when meminfo is absent. (ZPS-2462)
 - Added ZenPackLib requirement. (ZPS-3000)
 - Fix custom banner errors and disabled zenoss.cmd.linux.alt\_kernel\_name modeler plugin by default. (ZPS-2998)
+- Add dpkg support to zenoss.cmd.linux.rpm modeler plugin. (ZPS-1474)
 - Support OS Service Monitoring for RHEL-5 (SystemV) and  RHEL-7 (SystemD)(ZPS-2181, ZPS-1508)
 
 2.2.7
