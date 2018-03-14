@@ -665,6 +665,7 @@ Changes
 - Added ZenPackLib requirement. (ZPS-3000)
 - Fix custom banner errors and disabled zenoss.cmd.linux.alt\_kernel\_name modeler plugin by default. (ZPS-2998)
 - Support OS Service Monitoring for RHEL-5 (SystemV), RHEL-6 (Upstart) and  RHEL-7 (Systemd)(ZPS-2722)
+- Add dpkg support to zenoss.cmd.linux.rpm modeler plugin. (ZPS-1474)
 
 2.2.7
 
