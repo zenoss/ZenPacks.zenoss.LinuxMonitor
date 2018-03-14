@@ -569,22 +569,22 @@ LogicalVolume (in /Devices/Server/SSH/Linux)
 
    -  *None*
 
- ThinPool (in /Devices/Server/SSH/Linux)
+ThinPool (in /Devices/Server/SSH/Linux)
 
- -  Data Points
+-  Data Points
 
-    -  state
-    -  health
-    -  percentDataUsed
-    -  percentMetaDataUsed
+  -  state
+  -  health
+  -  percentDataUsed
+  -  percentMetaDataUsed
 
- -  Thresholds
+-  Thresholds
 
-    -  90 percent used
+  -  90 percent used
 
- -  Graphs
+-  Graphs
 
-    -  Pool Utilization
+  -  Pool Utilization
 
 OSProcess (in /Devices/Server/SSH/Linux)
 
