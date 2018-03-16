@@ -353,7 +353,7 @@ Modeler Plugins
    modeler plugins are disabled by default on new installs. If upgrading from
    a version previous to 2.3.0 they will still be enabled by default. It is
    recommended you disable the modeler plugin zenoss.cmd.linux.alt\_kernel\_name
-   if you have a customized /etc/issue file as customization could affect parsing results.
+   if you have a customized /etc/issue file as customization could affect modeling results.
 
 Monitoring Templates
 
