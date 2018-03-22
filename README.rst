@@ -551,7 +551,6 @@ PhysicalVolume (in /Devices/Server/SSH/Linux)
 .. Note::
    Physical Volumes will also show graphs from its related Hard Disk.
 
-
 VolumeGroup (in /Devices/Server/SSH/Linux)
 
 -  Data Points
@@ -570,7 +569,6 @@ VolumeGroup (in /Devices/Server/SSH/Linux)
 
 .. Note::
    Volume Groups will also show graphs from its related Physical Volumes.
-
 
 LogicalVolume (in /Devices/Server/SSH/Linux)
 
