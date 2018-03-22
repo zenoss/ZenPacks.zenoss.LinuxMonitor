@@ -480,7 +480,7 @@ FileSystem (in /Devices/Server/SSH/Linux)
    -  Inode Usage
 
 .. Note::
-   Filesystem will also show graphs from its related Logical Volume
+   Filesystems will also show graphs from its related Logical Volume
    or Hard Disk.
 
 ethernetCsmacd (in /Devices/Server/SSH/Linux)
