@@ -14,7 +14,8 @@ from zope.interface import implements
 
 from Products.ZenUtils.Utils import prepId
 from Products.Zuul.catalog.interfaces import IIndexableWrapper
-from Products.Zuul.catalog.global_catalog import ComponentWrapper
+from ZenPacks.zenoss.ZenPackLib.lib.wrapper.ComponentIndexableWrapper import \
+    ComponentIndexableWrapper
 
 from ZenPacks.zenoss.LinuxMonitor.util import keyword_search
 
@@ -101,7 +102,7 @@ class HardDisk(schema.HardDisk):
             yield obj
 
 
-class HardDiskIndexableWrapper(ComponentWrapper):
+class HardDiskIndexableWrapper(ComponentIndexableWrapper):
     implements(IIndexableWrapper)
     adapts(HardDisk)
 
