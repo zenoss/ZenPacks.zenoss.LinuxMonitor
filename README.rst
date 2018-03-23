@@ -479,6 +479,10 @@ FileSystem (in /Devices/Server/SSH/Linux)
    -  Inode Utilization
    -  Inode Usage
 
+.. Note::
+   Filesystems will also show graphs from its related Logical Volume
+   or Hard Disk.
+
 ethernetCsmacd (in /Devices/Server/SSH/Linux)
 
 -  Data Points
@@ -505,7 +509,7 @@ ethernetCsmacd (in /Devices/Server/SSH/Linux)
    -  Packet Throughput
    -  Error Rate
 
-SnaphotVolume (in /Devices/Server/SSH/Linux)
+SnapshotVolume (in /Devices/Server/SSH/Linux)
 
 -  Data Points
 
@@ -519,6 +523,10 @@ SnaphotVolume (in /Devices/Server/SSH/Linux)
 -  Graphs
 
    -  *None*
+
+.. Note::
+   Snapshot Volumes will also show graphs from its related Volume Group
+   and Hard Disk.
 
 PhysicalVolume (in /Devices/Server/SSH/Linux)
 
@@ -540,6 +548,9 @@ PhysicalVolume (in /Devices/Server/SSH/Linux)
 
    -  Utilization
 
+.. Note::
+   Physical Volumes will also show graphs from its related Hard Disk.
+
 VolumeGroup (in /Devices/Server/SSH/Linux)
 
 -  Data Points
@@ -556,6 +567,9 @@ VolumeGroup (in /Devices/Server/SSH/Linux)
 
    -  Utilization
 
+.. Note::
+   Volume Groups will also show graphs from its related Physical Volumes.
+
 LogicalVolume (in /Devices/Server/SSH/Linux)
 
 -  Data Points
@@ -570,6 +584,10 @@ LogicalVolume (in /Devices/Server/SSH/Linux)
 -  Graphs
 
    -  *None*
+
+.. Note::
+   Logical Volumes will also show graphs from its related Volume Group
+   and Hard Disk.
 
 ThinPool (in /Devices/Server/SSH/Linux)
 
@@ -587,6 +605,10 @@ ThinPool (in /Devices/Server/SSH/Linux)
 -  Graphs
 
    -  Pool Utilization
+
+.. Note::
+   Thin Pools will also show graphs from its related Volume Group
+   and Hard Disk.
 
 OSProcess (in /Devices/Server/SSH/Linux)
 
