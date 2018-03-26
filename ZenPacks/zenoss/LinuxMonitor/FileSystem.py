@@ -1,6 +1,6 @@
 ##############################################################################
 #
-# Copyright (C) Zenoss, Inc. 2017, all rights reserved.
+# Copyright (C) Zenoss, Inc. 2017, 2018, all rights reserved.
 #
 # This content is made available according to terms specified in
 # License.zenoss under the directory where your Zenoss product is installed.
@@ -19,14 +19,8 @@ from zExceptions import NotFound
 from Products.ZenUtils.FunctionCache import FunctionCache
 from Products.Zuul.catalog.interfaces import IIndexableWrapper
 
-try:
-    from Products.Zuul.catalog.global_catalog \
-        import FileSystemWrapper as BaseFileSystemWrapper
-except ImportError:
-    # Zenoss 4.1 doesn't have FileSystemWrapper.
-    from Products.Zuul.catalog.global_catalog import ComponentWrapper
-
-    BaseFileSystemWrapper = ComponentWrapper
+from ZenPacks.zenoss.ZenPackLib.lib.wrapper.ComponentIndexableWrapper import \
+        ComponentIndexableWrapper
 
 from ZenPacks.zenoss.LinuxMonitor.util import override_graph_labels, keyword_search
 
@@ -226,7 +220,7 @@ def getStorageServerPaths(device, search_root):
     return filesystem_servers
 
 
-class FileSystemWrapper(BaseFileSystemWrapper):
+class FileSystemWrapper(ComponentIndexableWrapper):
     '''
     Indexing adapter for FileSystem.
     '''
