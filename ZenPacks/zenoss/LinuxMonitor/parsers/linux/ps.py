@@ -188,7 +188,7 @@ class ps(CommandParser):
                         device=cmd.deviceConfig.device,
                         summary=summary,
                         message=message,
-                        component=processSet,
+                        component=cmd.component,
                         eventKey=cmd.generatedId,
                         severity=failSeverity)
                     log.warning("(%s) %s", cmd.deviceConfig.device, message)
@@ -212,17 +212,16 @@ class ps(CommandParser):
 
         # Globals.MostRecentMonitoredTimePids is a global that simply keeps the most recent data ... used to retrieve the "before" at monitoring time
         if Globals.MostRecentMonitoredTimePids.get(device, None):
-            beforePidsProcesses = Globals.MostRecentMonitoredTimePids[device].get(processSet, None)
+            beforePidsProcesses = Globals.MostRecentMonitoredTimePids[device].get(processSet, {})
         else:
             beforePidsProcesses = Globals.MostRecentMonitoredTimePids[device] = {}
 
         # the first time this runs ... there is no "before"
         # this occurs when beforePidsProcesses is an empty dict
         # we need to save off the current processes and continue til the next monitoring time when "before" and "after" will be present
-        if beforePidsProcesses is None:
+        if any(beforePidsProcesses):
             log.debug("No existing 'before' process information for process set: %s ... skipping", processSet)
             Globals.MostRecentMonitoredTimePids[device][processSet] = afterPidsProcesses
-            return
 
         beforePids = beforePidsProcesses.keys()
         beforeProcessSetPIDs = {}
@@ -245,7 +244,7 @@ class ps(CommandParser):
                 device=cmd.deviceConfig.device,
                 summary=summary,
                 message=message,
-                component=processSet,
+                component=cmd.component,
                 eventKey=cmd.generatedId,
                 severity=cmd.severity)
             log.info("(%s) %s", cmd.deviceConfig.device, message)
@@ -260,7 +259,7 @@ class ps(CommandParser):
                 device=cmd.deviceConfig.device,
                 summary=summary,
                 message=message,
-                component=processSet,
+                component=cmd.component,
                 eventKey=cmd.generatedId,
                 severity=Event.Clear)
             log.debug("(%s) %s", cmd.deviceConfig.device, message)

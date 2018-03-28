@@ -717,6 +717,7 @@ Changes
 - Support OS Service Monitoring for RHEL-5 (SystemV), RHEL-6 (Upstart) and  RHEL-7 (Systemd)(ZPS-2722)
 - Add dpkg support to zenoss.cmd.linux.rpm modeler plugin. (ZPS-1474)
 - Added support for Thin Pool Monitoring. (ZPS-2494)
+- Fixed alert spam for services (ZPS-1625)
 
   - New Component: The following Component was added:
 
