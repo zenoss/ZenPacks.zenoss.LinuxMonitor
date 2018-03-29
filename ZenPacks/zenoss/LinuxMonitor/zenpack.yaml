@@ -393,14 +393,14 @@ classes:
 
             storageDevice:
                 label: Storage Dev
-                details_display: true
+                details_display: false
 
             getStorageDevice:
                 label: Storage Device
                 api_only: true
                 api_backendtype: method
                 grid_display: true
-                details_display: false
+                details_display: true
                 renderer: Zenoss.render.zenpacklib_ZenPacks_zenoss_LinuxMonitor_fileSystemStorageDevice
                 order: 4.1
 
