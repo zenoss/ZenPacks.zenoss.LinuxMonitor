@@ -61,6 +61,7 @@ class TestBasicPSParsing(BaseTestCase):
                 "lastmodeltime": "lastmodeltime"
             }),
             "command":        "command",
+            "component":      "url_" + md5("Job").hexdigest().strip(),
             "includeRegex":   ".*Job.*",
             "excludeRegex":   "nothing",
             "replaceRegex":   ".*",
@@ -136,7 +137,6 @@ class TestBasicPSParsing(BaseTestCase):
         self.assertEqual(len(results.events), 1)
 
         event = results.events[0]
-        self.assertEqual(event.get("component"), "Job")
         self.assertEqual(event.get("eventGroup"), "Process")
         self.assertEqual(event.get("eventClass"), "/Status/OSProcess")
         self.assertEqual(event.get("severity"), 0)
@@ -184,7 +184,6 @@ class TestBasicPSParsing(BaseTestCase):
         ps().processResults(self.cmd, results)
         self.assertEqual(len(results.events), 3)
         for event in results.events:
-            self.assertEqual(event.get("component"), "Job")
             self.assertEqual(event.get("eventGroup"), "Process")
             self.assertEqual(event.get("eventClass"), "/Status/OSProcess")
             self.assertEqual(event.get("severity"), 0)
@@ -260,6 +259,7 @@ class TestMultipleCollections(BaseTestCase):
                 "lastmodeltime": "lastmodeltime"
             }),
             "command":        "command",
+            "component":      "url_" + md5("Job").hexdigest().strip(),
             "includeRegex":   ".*Job.*",
             "excludeRegex":   "nothing",
             "replaceRegex":   ".*",
@@ -391,7 +391,6 @@ class TestMultipleCollections(BaseTestCase):
         self.assertEqual(len(results.events), 1)
 
         event = results.events[0]
-        self.assertEqual(event.get("component"), "Job")
         self.assertEqual(event.get("eventGroup"), "Process")
         self.assertEqual(event.get("eventClass"), "/Status/OSProcess")
         self.assertEqual(event.get("severity"), 3)
@@ -422,7 +421,6 @@ class TestMultipleCollections(BaseTestCase):
 
         self.assertEqual(len(results.events), 2)
         self.assertTrue(all(e["severity"] == 0 for e in results.events))
-        self.assertTrue(all(e["component"] == "Job" for e in results.events))
         self.assertTrue(all(
             e["eventGroup"] == "Process" for e in results.events
         ))
@@ -442,6 +440,7 @@ class TestEdgeCases(BaseTestCase):
                 "lastmodeltime": "lastmodeltime"
             }),
             "command":        "command",
+            "component":      "url_" + md5("sendmail").hexdigest().strip(),
             "includeRegex":   ".*oracle.*",
             "excludeRegex":   "nothing",
             "replaceRegex":   ".*",
@@ -500,6 +499,7 @@ class TestDefunctProcesses(BaseTestCase):
                 "lastmodeltime": "lastmodeltime"
             }),
             "command":        "command",
+            "component":      "url_" + md5("defunct").hexdigest().strip(),
             "includeRegex":   ".*defunct.*",
             "excludeRegex":   "nothing",
             "replaceRegex":   ".*",
@@ -540,7 +540,7 @@ class TestDefunctProcesses(BaseTestCase):
         ps().processResults(self.cmd, results)
 
         self.assertEqual(len(results.values), 1)
-        self.assertEqual(len(results.events), 0)
+        self.assertEqual(len(results.events), 2)
 
         # Reset 'result' for second collection
         self.cmd.result = Object(**{"exitCode": 0})
@@ -576,6 +576,7 @@ class TestCmdConfigs(BaseTestCase):
                 "lastmodeltime": "a second ago"
             }),
             "command":        "command",
+            "component":      "url_" + md5("myapp").hexdigest().strip(),
             "includeRegex":   "",
             "excludeRegex":   "",
             "replaceRegex":   "",
