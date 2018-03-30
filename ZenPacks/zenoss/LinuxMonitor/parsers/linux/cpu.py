@@ -38,6 +38,7 @@ class cpu(CommandParser):
 
             # New ids for Device CPU
             userCpuPerCpu = None
+            niceCpuPerCpu = None
             systemCpuPerCpu = None
             idleCpuPerCpu = None
             usedCpuPerCpu = None
@@ -69,6 +70,7 @@ class cpu(CommandParser):
                 if cpuCount:
                   perCpuValues = cmd.result.output.splitlines()[0].split()
                   userCpuPerCpu = float(perCpuValues[1]) / float(cpuCount)
+                  niceCpuPerCpu = float(perCpuValues[2]) / float(cpuCount)
                   systemCpuPerCpu = float(perCpuValues[3]) / float(cpuCount)
                   idleCpuPerCpu = float(perCpuValues[4]) / float(cpuCount)
                   usedCpuPerCpu = userCpuPerCpu + systemCpuPerCpu
@@ -78,6 +80,7 @@ class cpu(CommandParser):
 
             valueMap = dict(zip(ids, values))
             valueMap['ssCpuUserPerCpu']=userCpuPerCpu
+            valueMap['ssCpuNicePerCpu']=niceCpuPerCpu
             valueMap['ssCpuSystemPerCpu']=systemCpuPerCpu
             valueMap['ssCpuIdlePerCpu']=idleCpuPerCpu
             valueMap['ssCpuUsedPerCpu']=usedCpuPerCpu

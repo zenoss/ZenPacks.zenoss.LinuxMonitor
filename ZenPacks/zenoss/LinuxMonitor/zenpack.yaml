@@ -584,6 +584,12 @@ device_classes:
                                 aliases:
                                     cpu_user__pct: ""
 
+                            ssCpuNicePerCpu:
+                                rrdtype: DERIVE
+                                rrdmin: 0
+                                aliases:
+                                    cpu_nice__pct: ""
+
                             ssCpuSystemPerCpu:
                                 rrdtype: DERIVE
                                 rrdmin: 0
@@ -723,6 +729,10 @@ device_classes:
                                 dpName: cpu_ssCpuUserPerCpu
                                 format: "%7.2lf%%"
 
+                            Nice:
+                                dpName: cpu_ssCpuNicePerCpu
+                                format: "%7.2lf%%"
+
                             System:
                                 dpName: cpu_ssCpuSystemPerCpu
                                 format: "%7.2lf%%"
@@ -837,6 +847,10 @@ device_classes:
                                 rrdtype: DERIVE
                                 rrdmin: 0
 
+                            ssCpuNice:
+                                rrdtype: DERIVE
+                                rrdmin: 0
+
                             ssCpuSystem:
                                 rrdtype: DERIVE
                                 rrdmin: 0
@@ -858,6 +872,10 @@ device_classes:
 
                             User:
                                 dpName: cpu_ssCpuUser
+                                format: "%7.2lf%%"
+
+                            Nice:
+                                dpName: cpu_ssCpuNice
                                 format: "%7.2lf%%"
 
                             System:

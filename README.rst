@@ -719,6 +719,7 @@ Changes
 - Added support for Thin Pool Monitoring. (ZPS-2494)
 - Fixed alert spam for services (ZPS-1625)
 - Added monitoring for individual processor components (ZPS-2444)
+- Added Nice CPU usage for Processors (ZPS-3315)
 
   - New Component: The following Component was added:
 
