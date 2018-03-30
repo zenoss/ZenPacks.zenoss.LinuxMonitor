@@ -718,6 +718,7 @@ Changes
 - Add dpkg support to zenoss.cmd.linux.rpm modeler plugin. (ZPS-1474)
 - Added support for Thin Pool Monitoring. (ZPS-2494)
 - Fixed alert spam for services (ZPS-1625)
+- Added monitoring for individual processor components (ZPS-2444)
 
   - New Component: The following Component was added:
 

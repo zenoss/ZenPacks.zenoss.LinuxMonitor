@@ -810,6 +810,64 @@ device_classes:
                                 format: "%7.2lf%s"
                                 color: 98df8a
 
+            CPU:
+                description: "Linux device monitoring via SSH."
+                targetPythonClass: Products.ZenModel.CPU
+
+                datasources:
+                    cpu:
+                        type: COMMAND
+                        usessh: true
+                        commandTemplate: "/usr/bin/env cat /proc/stat"
+                        parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.cpu
+                        component: "${here/id}"
+                        eventClass: /Ignore
+                        severity: Clear
+
+                        datapoints:
+                            ssCpuUsedPerCpu:
+                                rrdtype: DERIVE
+                                rrdmin: 0
+
+                            ssCpuIdle:
+                                rrdtype: DERIVE
+                                rrdmin: 0
+
+                            ssCpuUser:
+                                rrdtype: DERIVE
+                                rrdmin: 0
+
+                            ssCpuSystem:
+                                rrdtype: DERIVE
+                                rrdmin: 0
+
+                            ssCpuWait:
+                                rrdtype: DERIVE
+                                rrdmin: 0
+
+                graphs:
+                    CPU Utilization:
+                        units: percent
+                        miny: 0
+                        maxy: 100
+
+                        graphpoints:
+                            Busy:
+                                dpName: cpu_ssCpuUsedPerCpu
+                                format: "%7.2lf%%"
+
+                            User:
+                                dpName: cpu_ssCpuUser
+                                format: "%7.2lf%%"
+
+                            System:
+                                dpName: cpu_ssCpuSystem
+                                format: "%7.2lf%%"
+
+                            Wait:
+                                dpName: cpu_ssCpuWait
+                                format: "%7.2lf%%"
+
             ethernetCsmacd:
                 description: "Ethernet (and default) network interface monitoring for Linux via SSH."
                 targetPythonClass: Products.ZenModel.IpInterface
