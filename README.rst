@@ -208,7 +208,7 @@ allow the **zenmonitor** user to run the commands.
      to your distro's current version. This is especially true for older
      versions of RHEL, CentOS, Ubuntu, and Suse Linux.
 
-   * If using a non-root user on Suse Linux you must set setting the following as root
+   * If using a non-root user on Suse Linux you must set the following as root
      due to Suse restricting dmesg.
 
      .. code:: text
