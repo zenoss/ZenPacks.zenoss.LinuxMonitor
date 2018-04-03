@@ -208,6 +208,12 @@ allow the **zenmonitor** user to run the commands.
      to your distro's current version. This is especially true for older
      versions of RHEL, CentOS, Ubuntu, and Suse Linux.
 
+   * If using a non-root user on Suse Linux you must set setting the following as root
+     due to Suse restricting dmesg.
+
+     .. code:: text
+
+        echo 0 > /proc/sys/kernel/dmesg_restrict
 
    * For Suse Linux the paths for (**pvs, vgs, lvs**) are located at
      **/sbin/pvs**, **/sbin/vgs**, and **/sbin/lvs** respectively. Please
