@@ -139,6 +139,7 @@ classes:
                 type: lines
 
             uuid:
+                label: UUID
                 grid_display: False
 
         dynamicview_views: [service_view]
@@ -224,6 +225,7 @@ classes:
 
         properties:
             origin:
+                label: Origin
                 grid_display: False
 
             attributes:
