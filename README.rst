@@ -175,10 +175,10 @@ Using a Non-Root User
 ~~~~~~~~~~~~~~~~~~~~~
 
 This ZenPack requires the ability to run the *pvs*, *vgs*, *lvs*,
-*systemctl*, *initctl* and *service* commands, remotely on your linux
+*systemctl*, *initctl*, *df* and *service* commands, remotely on your linux
 server(s) using SSH. By default, most of these commands are only
 allowed to be run by the **root** user. The output of *systemctl*,
-*initctl* and *service* commands depends on whether they are executed
+*initctl*, *df* and *service* commands depends on whether they are executed
 via **sudo**. Furthermore, this ZenPack expects these commands be in
 the user's path. Normally this is only true for the root user.
 
@@ -199,7 +199,8 @@ allow the **zenmonitor** user to run the commands.
             /bin/systemctl status *, /sbin/initctl list, /sbin/service --status-all, \
             /usr/sbin/dmidecode
         Cmnd_Alias ZENOSS_NET_CMDS = /bin/dmesg
-        zenmonitor ALL=(ALL) NOPASSWD: ZENOSS_LVM_CMDS, ZENOSS_SVC_CMDS, ZENOSS_NET_CMDS
+        Cmnd_Alias ZENOSS_DF_CMDS = /bin/df
+        zenmonitor ALL=(ALL) NOPASSWD: ZENOSS_LVM_CMDS, ZENOSS_SVC_CMDS, ZENOSS_NET_CMDS, ZENOSS_DF_CMDS
 
    - Save, ensuring all paths for these commands are correct
 
@@ -727,6 +728,7 @@ Changes
 - Added monitoring for individual processor components (ZPS-2444)
 - Added Nice CPU usage for Processors (ZPS-3315)
 - Fix OS Manufacturer not showing (ZPS-1864)
+- Add sudo to df commands. (ZPS-1594)
 
   - New Component: The following Component was added:
 

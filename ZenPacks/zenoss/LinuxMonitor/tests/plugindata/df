@@ -1,4 +1,4 @@
-export PATH=$PATH:/bin:/sbin:/usr/bin:/usr/sbin; if command -v timeout > /dev/null 2>&1; then timeout 30 /usr/bin/env df -PTk; else /usr/bin/env df -PTk; fi
+export PATH=$PATH:/bin:/sbin:/usr/bin:/usr/sbin; if command -v timeout > /dev/null 2>&1; then timeout 30 /usr/bin/env sudo df -PTk; else /usr/bin/env sudo df -PTk; fi
 /dev/mapper/centos-root xfs         49746196 4035828  45710368       9% /
 devtmpfs                devtmpfs     1931008       0   1931008       0% /dev
 tmpfs                   tmpfs        1941228       4   1941224       1% /dev/shm

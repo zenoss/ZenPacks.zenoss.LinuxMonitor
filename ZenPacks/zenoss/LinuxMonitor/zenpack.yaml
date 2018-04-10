@@ -1052,7 +1052,7 @@ device_classes:
                     disk:
                         type: COMMAND
                         usessh: true
-                        commandTemplate: "/bin/sh -c 'export PATH=$$PATH:/bin:/sbin:/usr/bin:/usr/sbin; if command -v timeout > /dev/null 2>&1; then timeout 30 /usr/bin/env df -kP; else /usr/bin/env df -kP; fi'"
+                        commandTemplate: "/bin/sh -c 'export PATH=$$PATH:/bin:/sbin:/usr/bin:/usr/sbin; if command -v timeout > /dev/null 2>&1; then timeout 30 /usr/bin/env sudo df -kP; else /usr/bin/env sudo df -kP; fi'"
                         parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.df
                         component: "${here/id}"
                         eventClass: /Ignore
@@ -1077,7 +1077,7 @@ device_classes:
                     idisk:
                         type: COMMAND
                         usessh: true
-                        commandTemplate: "/bin/sh -c 'export PATH=$$PATH:/bin:/sbin:/usr/bin:/usr/sbin; if command -v timeout > /dev/null 2>&1; then timeout 30 /usr/bin/env df -ikP; else /usr/bin/env df -ikP; fi'"
+                        commandTemplate: "/bin/sh -c 'export PATH=$$PATH:/bin:/sbin:/usr/bin:/usr/sbin; if command -v timeout > /dev/null 2>&1; then timeout 30 /usr/bin/env sudo df -ikP; else /usr/bin/env sudo df -ikP; fi'"
                         parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.dfi
                         component: "${here/id}"
                         eventClass: /Ignore
@@ -1165,7 +1165,7 @@ device_classes:
                     disk:
                         type: COMMAND
                         usessh: true
-                        commandTemplate: "/bin/sh -c 'export PATH=$$PATH:/bin:/sbin:/usr/bin:/usr/sbin; if command -v timeout > /dev/null 2>&1; then timeout 30 /usr/bin/env df -kP; else /usr/bin/env df -kP; fi'"
+                        commandTemplate: "/bin/sh -c 'export PATH=$$PATH:/bin:/sbin:/usr/bin:/usr/sbin; if command -v timeout > /dev/null 2>&1; then timeout 30 /usr/bin/env sudo df -kP; else /usr/bin/env sudo df -kP; fi'"
                         parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.df
                         component: "${here/id}"
                         eventClass: /Ignore
@@ -1190,7 +1190,7 @@ device_classes:
                     idisk:
                         type: COMMAND
                         usessh: true
-                        commandTemplate: "/bin/sh -c 'export PATH=$$PATH:/bin:/sbin:/usr/bin:/usr/sbin; if command -v timeout > /dev/null 2>&1; then timeout 30 /usr/bin/env df -ikP; else /usr/bin/env df -ikP; fi'"
+                        commandTemplate: "/bin/sh -c 'export PATH=$$PATH:/bin:/sbin:/usr/bin:/usr/sbin; if command -v timeout > /dev/null 2>&1; then timeout 30 /usr/bin/env sudo df -ikP; else /usr/bin/env sudo df -ikP; fi'"
                         parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.dfi
                         component: "${here/id}"
                         eventClass: /Ignore
