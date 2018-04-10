@@ -52,7 +52,7 @@ class TestOSReleasePlugin(BaseTestCase):
         input = re.sub('\s{2,}', '\n', input.strip())
         om = self.plugin.process(self.device, input, LOG)
         self.assertEquals(
-            om.setOSProductKey, MultiArgs("Red Hat Enterprise Linux Server 7.2 (Maipo)", "RedHat"))
+            str(om.setOSProductKey), str(MultiArgs("Red Hat Enterprise Linux Server 7.2 (Maipo)", "RedHat")))
 
     def testCentOSInput(self):
         input = """
@@ -79,7 +79,7 @@ class TestOSReleasePlugin(BaseTestCase):
         input = re.sub('\s{2,}', '\n', input.strip())
         om = self.plugin.process(self.device, input, LOG)
         self.assertEquals(
-            om.setOSProductKey, MultiArgs("CentOS Linux 7 (Core)", "CentOS"))
+            str(om.setOSProductKey), str(MultiArgs("CentOS Linux 7 (Core)", "CentOS")))
 
     def testDebianInput(self):
         input = """
@@ -96,7 +96,7 @@ class TestOSReleasePlugin(BaseTestCase):
         input = re.sub('\s{2,}', '\n', input.strip())
         om = self.plugin.process(self.device, input, LOG)
         self.assertEquals(
-            om.setOSProductKey, MultiArgs("Debian GNU/Linux 7 (wheezy)","Debian"))
+            str(om.setOSProductKey), str(MultiArgs("Debian GNU/Linux 7 (wheezy)","Debian")))
 
     def testUbuntuInput(self):
         input = """
@@ -117,7 +117,7 @@ class TestOSReleasePlugin(BaseTestCase):
         input = re.sub('\s{2,}', '\n', input.strip())
         om = self.plugin.process(self.device, input, LOG)
         self.assertEquals(
-            om.setOSProductKey, MultiArgs("Ubuntu 14.04.1 LTS","Ubuntu"))
+            str(om.setOSProductKey), str(MultiArgs("Ubuntu 14.04.1 LTS","Ubuntu")))
 
 
 def test_suite():

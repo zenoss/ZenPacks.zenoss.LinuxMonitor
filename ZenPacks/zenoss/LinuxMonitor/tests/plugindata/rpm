@@ -1,9 +1,4 @@
-export PATH=$PATH:/bin:/sbin:/usr/bin:/usr/sbin; $(which rpm || echo true) -qa --qf "%{NAME}__FIELD__%{VERSION}__FIELD__%{RELEASE}__FIELD__%{INSTALLTIME}__FIELD__%{VENDOR}__FIELD__%{SUMMARY}\n";
- echo "_SPLIT_"; if command -v dpkg >/dev/null 2>&1;
- then for file_list in $(ls /var/lib/dpkg/info/*.list);
- do stat_result=$(stat --format=%Y "$file_list"); printf "_field:%s_field:%s\n" "$(basename $file_list .list)" "$stat_result";
- done; dpkg-query -W -f='_field:${Package}_field:${Version}_field:${Maintainer}_field:${Description}\n'; fi
-___HOST_OUTPUT___
+export PATH=$PATH:/bin:/sbin:/usr/bin:/usr/sbin; $(which rpm || echo true) -qa --qf "%{NAME}__FIELD__%{VERSION}__FIELD__%{RELEASE}__FIELD__%{INSTALLTIME}__FIELD__%{VENDOR}__FIELD__%{SUMMARY}\n"; echo "_SPLIT_"; if command -v dpkg >/dev/null 2>&1; then for file_list in $(ls /var/lib/dpkg/info/*.list); do stat_result=$(stat --format=%Y "$file_list"); printf "_field:%s_field:%s\n" "$(basename $file_list .list)" "$stat_result"; done; dpkg-query -W -f='_field:${Package}_field:${Version}_field:${Maintainer}_field:${Description}\n'; fi
 libxkbfile__FIELD__1.0.9__FIELD__3.el7__FIELD__1503516137__FIELD__Red Hat, Inc.__FIELD__X.Org X11 libxkbfile runtime library
 libvirt-gobject__FIELD__1.0.0__FIELD__1.el7__FIELD__1503516319__FIELD__Red Hat, Inc.__FIELD__libvirt object APIs for managing virtualization hosts
 audit-libs__FIELD__2.7.6__FIELD__3.el7__FIELD__1503516056__FIELD__Red Hat, Inc.__FIELD__Dynamic library for libaudit
