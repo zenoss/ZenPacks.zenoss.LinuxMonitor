@@ -721,6 +721,7 @@ Changes
 - Fixed alert spam for services (ZPS-1625)
 - Added monitoring for individual processor components (ZPS-2444)
 - Added Nice CPU usage for Processors (ZPS-3315)
+- Fix OS Manufacturer not showing (ZPS-1864)
 - Add sudo to df commands. (ZPS-1594)
 
   - New Component: The following Component was added:
