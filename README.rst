@@ -207,10 +207,16 @@ allow the **zenmonitor** user to run the commands.
 .. Note::
    * In order for Ssh operation works correctly, ensure OpenSSH is updated
      to your distro's current version. This is especially true for older
-     versions of RHEL, CentOS, Ubuntu, and Suse Linux.
+     versions of RHEL, CentOS, Ubuntu, and SUSE Linux.
 
+   * If using a non-root user on SUSE Linux you must set the following as root
+     due to SUSE restricting dmesg.
 
-   * For Suse Linux the paths for (**pvs, vgs, lvs**) are located at
+     .. code:: text
+
+        echo 0 > /proc/sys/kernel/dmesg_restrict
+
+   * For SUSE Linux the paths for (**pvs, vgs, lvs**) are located at
      **/sbin/pvs**, **/sbin/vgs**, and **/sbin/lvs** respectively. Please
      ensure that each command can be manually executed remotely.
 

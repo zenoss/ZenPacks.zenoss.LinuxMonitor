@@ -16,15 +16,10 @@ Collect linux release information using the `cat /etc/*-release` command.
 import re
 
 from Products.DataCollector.plugins.CollectorPlugin import LinuxCommandPlugin
+from Products.DataCollector.plugins.DataMaps import MultiArgs
 
 
-SUPPORTED_DISTROS = (
-    'ubuntu',
-    'debian',
-    'redhat',
-    'centos',
-    'suse',
-)
+SUPPORTED_DISTROS =  {'debian':'Debian', 'ubuntu':'Ubuntu','centos':'CentOS','redhat': 'RedHat', 'suse': 'Novell', 'red hat': 'RedHat'}
 
 
 RE_DISTR = re.compile('(?P<os>(\w+(\s|\/)){1,}(\d+(\.)?){1,}\s[A-Za-z()]+)')
@@ -78,7 +73,7 @@ def getOSModel(results):
     lines = combineNameAndVersion(results)
     for line in lines:
         fline = ''.join(line.split()).lower()
-        if fline and any((distro in fline for distro in SUPPORTED_DISTROS)):
+        if fline and any((distro in fline for distro in SUPPORTED_DISTROS.keys())):
             if any([hpField in fline for hpField in highPriorityFields]):
                 return line.split('=')[1].strip('"')
             match = RE_DISTR.search(line)
@@ -109,8 +104,11 @@ class os_release(LinuxCommandPlugin):
             device.id)
 
         osModel = getOSModel(results) or "Unknown Linux"
-
+        osManufacturer = None
+        for distro in SUPPORTED_DISTROS.keys():
+            if distro in osModel.lower():
+                osManufacturer = SUPPORTED_DISTROS[distro]
         om = self.objectMap()
-        om.setOSProductKey = osModel
+        om.setOSProductKey = MultiArgs(osModel, osManufacturer)
 
         return om
