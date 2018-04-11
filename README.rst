@@ -291,9 +291,18 @@ Modeling and Monitoring OS Services
 The Linux OS services are modeled using the *zenoss.cmd.linux.os_service*
 modeler plugin. The following systems are supported:
 
-- systemd (RHEL 7)
-- upstart (RHEL 6)
-- systemV (RHEL 5 and earlier)
+- RHEL 5 - systemV
+- RHEL 6 - upstart
+- RHEL 7 - systemd
+- CentOS 5 - systemV
+- CentOS 6 - upstart
+- CentOS 7 - systemd
+- Debian 8 - systemd
+- Debian 9 - systemd
+- Suse 12 - systemd
+- Ubuntu 12 - upstart
+- Ubuntu 14 - upstart
+- Ubuntu 15 - systemd
 
 Version 2.3.0 supports monitoring of the status of **systemd**, **upstart**
 and **systemV** system services. The zProperties *zLinuxServicesModeled* and
@@ -721,7 +730,7 @@ Changes
 - Fix netmask as hex parsing and KeyError when meminfo is absent. (ZPS-2462)
 - Added ZenPackLib requirement. (ZPS-3000)
 - Fix custom banner errors and disabled zenoss.cmd.linux.alt\_kernel\_name modeler plugin by default. (ZPS-2998)
-- Support OS Service Monitoring for RHEL-5 (SystemV), RHEL-6 (Upstart) and  RHEL-7 (Systemd)(ZPS-2722)
+- Support OS Service Monitoring. (ZPS-2722)
 - Add dpkg support to zenoss.cmd.linux.rpm modeler plugin. (ZPS-1474)
 - Added support for Thin Pool Monitoring. (ZPS-2494)
 - Fixed alert spam for services (ZPS-1625)
