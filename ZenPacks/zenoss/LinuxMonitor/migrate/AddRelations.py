@@ -18,11 +18,12 @@ class AddRelations(ZenPackMigration):
         dc = pack.dmd.Devices.Server.SSH.Linux
         for d in dc.getSubDevicesGen():
 
-            for volumeGroup in d.volumeGroups():
-                if not hasattr(volumeGroup, 'thinPools'):
-                    volumeGroup.buildRelations()
-                for logicalVolume in volumeGroup.logicalVolumes():
-                    if not hasattr(logicalVolume, 'thinPool'):
-                        logicalVolume.buildRelations()
+            if hasattr(d, 'volumeGroups'):
+                for volumeGroup in d.volumeGroups():
+                    if not hasattr(volumeGroup, 'thinPools'):
+                        volumeGroup.buildRelations()
+                    for logicalVolume in volumeGroup.logicalVolumes():
+                        if not hasattr(logicalVolume, 'thinPool'):
+                            logicalVolume.buildRelations()
 
 AddRelations()
