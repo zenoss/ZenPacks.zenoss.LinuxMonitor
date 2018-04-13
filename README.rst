@@ -733,11 +733,12 @@ Changes
 - Support OS Service Monitoring. (ZPS-2722)
 - Add dpkg support to zenoss.cmd.linux.rpm modeler plugin. (ZPS-1474)
 - Added support for Thin Pool Monitoring. (ZPS-2494)
-- Fixed alert spam for services (ZPS-1625)
-- Added monitoring for individual processor components (ZPS-2444)
-- Added Nice CPU usage for Processors (ZPS-3315)
-- Fix OS Manufacturer not showing (ZPS-1864)
+- Fixed alert spam for services. (ZPS-1625)
+- Added monitoring for individual processor components. (ZPS-2444)
+- Added Nice CPU usage for Processors. (ZPS-3315)
+- Fix OS Manufacturer not showing. (ZPS-1864)
 - Add sudo to df commands. (ZPS-1594)
+- Remove old modeler plugins, ensure model consistency. (ZPS-3411)
 
   - New Component: The following Component was added:
 

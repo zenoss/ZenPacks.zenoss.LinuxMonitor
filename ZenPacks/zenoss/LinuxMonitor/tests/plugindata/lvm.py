@@ -47,7 +47,7 @@
              'id': 'tp-lvmserver_pool',
              'lvsize': 1073741824,
              'modname': 'ZenPacks.zenoss.LinuxMonitor.ThinPool',
-             'metadatasize': '4194304',
+             'metadatasize': 4194304,
              'relname': 'thinPools',
              'title': 'pool',
              'uuid': 'Je2mF8-V0q3-CXVX-6p21-eBAD-VMPt-pEOczH',
