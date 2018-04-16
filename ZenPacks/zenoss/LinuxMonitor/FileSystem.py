@@ -37,6 +37,9 @@ class FileSystem(schema.FileSystem):
     def capacity(self):
         return self.cacheRRDValue("disk_percentUsed")
 
+    def capacityBytes(self):
+        return self.cacheRRDValue("disk_percentUsed")
+
     def getTotalBlocks(self):
         """Return calculated total blocks.
 
