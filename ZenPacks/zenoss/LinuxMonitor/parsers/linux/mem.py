@@ -54,6 +54,10 @@ class mem(CommandParser):
         values["MemUsed"] = values["MemTotal"] - values["MemAvailable"]
         values["MemUsedPercent"] = (
             float(values["MemUsed"]) / float(values["MemTotal"])) * 100.0
+        if datapointMap.get("MemAdjustedUsed"):
+            values["MemAdjustedUsed"] = values["MemTotal"] - (values["MemFree"] + values["Buffers"] + values["Cached"])
+        if datapointMap.get("MemAdjustedUsedPercent"):
+            values["MemAdjustedUsedPercent"] = ((float(values["MemTotal"] - (values["MemFree"] + values["Buffers"] + values["Cached"])) )/ float(values["MemTotal"])) * 100.0
 
         # Add all requested values to result.
         result.values.extend(
