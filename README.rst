@@ -422,6 +422,13 @@ Device (in /Devices/Server/SSH/Linux)
    -  Memory Usage
    -  IO Throughput
 
+   .. Note::
+      In version 2.3.0 support for the datapoints MemAdjustedUsed and
+      MemAdjustedUsedPercent were added. Theses datapoints include Buffers, Cached
+      and Free in the memory used calculation. These datapoints are not added by
+      default. To use the datapoints you will need to create datapoints called
+      MemAdjustedUsed and MemAdjustedUsedPercent on the device template.
+
 HardDisk (in /Devices/Server/SSH/Linux)
 
 -  Data Points
@@ -739,6 +746,7 @@ Changes
 - Fix OS Manufacturer not showing. (ZPS-1864)
 - Add sudo to df commands. (ZPS-1594)
 - Remove old modeler plugins, ensure model consistency. (ZPS-3411)
+- Add support for adjustedMemory datapoints. (ZPS-862)
 
   - New Component: The following Component was added:
 
