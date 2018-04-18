@@ -1351,7 +1351,7 @@ device_classes:
                                            elif command -v initctl >/dev/null 2>&1;
                                            then echo "UPSTART"; sudo initctl list 2>&1 || true;
                                            elif command -v service >/dev/null 2>&1;
-                                           then echo "SYSTEMV"; sudo service --status-all 2>&1 || true;
+                                           then echo "SYSTEMV"; sudo /etc/init.d/${here/id} status > /dev/null 2>&1; echo $$? || true;
                                            else echo "UNKNOWN";
                                            exit 127;
                                            fi'

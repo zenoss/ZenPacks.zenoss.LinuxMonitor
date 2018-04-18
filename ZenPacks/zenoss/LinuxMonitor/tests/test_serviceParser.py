@@ -188,7 +188,7 @@ class ServiceParserTests(BaseTestCase):
         service().processResults(self.cmd, result)
         self.assertEqual(result.events[0]['summary'], 'OS Service is up')
 
-    def test_SystemVEvents(self):
+    def disabled_test_SystemVEvents(self):
         self.cmd.result.output = SYSTEMV_OUTPUT
 
         # Test Event is Down
