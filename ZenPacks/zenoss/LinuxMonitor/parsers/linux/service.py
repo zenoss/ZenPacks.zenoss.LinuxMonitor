@@ -17,20 +17,70 @@ ON_STATUS = ['active',                  # Systemd status up
              'start/running',           # Upstart status up
              'running']                 # SystemV status up
 
+SYSV_EXIT_CODE = {
+    '0': 'program is running or service is OK',
+    '1': 'program is dead and /var/run pid file exists',
+    '2': 'program is dead and /var/lock lock file exists',
+    '3': 'program is not running',
+    '4': 'program or service status is unknown'
+}
+
 
 class service(CommandParser):
     def dataForParser(self, context, datapoint):
         return dict(id=context.name())
 
     def processResults(self, cmd, result):
-
         if cmd.result.exitCode != 0:
             return
 
         log.debug(cmd.result.output)
 
+        # Init default values for 'active' clear event
+        status_value = 1    # Status On/Active
+        severity = 0        # Clear
+        event_status = 'up'
+        name = cmd.component
+
         # Parse service string from output and find if systemd or systemV
         services = cmd.result.output.splitlines()
+
+        # Redesign SystemV (ZEN-3199)
+        if services[0] == 'SYSTEMV':
+            if services[1] in SYSV_EXIT_CODE:
+                message = SYSV_EXIT_CODE.get(services[1])
+            elif services[1] in xrange(5, 99):
+                message = 'Reserved for future LSB use'
+            elif services[1] in xrange(100, 149):
+                message = 'Reserved for distribution use'
+            elif services[1] in xrange(150, 199):
+                message = 'Reserved for application use'
+            else:
+                message = 'reserved'
+
+            if services[1] != '0':
+                status_value = 0
+                event_status = 'down'
+                severity = cmd.severity
+
+            result.events.append({
+                'device': cmd.deviceConfig.device,
+                'component': cmd.component,
+                'severity': severity,
+                'eventClass': cmd.eventClass,
+                'eventClassKey': "{}|{}".format("linux-services",
+                                                cmd.component),
+                'summary': 'OS Service is {}'.format(event_status),
+                'message': 'Exit status: ' + message
+                })
+
+            for dp in cmd.points:
+                if 'status' in dp.id:
+                    result.values.append((dp, status_value))
+
+            return result
+
+        # Continues code for SystemD and Upstart
         initService = SERVICE_MAP.get(services[0])
 
         if not initService:
@@ -42,11 +92,7 @@ class service(CommandParser):
         functions = initService.get('functions')
         if functions:
             services = functions.get('services')(services)
-        # Init default values for 'active' clear event
-        status_value = 1    # Status On/Active
-        severity = 0        # Clear
-        event_status = 'up'
-        name = cmd.component
+
         # Get comp name over id (id does not have special chars like '@')
         for dp in cmd.points:
             if 'status' in dp.id:
