@@ -9,6 +9,7 @@ zProperties:
     zLinuxServicesModeled:
         category: Linux
         type: lines
+        default: [.*]
 
     zLinuxServicesNotModeled:
         category: Linux
