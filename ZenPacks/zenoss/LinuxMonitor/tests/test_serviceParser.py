@@ -85,36 +85,6 @@ UPSTART_OUTPUT = """UPSTART
     rcS-sulogin stop/waiting
     serial stop/waiting"""
 
-SYSTEMV_OUTPUT = """SYSTEMV
-    htcacheclean is stopped
-    httpd is stopped
-    ip6tables: Firewall is not running.
-    IPsec stopped
-    iptables: Firewall is not running.
-    irqbalance (pid  1163) is running...
-    iscsi is stopped
-    iscsid is stopped
-    Kdump is not operational
-    lldpad (pid  1200) is running...
-    lvmetad is stopped
-    mdmonitor is stopped
-    messagebus (pid  1240) is running...
-    multipathd is stopped
-    mysqld is stopped
-    netconsole module not loaded
-    Configured devices:
-    lo Auto_eth0
-    Currently active devices:
-    lo eth0
-    NetworkManager (pid  1251) is running...
-    rpc.svcgssd is stopped
-    rpc.mountd is stopped
-    nfsd is stopped
-    rpc.rquotad is stopped
-    rpc.statd (pid  1270) is running...
-    nscd is stopped
-    """
-
 LOG = logging.getLogger("zen.testcases")
 
 
@@ -191,19 +161,85 @@ class ServiceParserTests(BaseTestCase):
     def disabled_test_SystemVEvents(self):
         self.cmd.result.output = SYSTEMV_OUTPUT
 
-        # Test Event is Down
-        result = ParsedResults()
-        self.cmd.component = 'httpd'
-        self.cmd.points[0]['data']['id'] = 'httpd'
-        service().processResults(self.cmd, result)
-        self.assertEqual(result.events[0]['summary'], 'OS Service is down')
-
         # Test Event is Up
         result = ParsedResults()
-        self.cmd.component = 'irqbalance'
-        self.cmd.points[0]['data']['id'] = 'irqbalance'
+        self.cmd.component = 'test_service'
+        self.cmd.points[0]['data']['id'] = 'test_service'
+        self.cmd.result.output = 'SYSTEMV\n0\n'
         service().processResults(self.cmd, result)
         self.assertEqual(result.events[0]['summary'], 'OS Service is up')
+        self.assertEqual(result.events[0]['message'], 'Exit status: ' +
+                         'program is running or service is OK')
+
+        # Test Event is Down with exit code 1
+        result = ParsedResults()
+        self.cmd.component = 'test_service'
+        self.cmd.points[0]['data']['id'] = 'test_service'
+        self.cmd.result.output = 'SYSTEMV\n1\n'
+        service().processResults(self.cmd, result)
+        self.assertEqual(result.events[0]['summary'], 'OS Service is down')
+        self.assertEqual(result.events[0]['message'], 'Exit status: ' +
+                         'program is dead and /var/run pid file exists')
+
+        # Test Event is Down with exit code 2
+        result = ParsedResults()
+        self.cmd.component = 'test_service'
+        self.cmd.points[0]['data']['id'] = 'test_service'
+        self.cmd.result.output = 'SYSTEMV\n2\n'
+        service().processResults(self.cmd, result)
+        self.assertEqual(result.events[0]['summary'], 'OS Service is down')
+        self.assertEqual(result.events[0]['message'], 'Exit status: ' +
+                         'program is dead and /var/lock lock file exists')
+
+        # Test Event is Down with exit code 3
+        result = ParsedResults()
+        self.cmd.component = 'test_service'
+        self.cmd.points[0]['data']['id'] = 'test_service'
+        self.cmd.result.output = 'SYSTEMV\n3\n'
+        service().processResults(self.cmd, result)
+        self.assertEqual(result.events[0]['summary'], 'OS Service is down')
+        self.assertEqual(result.events[0]['message'], 'Exit status: ' +
+                         'program is not running')
+
+        # Test Event is Down with exit code 4
+        result = ParsedResults()
+        self.cmd.component = 'test_service'
+        self.cmd.points[0]['data']['id'] = 'test_service'
+        self.cmd.result.output = 'SYSTEMV\n4\n'
+        service().processResults(self.cmd, result)
+        self.assertEqual(result.events[0]['summary'], 'OS Service is down')
+        self.assertEqual(result.events[0]['message'], 'Exit status: ' +
+                         'program or service status is unknown')
+
+        # Test Event is Down with exit code 10
+        result = ParsedResults()
+        self.cmd.component = 'test_service'
+        self.cmd.points[0]['data']['id'] = 'test_service'
+        self.cmd.result.output = 'SYSTEMV\n10\n'
+        service().processResults(self.cmd, result)
+        self.assertEqual(result.events[0]['summary'], 'OS Service is down')
+        self.assertEqual(result.events[0]['message'], 'Exit status: ' +
+                         'Reserved for future LSB use')
+
+        # Test Event is Down with exit code 140
+        result = ParsedResults()
+        self.cmd.component = 'test_service'
+        self.cmd.points[0]['data']['id'] = 'test_service'
+        self.cmd.result.output = 'SYSTEMV\n140\n'
+        service().processResults(self.cmd, result)
+        self.assertEqual(result.events[0]['summary'], 'OS Service is down')
+        self.assertEqual(result.events[0]['message'], 'Exit status: ' +
+                         'Reserved for future distribution use')
+
+        # Test Event is Down with exit code 155
+        result = ParsedResults()
+        self.cmd.component = 'test_service'
+        self.cmd.points[0]['data']['id'] = 'test_service'
+        self.cmd.result.output = 'SYSTEMV\n155\n'
+        service().processResults(self.cmd, result)
+        self.assertEqual(result.events[0]['summary'], 'OS Service is down')
+        self.assertEqual(result.events[0]['message'], 'Exit status: ' +
+                         'Reserved for application use')
 
 
 def test_suite():

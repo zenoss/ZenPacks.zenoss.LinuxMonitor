@@ -56,7 +56,7 @@ class service(CommandParser):
             elif services[1] in xrange(150, 199):
                 message = 'Reserved for application use'
             else:
-                message = 'reserved'
+                message = 'Reserved'
 
             if services[1] != '0':
                 status_value = 0

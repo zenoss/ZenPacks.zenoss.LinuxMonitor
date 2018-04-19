@@ -96,7 +96,7 @@ Upstart output('initctl list'):
     ...
 
 
-Systemv output('ls -l /etc/rc${RUNLEVEL}.d/'):
+Systemv output('ls -l /etc/rc${CURRENT_RUNLEVEL}.d/'):
 
     ...
     total 288
@@ -211,6 +211,9 @@ RE_UPSTART_SERVICE = re.compile('(?P<title>[\w\-]+(\s\([\w\/]+\))?)\s'   # servi
                                 '(?P<active_status>[\w\/]+)'             # active status
                                 '(.\sprocess\s(?P<main_pid>\d+))?')      # active status if exists
 # Only links that start with 'S' are running in current runlevel
+# Matches output of "ls -l /etc/rc${CURRENT_RUNLEVEL}.d/"
+#   lrwxrwxrwx 1 root root 16 Oct 15  2009 K36mysqld -> ../init.d/mysqld
+#   lrwxrwxrwx 1 root root 15 Oct 15  2009 S50snmpd -> ../init.d/snmpd
 RE_SYSTEMV_SERVICE = re.compile(ur'S\d+[\w-]+\s->\s\.\./init\.d/(?P<title>.+)')
 
 
@@ -301,7 +304,7 @@ class os_service(LinuxCommandPlugin):
                 'sudo initctl list 2>&1 || true ; '
                'elif command -v service >/dev/null 2>&1; then '
                 'echo "SYSTEMV"; '
-                'sudo ls -l /etc/rc$(/sbin/runlevel | sed -r "s/[^0-9]//g").d/ 2>&1 || true; '
+                'sudo ls -l /etc/rc$(/sbin/runlevel | awk \'{print $2}\').d/ 2>&1 || true; '
                'else '
                 'echo "UNKNOWN"; '
                 'exit 127; '
