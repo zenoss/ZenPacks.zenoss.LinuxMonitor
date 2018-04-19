@@ -49,11 +49,11 @@ class service(CommandParser):
         if services[0] == 'SYSTEMV':
             if services[1] in SYSV_EXIT_CODE:
                 message = SYSV_EXIT_CODE.get(services[1])
-            elif services[1] in xrange(5, 99):
+            elif int(services[1]) in xrange(5, 99):
                 message = 'Reserved for future LSB use'
-            elif services[1] in xrange(100, 149):
+            elif int(services[1]) in xrange(100, 149):
                 message = 'Reserved for distribution use'
-            elif services[1] in xrange(150, 199):
+            elif int(services[1]) in xrange(150, 199):
                 message = 'Reserved for application use'
             else:
                 message = 'Reserved'

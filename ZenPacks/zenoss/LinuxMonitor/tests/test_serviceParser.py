@@ -158,9 +158,7 @@ class ServiceParserTests(BaseTestCase):
         service().processResults(self.cmd, result)
         self.assertEqual(result.events[0]['summary'], 'OS Service is up')
 
-    def disabled_test_SystemVEvents(self):
-        self.cmd.result.output = SYSTEMV_OUTPUT
-
+    def test_SystemVEvents(self):
         # Test Event is Up
         result = ParsedResults()
         self.cmd.component = 'test_service'
@@ -229,7 +227,7 @@ class ServiceParserTests(BaseTestCase):
         service().processResults(self.cmd, result)
         self.assertEqual(result.events[0]['summary'], 'OS Service is down')
         self.assertEqual(result.events[0]['message'], 'Exit status: ' +
-                         'Reserved for future distribution use')
+                         'Reserved for distribution use')
 
         # Test Event is Down with exit code 155
         result = ParsedResults()
