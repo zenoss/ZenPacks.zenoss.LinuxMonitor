@@ -1,4 +1,3 @@
-
 Linux Monitor Zenpack
 =====================
 
@@ -6,6 +5,13 @@ This ZenPack monitors the Linux Operating System.
 
 Releases
 --------
+
+.. _Version-2.3.0: http://wiki.zenoss.org/download/zenpacks/ZenPacks.zenoss.LinuxMonitor/2.3.0/ZenPacks.zenoss.LinuxMonitor-2.3.0.egg
+
+Version-2.3.0_
+   | Released on TODO
+   | Compatible with Zenoss 4.2.5 - 6.1
+   | Requires `ZenPackLib ZenPack </product/zenpacks/zenpacklib>`_
 
 .. _Version-2.2.7: http://wiki.zenoss.org/download/zenpacks/ZenPacks.zenoss.LinuxMonitor/2.2.7/ZenPacks.zenoss.LinuxMonitor-2.2.7.egg
 
@@ -40,7 +46,7 @@ Features
 
 -  Monitors multiple Linux flavors and versions
 -  OpenStack LVM volume integration
--  Monitors LVM Physical Volumes, Volume Groups, and Logical Volumes
+-  Monitors LVM Physical Volumes, Volume Groups, Thin Pools and Logical Volumes
 -  Block Device monitoring
 -  Service Monitoring via Sysvinit, Systemd, Upstart
 -  Root Cause Analysis with Impact Support
@@ -78,6 +84,10 @@ File Systems
     Attributes: Mount Point, Storage Device, Total Bytes, Used Bytes,
     Free Bytes, % Util
 
+.. Note::
+   Some links between server and client of NFS File System and other storage
+   devices are intentionally removed as they significantly impact performance.
+
 Interfaces
     Attributes: IP Interface, IP Addresses, Description, MAC Address,
     Operational Status, Admin Status
@@ -97,11 +107,16 @@ Physical Volumes
 
 Volume Groups
     Attributes: Name, Size, Free, % Util, Snapshot Volumes, Logical
-    Volumes, Physical Volumes
+    Volumes, Physical Volumes, Thin Pools
 
 Logical Volumes
     Attributes: Name, Volume Group, Size, Block Device, File System,
     Active, Snapshot Volumes
+    Relations: Volume Groups, Thin Pools
+
+Thin Pools
+    Attributes: Name, Volume Group, Size, Block Device, File System,
+    Active, Metadata Size
     Relations: Volume Groups
 
 OS Processes
@@ -109,12 +124,11 @@ OS Processes
     Severity
 
 OS Services
-    Attributes: Name, Loaded Status, Active Status, Main PID, Processes,
-    Description
+    Attributes: Name, Description, Init System
 
 .. Note::
-   On some Linux flavors some fields (Loaded Status, Processes,
-   Description) could be empty.
+   Prior to version 2.3.0, some columns (Loaded Status, Processes,
+   Description) may be empty. These columns are removed in version 2.3.0
 
 Set Linux Server Monitoring Credentials
 ---------------------------------------
@@ -165,10 +179,10 @@ Using a Non-Root User
 ~~~~~~~~~~~~~~~~~~~~~
 
 This ZenPack requires the ability to run the *pvs*, *vgs*, *lvs*,
-*systemctl*, *initctl* and *service* commands, remotely on your linux
+*systemctl*, *initctl*, *df* and *service* commands, remotely on your linux
 server(s) using SSH. By default, most of these commands are only
 allowed to be run by the **root** user. The output of *systemctl*,
-*initctl* and *service* commands depends on whether they are executed
+*initctl*, *df* and *service* commands depends on whether they are executed
 via **sudo**. Furthermore, this ZenPack expects these commands be in
 the user's path. Normally this is only true for the root user.
 
@@ -189,17 +203,24 @@ allow the **zenmonitor** user to run the commands.
             /bin/systemctl status *, /sbin/initctl list, /sbin/service --status-all, \
             /usr/sbin/dmidecode
         Cmnd_Alias ZENOSS_NET_CMDS = /bin/dmesg
-        zenmonitor ALL=(ALL) NOPASSWD: ZENOSS_LVM_CMDS, ZENOSS_SVC_CMDS, ZENOSS_NET_CMDS
+        Cmnd_Alias ZENOSS_DF_CMDS = /bin/df
+        zenmonitor ALL=(ALL) NOPASSWD: ZENOSS_LVM_CMDS, ZENOSS_SVC_CMDS, ZENOSS_NET_CMDS, ZENOSS_DF_CMDS
 
    - Save, ensuring all paths for these commands are correct
 
 .. Note::
    * In order for Ssh operation works correctly, ensure OpenSSH is updated
      to your distro's current version. This is especially true for older
-     versions of RHEL, CentOS, Ubuntu, and Suse Linux.
+     versions of RHEL, CentOS, Ubuntu, and SUSE Linux.
 
+   * If using a non-root user on SUSE Linux you must set the following as root
+     due to SUSE restricting dmesg.
 
-   * For Suse Linux the paths for (**pvs, vgs, lvs**) are located at
+     .. code:: text
+
+        echo 0 > /proc/sys/kernel/dmesg_restrict
+
+   * For SUSE Linux the paths for (**pvs, vgs, lvs**) are located at
      **/sbin/pvs**, **/sbin/vgs**, and **/sbin/lvs** respectively. Please
      ensure that each command can be manually executed remotely.
 
@@ -269,11 +290,64 @@ as devices with the following command.
 
    zenbatchload <filename>
 
+Modeling and Monitoring OS Services
+-----------------------------------
+The Linux OS services are modeled using the *zenoss.cmd.linux.os_service*
+modeler plugin. The following systems are supported:
+
+- RHEL 5
+- RHEL 6
+- RHEL 7
+- CentOS 5
+- CentOS 6
+- CentOS 7
+- Debian 8
+- Debian 9
+- Suse 12
+- Ubuntu 12
+- Ubuntu 14
+- Ubuntu 15
+- Ubuntu 16
+
+Version 2.3.0 supports monitoring of the status of **systemd**, **upstart**
+and **systemV** system services. *OSService-SYSTEMD*, *OSService-UPSTART* and
+*OSService-SYSTEMD* monitoring templates are automatically bound to a service
+component based on the targets modeled init system value. The zProperties
+*zLinuxServicesModeled* and *zLinuxServicesNotModeled* restrict the services
+that are modeled and thereby monitored.
+
++------------------------------+----------------------------------------------+
+| Name                         | Description                                  |
++==============================+==============================================+
+| zLinuxServicesModeled        | Accepts regular expressions that             |
+|                              | matches one or more services to model        |
++------------------------------+----------------------------------------------+
+| zLinuxServicesNotModeled     | Accepts regular expressions that             |
+|                              | matches one or more services to not model    |
++------------------------------+----------------------------------------------+
+
+Only *loaded* services are modeled. An empty value in ``zLinuxServiceModeled``
+is treated as ``.*`` regex and models all loaded services. Both the
+zProperties can support multiple regex expressions when separated on new lines.
+The *OSService* monitoring template generates events on every collection cycle
+for a service that is down. The events are automatically cleared if the service
+is up again.
+
+.. Note::
+   ``zLinuxServicesNotModeled`` overrules ``zLinuxServicesModeled``. If a
+   service name matches regexes in both zProperties, the service will not
+   modeled.
+
 Installed Items
 ---------------
 
 Installing this ZenPack will add the following items to your Zenoss
 system.
+
+Configuration Properties
+
+- zLinuxServicesModeled
+- zLinuxServicesNotModeled
 
 Device Classes
 
@@ -296,6 +370,13 @@ Modeler Plugins
 -  zenoss.cmd.linux.os\_release
 -  zenoss.cmd.linux.os\_service
 
+.. Note::
+   As of version 2.3.0 the zenoss.cmd.linux.rpm and zenoss.cmd.linux.alt\_kernel\_name
+   modeler plugins are disabled by default on new installs. If upgrading from
+   a version previous to 2.3.0 they will still be enabled by default. It is
+   recommended you disable the modeler plugin zenoss.cmd.linux.alt\_kernel\_name
+   if you have a customized /etc/issue file as customization could affect modeling results.
+
 Monitoring Templates
 
 -  Device (in /Devices/Server/SSH/Linux)
@@ -308,6 +389,10 @@ Monitoring Templates
 -  VolumeGroup (in /Devices/Server/SSH/Linux)
 -  LogicalVolume (in /Devices/Server/SSH/Linux)
 -  OSProcess (in /Devices/Server/SSH/Linux)
+-  OSService-SYSTEMD (in /Devices/Server/SSH/Linux)
+-  OSService-UPSTART (in /Devices/Server/SSH/Linux)
+-  OSService-SYSTEMV (in /Devices/Server/SSH/Linux)
+-  ThinPool (in /Devices/Server/SSH/Linux)
 
 Monitoring Templates
 --------------------
@@ -317,7 +402,9 @@ Device (in /Devices/Server/SSH/Linux)
 -  Data Points
 
    -  ssCpuIdlePerCpu
+   -  ssCpuNicePerCpu
    -  ssCpuUserPerCpu
+   -  ssCpuUsedPerCpu
    -  ssCpuSystemPerCpu
    -  ssCpuWaitPerCpu
    -  sysUpTime
@@ -344,6 +431,31 @@ Device (in /Devices/Server/SSH/Linux)
    -  Memory Utilization
    -  Memory Usage
    -  IO Throughput
+
+   .. Note::
+      In version 2.3.0 support for the datapoints MemAdjustedUsed and
+      MemAdjustedUsedPercent were added. Theses datapoints include Buffers, Cached
+      and Free in the memory used calculation. These datapoints are not added by
+      default. To use the datapoints you will need to create datapoints called
+      MemAdjustedUsed and MemAdjustedUsedPercent in the mem datasource on the device template.
+
+CPU (in /Devices/Server/SSH/Linux)
+
+-  Data Points
+   -  ssCpuUsedPerCpu
+   -  ssCpuIdle
+   -  ssCpuNice
+   -  ssCpuUser
+   -  ssCpuSystem
+   -  ssCpuWait
+
+-  Thresholds
+
+   -  *None*
+
+-  Graphs
+
+   -  CPU Utilization
 
 HardDisk (in /Devices/Server/SSH/Linux)
 
@@ -418,6 +530,10 @@ FileSystem (in /Devices/Server/SSH/Linux)
    -  Inode Utilization
    -  Inode Usage
 
+.. Note::
+   Filesystems will also show graphs from its related Logical Volume
+   or Hard Disk.
+
 ethernetCsmacd (in /Devices/Server/SSH/Linux)
 
 -  Data Points
@@ -444,7 +560,7 @@ ethernetCsmacd (in /Devices/Server/SSH/Linux)
    -  Packet Throughput
    -  Error Rate
 
-SnaphotVolume (in /Devices/Server/SSH/Linux)
+SnapshotVolume (in /Devices/Server/SSH/Linux)
 
 -  Data Points
 
@@ -458,6 +574,10 @@ SnaphotVolume (in /Devices/Server/SSH/Linux)
 -  Graphs
 
    -  *None*
+
+.. Note::
+   Snapshot Volumes will also show graphs from its related Volume Group
+   and Hard Disk.
 
 PhysicalVolume (in /Devices/Server/SSH/Linux)
 
@@ -479,6 +599,9 @@ PhysicalVolume (in /Devices/Server/SSH/Linux)
 
    -  Utilization
 
+.. Note::
+   Physical Volumes will also show graphs from its related Hard Disk.
+
 VolumeGroup (in /Devices/Server/SSH/Linux)
 
 -  Data Points
@@ -495,6 +618,9 @@ VolumeGroup (in /Devices/Server/SSH/Linux)
 
    -  Utilization
 
+.. Note::
+   Volume Groups will also show graphs from its related Physical Volumes.
+
 LogicalVolume (in /Devices/Server/SSH/Linux)
 
 -  Data Points
@@ -509,6 +635,31 @@ LogicalVolume (in /Devices/Server/SSH/Linux)
 -  Graphs
 
    -  *None*
+
+.. Note::
+   Logical Volumes will also show graphs from its related Volume Group
+   and Hard Disk.
+
+ThinPool (in /Devices/Server/SSH/Linux)
+
+-  Data Points
+
+   -  state
+   -  health
+   -  percentDataUsed
+   -  percentMetaDataUsed
+
+-  Thresholds
+
+   -  90 percent used
+
+-  Graphs
+
+   -  Pool Utilization
+
+.. Note::
+   Thin Pools will also show graphs from its related Volume Group
+   and Hard Disk.
 
 OSProcess (in /Devices/Server/SSH/Linux)
 
@@ -528,6 +679,48 @@ OSProcess (in /Devices/Server/SSH/Linux)
    -  CPU Utilization
    -  Memory Usage
 
+OSService-SYSTEMD (in /Devices/Server/SSH/Linux)
+
+-  Data Points
+
+   -  status
+
+-  Thresholds
+
+   -  *None*
+
+-  Graphs
+
+   -  *None*
+
+OSService-UPSTART (in /Devices/Server/SSH/Linux)
+
+-  Data Points
+
+   -  status
+
+-  Thresholds
+
+   -  *None*
+
+-  Graphs
+
+   -  *None*
+
+OSService-SYSTEMV (in /Devices/Server/SSH/Linux)
+
+-  Data Points
+
+   -  status
+
+-  Thresholds
+
+   -  *None*
+
+-  Graphs
+
+   -  *None*
+
 Service Impact
 --------------
 
@@ -546,7 +739,9 @@ Service Impact Relationships
 -  LogicalVolume is impacted by VolumeGroup or HardDisk;
 -  SnapshotVolume is impacted by LogicalVolume or HardDisk;
 -  FileSystem is impacted by SnapshotVolume or LogicalVolume or HardDisk
-   or LinuxDevice
+   or LinuxDevice or ThinPool
+-  ThinPool is impacted by VolumeGroup or HardDisk or logicalVolume;
+
 
 Daemons
 -------
@@ -579,7 +774,9 @@ Linux.
 +------------------------------+--------------------+--------------------+--------------------+
 |                              | 12.04 LTS          | April 2012         | April 2017         |
 +------------------------------+--------------------+--------------------+--------------------+
-| Debian                       | 8                  | July 2017          | April 2020         |
+| Debian                       | 8                  | April 2015         | April 2020         |
++------------------------------+--------------------+--------------------+--------------------+
+|                              | 9                  | June 2017          | June 2022          |
 +------------------------------+--------------------+--------------------+--------------------+
 | RedHat Enterprise Linux      | 7                  | June 2014          | June 2020          |
 +------------------------------+--------------------+--------------------+--------------------+
@@ -600,6 +797,37 @@ Linux.
 
 Changes
 -------
+2.3.0
+
+- The zenoss.cmd.linux.rpm modeler plugin is now disabled by default. (ZPS-1603)
+- Fix netmask as hex parsing and KeyError when meminfo is absent. (ZPS-2462)
+- Added ZenPackLib requirement. (ZPS-3000)
+- Fix custom banner errors and disabled zenoss.cmd.linux.alt\_kernel\_name modeler plugin by default. (ZPS-2998)
+- Support OS Service Monitoring. (ZPS-2722)
+- Add dpkg support to zenoss.cmd.linux.rpm modeler plugin. (ZPS-1474)
+- Added support for Thin Pool Monitoring. (ZPS-2494)
+- Fixed alert spam for services. (ZPS-1625)
+- Added monitoring for individual processor components. (ZPS-2444)
+- Added Nice CPU usage for Processors. (ZPS-3315)
+- Fix OS Manufacturer not showing. (ZPS-1864)
+- Add sudo to df commands. (ZPS-1594)
+- Remove old modeler plugins, ensure model consistency. (ZPS-3411)
+- Add support for adjustedMemory datapoints. (ZPS-862)
+
+  - New Component: The following Component was added:
+
+    - ThinPools
+
+  - New Graph: The following graph was added:
+
+    - ThinPools: Pool MetaData/Data Utilization
+
+  - New Relationships: The following relationships were added:
+
+    -  VolumeGroup 1:MC ThinPool
+    -  ThinPool 1:M LogicalVolume
+
+- Tested with Zenoss Resource Manager 4.2.5 RPS 743, 5.3.3 and 6.1.2 and Service Impact 5.3.0
 
 2.2.7
 
@@ -702,4 +930,3 @@ Changes
 -  Added Dynamic View Support
 -  Completely replaces EnterpriseLinux ZenPack
 -  Many other smaller improvements.
-

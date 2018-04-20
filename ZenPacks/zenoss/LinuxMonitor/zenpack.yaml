@@ -6,6 +6,15 @@ zProperties:
         type: boolean
         default: false
 
+    zLinuxServicesModeled:
+        category: Linux
+        type: lines
+        default: [.*]
+
+    zLinuxServicesNotModeled:
+        category: Linux
+        type: lines
+
 classes:
     DEFAULTS:
         base: [zenpacklib.Component]
@@ -28,28 +37,20 @@ classes:
     LinuxService:
         label: OS Service
         properties:
-            loaded_status:
-                label: Loaded Status
-                order: 1.1
-
-            active_status:
-                label: Active Status
-                order: 1.2
-
-            main_pid:
-                label: Main PID
-                type: int
-                order: 1.3
-
-            processes:
-                label: Processes
-                type: lines
-                order: 1.4
-
             description:
                 label: Description
-                order: 1.5
+                content_width: 250
+                order: 1.2
 
+            init_system:
+                label: Init System
+                order: 1.3
+                grid_display: False
+
+        monitoring_templates:
+            - OSService-SYSTEMD
+            - OSService-UPSTART
+            - OSService-SYSTEMV
         dynamicview_views: [service_view]
         dynamicview_weight: 30
         dynamicview_relations:
@@ -148,6 +149,7 @@ classes:
                 type: lines
 
             uuid:
+                label: UUID
                 grid_display: False
 
         dynamicview_views: [service_view]
@@ -155,6 +157,7 @@ classes:
         dynamicview_relations:
             impacts:
                 - logicalVolumes
+                - thinPools
             impacted_by:
                 - physicalVolumes
 
@@ -222,6 +225,7 @@ classes:
                 - snapshotVolumes
                 - filesystem
                 - openstack_core_components
+                - thinPool
             impacted_by:
                 - volumeGroup
                 - blockDevice
@@ -231,6 +235,7 @@ classes:
 
         properties:
             origin:
+                label: Origin
                 grid_display: False
 
             attributes:
@@ -361,6 +366,7 @@ classes:
                 - impacted_object
             impacted_by:
                 - device
+                - storage_disk_lun
 
     FileSystem:
         label: File System
@@ -450,7 +456,70 @@ classes:
             impacted_by:
                 - impacting_object
                 - getStorageServers
+    ThinPool:
+        label: Thin Pool
+        plural_label: Thin Pools
+        monitoring_templates: [ThinPool]
 
+        properties:
+            metadatasize:
+                label: Metadata Size
+                type: int
+                renderer: Zenoss.render.bytesString
+            attributes:
+                label: Attributes
+                grid_display: False
+                type: lines
+
+            lvsize:
+                label: Size
+                type: int
+                renderer: Zenoss.render.bytesString
+
+            active:
+                label: Active
+                datapoint: status_state
+                renderer: Zenoss.render.checkbox
+
+            vgname:
+                grid_display: False
+                details_display: False
+
+            uuid:
+                grid_display: False
+                details_display: False
+
+            filesystem:
+                label: File System
+                api_only: true
+                api_backendtype: method
+                type: entity
+
+            blockDevice:
+                label: Block Device
+                api_only: true
+                api_backendtype: method
+                type: entity
+
+            mountpoint:
+                grid_display: False
+                details_display: False
+                index_type: field
+
+            major_minor:
+                label: "Major:Minor"
+                grid_display: False
+                index_type: field
+
+        dynamicview_views: [service_view]
+        dynamicview_weight: 39
+        dynamicview_relations:
+            impacts:
+                - filesystem
+            impacted_by:
+                - volumeGroup
+                - blockDevice
+                - logicalVolumes
 
 class_relationships:
     - LinuxDevice 1:MC VolumeGroup
@@ -459,6 +528,8 @@ class_relationships:
     - VolumeGroup 1:MC LogicalVolume
     - LogicalVolume 1:MC SnapshotVolume
     - LinuxDevice 1:MC LinuxService
+    - VolumeGroup 1:MC ThinPool
+    - ThinPool 1:M LogicalVolume
 
 
 device_classes:
@@ -471,7 +542,6 @@ device_classes:
             zCollectorPlugins:
                 - zenoss.cmd.uname
                 - zenoss.cmd.linux.df
-                - zenoss.cmd.linux.alt_kernel_name
                 - zenoss.cmd.linux.cpuinfo
                 - zenoss.cmd.linux.interfaces
                 - zenoss.cmd.linux.lvm
@@ -479,7 +549,6 @@ device_classes:
                 - zenoss.cmd.linux.netstat_an
                 - zenoss.cmd.linux.netstat_rn
                 - zenoss.cmd.linux.process
-                - zenoss.cmd.linux.rpm
                 - zenoss.cmd.linux.sudo_dmidecode
                 - zenoss.cmd.linux.os_release
                 - zenoss.cmd.linux.os_service
@@ -526,6 +595,12 @@ device_classes:
                                 rrdmin: 0
                                 aliases:
                                     cpu_user__pct: ""
+
+                            ssCpuNicePerCpu:
+                                rrdtype: DERIVE
+                                rrdmin: 0
+                                aliases:
+                                    cpu_nice__pct: ""
 
                             ssCpuSystemPerCpu:
                                 rrdtype: DERIVE
@@ -666,6 +741,10 @@ device_classes:
                                 dpName: cpu_ssCpuUserPerCpu
                                 format: "%7.2lf%%"
 
+                            Nice:
+                                dpName: cpu_ssCpuNicePerCpu
+                                format: "%7.2lf%%"
+
                             System:
                                 dpName: cpu_ssCpuSystemPerCpu
                                 format: "%7.2lf%%"
@@ -752,6 +831,72 @@ device_classes:
                                 dpName: io_ssIORawSent
                                 format: "%7.2lf%s"
                                 color: 98df8a
+
+            CPU:
+                description: "Linux device monitoring via SSH."
+                targetPythonClass: Products.ZenModel.CPU
+
+                datasources:
+                    cpu:
+                        type: COMMAND
+                        usessh: true
+                        commandTemplate: "/usr/bin/env cat /proc/stat"
+                        parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.cpu
+                        component: "${here/id}"
+                        eventClass: /Ignore
+                        severity: Clear
+
+                        datapoints:
+                            ssCpuUsedPerCpu:
+                                rrdtype: DERIVE
+                                rrdmin: 0
+
+                            ssCpuIdle:
+                                rrdtype: DERIVE
+                                rrdmin: 0
+
+                            ssCpuUser:
+                                rrdtype: DERIVE
+                                rrdmin: 0
+
+                            ssCpuNice:
+                                rrdtype: DERIVE
+                                rrdmin: 0
+
+                            ssCpuSystem:
+                                rrdtype: DERIVE
+                                rrdmin: 0
+
+                            ssCpuWait:
+                                rrdtype: DERIVE
+                                rrdmin: 0
+
+                graphs:
+                    CPU Utilization:
+                        units: percent
+                        miny: 0
+                        maxy: 100
+
+                        graphpoints:
+                            Busy:
+                                dpName: cpu_ssCpuUsedPerCpu
+                                format: "%7.2lf%%"
+
+                            User:
+                                dpName: cpu_ssCpuUser
+                                format: "%7.2lf%%"
+
+                            Nice:
+                                dpName: cpu_ssCpuNice
+                                format: "%7.2lf%%"
+
+                            System:
+                                dpName: cpu_ssCpuSystem
+                                format: "%7.2lf%%"
+
+                            Wait:
+                                dpName: cpu_ssCpuWait
+                                format: "%7.2lf%%"
 
             ethernetCsmacd:
                 description: "Ethernet (and default) network interface monitoring for Linux via SSH."
@@ -917,7 +1062,7 @@ device_classes:
                     disk:
                         type: COMMAND
                         usessh: true
-                        commandTemplate: "/bin/sh -c 'export PATH=$$PATH:/bin:/sbin:/usr/bin:/usr/sbin; if command -v timeout > /dev/null 2>&1; then timeout 30 /usr/bin/env df -kP; else /usr/bin/env df -kP; fi'"
+                        commandTemplate: "/bin/sh -c 'export PATH=$$PATH:/bin:/sbin:/usr/bin:/usr/sbin; if command -v timeout > /dev/null 2>&1; then timeout 30 /usr/bin/env sudo df -kP; else /usr/bin/env sudo df -kP; fi'"
                         parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.df
                         component: "${here/id}"
                         eventClass: /Ignore
@@ -942,7 +1087,7 @@ device_classes:
                     idisk:
                         type: COMMAND
                         usessh: true
-                        commandTemplate: "/bin/sh -c 'export PATH=$$PATH:/bin:/sbin:/usr/bin:/usr/sbin; if command -v timeout > /dev/null 2>&1; then timeout 30 /usr/bin/env df -ikP; else /usr/bin/env df -ikP; fi'"
+                        commandTemplate: "/bin/sh -c 'export PATH=$$PATH:/bin:/sbin:/usr/bin:/usr/sbin; if command -v timeout > /dev/null 2>&1; then timeout 30 /usr/bin/env sudo df -ikP; else /usr/bin/env sudo df -ikP; fi'"
                         parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.dfi
                         component: "${here/id}"
                         eventClass: /Ignore
@@ -1030,7 +1175,7 @@ device_classes:
                     disk:
                         type: COMMAND
                         usessh: true
-                        commandTemplate: "/bin/sh -c 'export PATH=$$PATH:/bin:/sbin:/usr/bin:/usr/sbin; if command -v timeout > /dev/null 2>&1; then timeout 30 /usr/bin/env df -kP; else /usr/bin/env df -kP; fi'"
+                        commandTemplate: "/bin/sh -c 'export PATH=$$PATH:/bin:/sbin:/usr/bin:/usr/sbin; if command -v timeout > /dev/null 2>&1; then timeout 30 /usr/bin/env sudo df -kP; else /usr/bin/env sudo df -kP; fi'"
                         parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.df
                         component: "${here/id}"
                         eventClass: /Ignore
@@ -1055,7 +1200,7 @@ device_classes:
                     idisk:
                         type: COMMAND
                         usessh: true
-                        commandTemplate: "/bin/sh -c 'export PATH=$$PATH:/bin:/sbin:/usr/bin:/usr/sbin; if command -v timeout > /dev/null 2>&1; then timeout 30 /usr/bin/env df -ikP; else /usr/bin/env df -ikP; fi'"
+                        commandTemplate: "/bin/sh -c 'export PATH=$$PATH:/bin:/sbin:/usr/bin:/usr/sbin; if command -v timeout > /dev/null 2>&1; then timeout 30 /usr/bin/env sudo df -ikP; else /usr/bin/env sudo df -ikP; fi'"
                         parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.dfi
                         component: "${here/id}"
                         eventClass: /Ignore
@@ -1197,6 +1342,89 @@ device_classes:
                             Used:
                                 dpName: ps_mem
                                 format: "%7.2lf%s"
+
+            OSService-SYSTEMD:
+                description: "Linux systemd init system monitoring via SSH."
+                targetPythonClass: ZenPacks.zenoss.LinuxMonitor.LinuxService
+
+                datasources:
+                    service:
+                        type: COMMAND
+                        usessh: true
+                        # Check for systemd for services
+                        commandTemplate: >
+                                           /bin/sh -c 'export PATH=$$PATH:/bin:/sbin:/usr/bin:/usr/sbin;
+                                           if command -v systemctl > /dev/null 2>&1;
+                                           then echo "SYSTEMD";
+                                           sudo systemctl list-units -t service --all --no-page --no-legend |
+                                           sed "/not-found/d ; s/\s.*$$//" | xargs -n 1 sudo systemctl status --no-pager -l -n 0 2>&1 || true;
+                                           else echo "UNKNOWN";
+                                           exit 127;
+                                           fi'
+                        parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.service
+                        component: "${here/id}"
+                        eventClass: /Status
+                        severity: Warning
+
+                        datapoints:
+                            status:
+                                rrdmin: 0
+                                aliases:
+                                    service_status: ""
+
+            OSService-UPSTART:
+                description: "Linux upstart init system monitoring via SSH."
+                targetPythonClass: ZenPacks.zenoss.LinuxMonitor.LinuxService
+
+                datasources:
+                    service:
+                        type: COMMAND
+                        usessh: true
+                        # Check for upstart for services
+                        commandTemplate: >
+                                           /bin/sh -c 'export PATH=$$PATH:/bin:/sbin:/usr/bin:/usr/sbin;
+                                           if command -v initctl >/dev/null 2>&1;
+                                           then echo "UPSTART"; sudo initctl list 2>&1 || true;
+                                           else echo "UNKNOWN";
+                                           exit 127;
+                                           fi'
+                        parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.service
+                        component: "${here/id}"
+                        eventClass: /Status
+                        severity: Warning
+
+                        datapoints:
+                            status:
+                                rrdmin: 0
+                                aliases:
+                                    service_status: ""
+
+            OSService-SYSTEMV:
+                description: "Linux systemV monitoring via SSH."
+                targetPythonClass: ZenPacks.zenoss.LinuxMonitor.LinuxService
+
+                datasources:
+                    service:
+                        type: COMMAND
+                        usessh: true
+                        # Check for systemv for services
+                        commandTemplate: >
+                                           /bin/sh -c 'export PATH=$$PATH:/bin:/sbin:/usr/bin:/usr/sbin;
+                                           if command -v service >/dev/null 2>&1;
+                                           then echo "SYSTEMV"; sudo /etc/init.d/${here/title} status > /dev/null 2>&1; echo $$? || true;
+                                           else echo "UNKNOWN";
+                                           exit 127;
+                                           fi'
+                        parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.service
+                        component: "${here/id}"
+                        eventClass: /Status
+                        severity: Warning
+
+                        datapoints:
+                            status:
+                                rrdmin: 0
+                                aliases:
+                                    service_status: ""
 
             PhysicalVolume:
                 description: "Linux LVM physical volume monitoring via SSH."
@@ -1567,3 +1795,77 @@ device_classes:
                                 dpName: diskstats_msDoingIOWeighted
                                 rpn: "10,/"
                                 format: "%7.2lf%%"
+
+            ThinPool:
+                description: "Linux LVM thin pool monitoring via SSH."
+                targetPythonClass: ZenPacks.zenoss.LinuxMonitor.ThinPool
+
+                datasources:
+                    poolstats:
+                        type: COMMAND
+                        usessh: true
+                        commandTemplate: "/usr/bin/env sudo lvs --noheadings -o vg_name,lv_name,data_percent,metadata_percent"
+                        parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.poolstats
+                        component: "${here/id}"
+                        eventClass: /Ignore
+                        severity: Clear
+
+                        datapoints:
+                            percentDataUsed:
+                                rrdmin: 0
+                                aliases:
+                                    lv_pool_datapercent: ""
+                            percentMetaDataUsed:
+                                rrdmin: 0
+                                aliases:
+                                    lv_pool_metadatapercent: ""
+                    status:
+                        type: COMMAND
+                        usessh: true
+                        commandTemplate: "/usr/bin/env sudo lvs --noheadings -o vg_name,lv_name,lv_attr"
+                        parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.lvsstatus
+                        component: "${here/id}"
+                        eventClass: /Status
+                        component: "${here/id}"
+                        eventClass: /Ignore
+                        severity: Clear
+
+                        datapoints:
+                            state:
+                                rrdmin: 0
+                                aliases:
+                                    lvm_pool_state__bool: ""
+
+                            health:
+                                rrdmin: 0
+                                aliases:
+                                    lvm_pool_health__bool: ""
+                thresholds:
+                    "90 percent used":
+                        type: MinMaxThreshold
+                        maxval: "90"
+                        eventClass: /Status
+                        dsnames:
+                            - poolstats_percentDataUsed
+                            - poolstats_percentMetaDataUsed
+
+                graphs:
+                    Pool Utilization:
+                        units: percent
+                        miny: 0
+                        maxy: 100
+                        graphpoints:
+                            Data:
+                                dpName: poolstats_percentDataUsed
+                                format: "%7.2lf%%"
+
+                            MetaData:
+                                dpName: poolstats_percentMetaDataUsed
+                                format: "%7.2lf%%"
+event_classes:
+    /Status:
+        remove: false
+        mappings:
+            linux-services:
+                eventClassKey: linux-services
+                sequence: 100

@@ -10,7 +10,7 @@
 import logging
 LOG = logging.getLogger("zen.LinuxMonitor")
 
-from . import zenpacklib
+from ZenPacks.zenoss.ZenPackLib import zenpacklib
 import os.path
 from Products.CMFCore.DirectoryView import registerDirectory
 
@@ -21,11 +21,22 @@ if os.path.isdir(skinsDir):
 # CFG is necessary when using zenpacklib.TestCase.
 CFG = zenpacklib.load_yaml()
 
-from . import schema
+schema = CFG.zenpack_module.schema
 from . import transforms
 
 
 class ZenPack(schema.ZenPack):
+    """ZenPack class override"""
+    packZProperties_data = {
+        'zLinuxServicesModeled': {
+            'type': 'lines',
+            'description': 'Sets regular expressions of services to model',
+            'label': 'Regex expressions to model services'},
+        'zLinuxServicesNotModeled': {
+            'type': 'lines',
+            'description': 'Sets regular expressions of services to not model',
+            'label': 'Regex expressions to ignore services from modeling'},
+    }
 
     def install(self, app):
         super(ZenPack, self).install(app)

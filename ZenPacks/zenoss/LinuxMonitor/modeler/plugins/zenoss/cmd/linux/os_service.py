@@ -55,6 +55,11 @@ Systemd output('systemctl list-units -t service --all --no-page --no-legend | cu
        display-manager.service
        Loaded: not-found (Reason: No such file or directory)
        Active: inactive (dead)
+     kdump.service - Crash recovery kernel arming
+       Loaded: loaded (/usr/lib/systemd/system/kdump.service; disabled; vendor preset: enabled)
+       Active: failed (Result: exit-code) since Tue 2018-03-06 12:05:18 CST; 2 days ago
+       Process: 32754 ExecStart=/usr/bin/kdumpctl start (code=exited, status=1/FAILURE)
+       Main PID: 32754 (code=exited, status=1/FAILURE)
     ...
 
 
@@ -91,36 +96,92 @@ Upstart output('initctl list'):
     ...
 
 
-Systemv output('service --status-all'):
+Systemv output('ls -l /etc/rc${CURRENT_RUNLEVEL}.d/'):
 
     ...
-    htcacheclean is stopped
-    httpd is stopped
-    ip6tables: Firewall is not running.
-    IPsec stopped
-    iptables: Firewall is not running.
-    irqbalance (pid  1163) is running...
-    iscsi is stopped
-    iscsid is stopped
-    Kdump is not operational
-    lldpad (pid  1200) is running...
-    lvmetad is stopped
-    mdmonitor is stopped
-    messagebus (pid  1240) is running...
-    multipathd is stopped
-    mysqld is stopped
-    netconsole module not loaded
-    Configured devices:
-    lo Auto_eth0
-    Currently active devices:
-    lo eth0
-    NetworkManager (pid  1251) is running...
-    rpc.svcgssd is stopped
-    rpc.mountd is stopped
-    nfsd is stopped
-    rpc.rquotad is stopped
-    rpc.statd (pid  1270) is running...
-    nscd is stopped
+    total 288
+    lrwxrwxrwx 1 root root 17 Oct  1  2009 K00ipmievd -> ../init.d/ipmievd
+    lrwxrwxrwx 1 root root 17 Oct  1  2009 K01dnsmasq -> ../init.d/dnsmasq
+    lrwxrwxrwx 1 root root 24 Oct  1  2009 K02avahi-dnsconfd -> ../init.d/avahi-dnsconfd
+    lrwxrwxrwx 1 root root 24 Oct  1  2009 K02NetworkManager -> ../init.d/NetworkManager
+    lrwxrwxrwx 1 root root 16 Oct  1  2009 K05conman -> ../init.d/conman
+    lrwxrwxrwx 1 root root 19 Oct  1  2009 K05saslauthd -> ../init.d/saslauthd
+    lrwxrwxrwx 1 root root 17 Oct  1  2009 K05wdaemon -> ../init.d/wdaemon
+    lrwxrwxrwx 1 root root 16 Oct  1  2009 K10psacct -> ../init.d/psacct
+    lrwxrwxrwx 1 root root 15 Oct  1  2009 K15httpd -> ../init.d/httpd
+    lrwxrwxrwx 1 root root 13 Oct  1  2009 K20nfs -> ../init.d/nfs
+    lrwxrwxrwx 1 root root 14 Oct  1  2009 K24irda -> ../init.d/irda
+    lrwxrwxrwx 1 root root 13 Oct  1  2009 K35smb -> ../init.d/smb
+    lrwxrwxrwx 1 root root 19 Oct  1  2009 K35vncserver -> ../init.d/vncserver
+    lrwxrwxrwx 1 root root 17 Oct  1  2009 K35winbind -> ../init.d/winbind
+    lrwxrwxrwx 1 root root 16 Oct 15  2009 K36mysqld -> ../init.d/mysqld
+    lrwxrwxrwx 1 root root 20 Oct  1  2009 K50netconsole -> ../init.d/netconsole
+    lrwxrwxrwx 1 root root 19 Oct 15  2009 K50snmptrapd -> ../init.d/snmptrapd
+    lrwxrwxrwx 1 root root 20 Oct  1  2009 K69rpcsvcgssd -> ../init.d/rpcsvcgssd
+    lrwxrwxrwx 1 root root 16 Oct  1  2009 K73ypbind -> ../init.d/ypbind
+    lrwxrwxrwx 1 root root 14 Oct 15  2009 K74ipmi -> ../init.d/ipmi
+    lrwxrwxrwx 1 root root 14 Oct  1  2009 K74nscd -> ../init.d/nscd
+    lrwxrwxrwx 1 root root 15 Oct  1  2009 K80kdump -> ../init.d/kdump
+    lrwxrwxrwx 1 root root 15 Oct  1  2009 K85mdmpd -> ../init.d/mdmpd
+    lrwxrwxrwx 1 root root 20 Oct  1  2009 K87multipathd -> ../init.d/multipathd
+    lrwxrwxrwx 1 root root 24 Oct  1  2009 K88wpa_supplicant -> ../init.d/wpa_supplicant
+    lrwxrwxrwx 1 root root 14 Oct  1  2009 K89dund -> ../init.d/dund
+    lrwxrwxrwx 1 root root 18 Oct  1  2009 K89netplugd -> ../init.d/netplugd
+    lrwxrwxrwx 1 root root 14 Oct  1  2009 K89pand -> ../init.d/pand
+    lrwxrwxrwx 1 root root 15 Oct  1  2009 K89rdisc -> ../init.d/rdisc
+    lrwxrwxrwx 1 root root 14 Oct  1  2009 K91capi -> ../init.d/capi
+    lrwxrwxrwx 1 root root 23 Oct  1  2009 S00microcode_ctl -> ../init.d/microcode_ctl
+    lrwxrwxrwx 1 root root 22 Oct  1  2009 S02lvm2-monitor -> ../init.d/lvm2-monitor
+    lrwxrwxrwx 1 root root 25 Oct  1  2009 S04readahead_early -> ../init.d/readahead_early
+    lrwxrwxrwx 1 root root 15 Oct  1  2009 S05kudzu -> ../init.d/kudzu
+    lrwxrwxrwx 1 root root 18 Oct  1  2009 S06cpuspeed -> ../init.d/cpuspeed
+    lrwxrwxrwx 1 root root 19 Apr 11 08:18 S08ip6tables -> ../init.d/ip6tables
+    lrwxrwxrwx 1 root root 18 Apr 11 08:17 S08iptables -> ../init.d/iptables
+    lrwxrwxrwx 1 root root 18 Oct  1  2009 S08mcstrans -> ../init.d/mcstrans
+    lrwxrwxrwx 1 root root 14 Oct  1  2009 S09isdn -> ../init.d/isdn
+    lrwxrwxrwx 1 root root 17 Oct  1  2009 S10network -> ../init.d/network
+    lrwxrwxrwx 1 root root 16 Oct  1  2009 S11auditd -> ../init.d/auditd
+    lrwxrwxrwx 1 root root 21 Oct  1  2009 S12restorecond -> ../init.d/restorecond
+    lrwxrwxrwx 1 root root 16 Oct  1  2009 S12syslog -> ../init.d/syslog
+    lrwxrwxrwx 1 root root 20 Oct  1  2009 S13irqbalance -> ../init.d/irqbalance
+    lrwxrwxrwx 1 root root 17 Oct  1  2009 S13portmap -> ../init.d/portmap
+    lrwxrwxrwx 1 root root 17 Oct  1  2009 S14nfslock -> ../init.d/nfslock
+    lrwxrwxrwx 1 root root 19 Oct  1  2009 S15mdmonitor -> ../init.d/mdmonitor
+    lrwxrwxrwx 1 root root 19 Oct  1  2009 S18rpcidmapd -> ../init.d/rpcidmapd
+    lrwxrwxrwx 1 root root 17 Oct  1  2009 S19rpcgssd -> ../init.d/rpcgssd
+    lrwxrwxrwx 1 root root 22 Oct  2  2009 S19vmware-tools -> ../init.d/vmware-tools
+    lrwxrwxrwx 1 root root 20 Oct  1  2009 S22messagebus -> ../init.d/messagebus
+    lrwxrwxrwx 1 root root 24 Oct  1  2009 S23setroubleshoot -> ../init.d/setroubleshoot
+    lrwxrwxrwx 1 root root 19 Oct  1  2009 S25bluetooth -> ../init.d/bluetooth
+    lrwxrwxrwx 1 root root 15 Oct  1  2009 S25netfs -> ../init.d/netfs
+    lrwxrwxrwx 1 root root 15 Oct  1  2009 S25pcscd -> ../init.d/pcscd
+    lrwxrwxrwx 1 root root 15 Oct  1  2009 S26acpid -> ../init.d/acpid
+    lrwxrwxrwx 1 root root 14 Oct  1  2009 S26apmd -> ../init.d/apmd
+    lrwxrwxrwx 1 root root 19 Oct  1  2009 S26haldaemon -> ../init.d/haldaemon
+    lrwxrwxrwx 1 root root 14 Oct  1  2009 S26hidd -> ../init.d/hidd
+    lrwxrwxrwx 1 root root 20 Oct 15  2009 S26lm_sensors -> ../init.d/lm_sensors
+    lrwxrwxrwx 1 root root 16 Oct  1  2009 S28autofs -> ../init.d/autofs
+    lrwxrwxrwx 1 root root 15 Oct  1  2009 S50hplip -> ../init.d/hplip
+    lrwxrwxrwx 1 root root 15 Oct 15  2009 S50snmpd -> ../init.d/snmpd
+    lrwxrwxrwx 1 root root 14 Oct  1  2009 S55sshd -> ../init.d/sshd
+    lrwxrwxrwx 1 root root 14 Oct  1  2009 S56cups -> ../init.d/cups
+    lrwxrwxrwx 1 root root 20 Oct  1  2009 S56rawdevices -> ../init.d/rawdevices
+    lrwxrwxrwx 1 root root 16 Oct  1  2009 S56xinetd -> ../init.d/xinetd
+    lrwxrwxrwx 1 root root 14 Oct 15  2009 S58ntpd -> ../init.d/ntpd
+    lrwxrwxrwx 1 root root 18 Oct  1  2009 S80sendmail -> ../init.d/sendmail
+    lrwxrwxrwx 1 root root 13 Oct  1  2009 S85gpm -> ../init.d/gpm
+    lrwxrwxrwx 1 root root 15 Oct  1  2009 S90crond -> ../init.d/crond
+    lrwxrwxrwx 1 root root 13 Oct  1  2009 S90xfs -> ../init.d/xfs
+    lrwxrwxrwx 1 root root 17 Oct  1  2009 S95anacron -> ../init.d/anacron
+    lrwxrwxrwx 1 root root 13 Oct  1  2009 S95atd -> ../init.d/atd
+    lrwxrwxrwx 1 root root 15 Oct 15  2009 S95jexec -> ../init.d/jexec
+    lrwxrwxrwx 1 root root 25 Oct  1  2009 S96readahead_later -> ../init.d/readahead_later
+    lrwxrwxrwx 1 root root 15 Oct  1  2009 S97rhnsd -> ../init.d/rhnsd
+    lrwxrwxrwx 1 root root 22 Oct  1  2009 S97yum-updatesd -> ../init.d/yum-updatesd
+    lrwxrwxrwx 1 root root 22 Oct  1  2009 S98avahi-daemon -> ../init.d/avahi-daemon
+    lrwxrwxrwx 1 root root 19 Oct  1  2009 S99firstboot -> ../init.d/firstboot
+    lrwxrwxrwx 1 root root 11 Oct  1  2009 S99local -> ../rc.local
+    lrwxrwxrwx 1 root root 16 Oct  1  2009 S99smartd -> ../init.d/smartd
     ...
 
 
@@ -143,16 +204,17 @@ RE_SYSTEMD_SERVICE = re.compile(
                         'Loaded:\s(?P<loaded_status>\w.+\))\s+'          # loaded status
                         '(Drop-In:(?P<drop_in>\s/\w[\w./].+)\s+)?'       # optional Drop-In
                         'Active:\s+'
-                        '(?P<active_status>\w+\s\(\w+\)(\ssince.+ago)?)' # active status
+                        '(?P<active_status>\w+\s\([\w:\s-]+\)(\ssince.+ago)?)' # active status
                         '(.+Main\sPID:\s(?P<main_pid>\d+))?'             # optional sevicepid
                         '.*')
-RE_UPSTART_SERVICE = re.compile('(?P<title>[A-Za-z0-9\-\.]+)\s'
-                                '(?P<active_status>[\w/]+)'
-                                '(.\sprocess\s(?P<main_pid>\d+))?')
-RE_SYSTEMV_SERVICE = re.compile('(?P<title>[A-Za-z0-9_\-\.\s:]+)'
-                                '((\s|:)\(pid\s+(?P<main_pid>\d+)\))?'
-                                '\sis\s(?P<active_status>[\w\s]+)')
-RE_PROCESS = re.compile('(?<=Process:\s)(\d+\s\w+=\S+\s([A-z\-=]+\s)*\(\S+\s\S+\))')
+RE_UPSTART_SERVICE = re.compile('(?P<title>[\w\-]+(\s\([\w\/]+\))?)\s'   # service title
+                                '(?P<active_status>[\w\/]+)'             # active status
+                                '(.\sprocess\s(?P<main_pid>\d+))?')      # active status if exists
+# Only links that start with 'S' are running in current runlevel
+# Matches output of "ls -l /etc/rc${CURRENT_RUNLEVEL}.d/"
+#   lrwxrwxrwx 1 root root 16 Oct 15  2009 K36mysqld -> ../init.d/mysqld
+#   lrwxrwxrwx 1 root root 15 Oct 15  2009 S50snmpd -> ../init.d/snmpd
+RE_SYSTEMV_SERVICE = re.compile(ur'S\d+[\w-]+\s->\s\.\./init\.d/(?P<title>.+)')
 
 
 def systemd_getServices(services):
@@ -169,13 +231,48 @@ def systemd_getServices(services):
         return re.sub(ur'\u25cf', '\n', uServices).splitlines()
     else:
         uServices = unicode('\n'.join(services), 'utf-8')
-        return re.sub(r'\n([\s\w])', '\\1',uServices).splitlines()
+        return re.sub(r'\n([\s\w])', '\\1', uServices).splitlines()
 
 
-def systemd_getProcesses(line):
-    matches = RE_PROCESS.findall(line)
-    if matches:
-        return zip(*matches)[0]
+def check_services_modeled(model_list, ignore_list, title):
+    # Return False if service is not to be modeled
+    for name in ignore_list:
+        if re.match(name, title):
+            return False
+
+    for name in model_list:
+        if re.match(name, title):
+            return True
+    return False
+
+
+def validate_modeling_regex(device, log):
+    # Validate Regex and return valid expressions
+    model_list, ignore_list = [], []
+
+    zLinuxServicesModeled = getattr(device, 'zLinuxServicesModeled', [])
+    # Regex '.*' or empty list will model all services by default
+    if not len(zLinuxServicesModeled):
+        model_list.append('.*')
+    # Make list for services to be modeled
+    for name in zLinuxServicesModeled:
+        try:
+            re.compile(name)
+            model_list.append(name)
+        except:
+            log.warn('Ignoring "{}" in zLinuxServicesModeled. '
+                     'Invalid Regular Expression.'.format(name))
+
+    # Make list for services to be ignored
+    for name in getattr(device, 'zLinuxServicesNotModeled', []):
+        try:
+            re.compile(name)
+            ignore_list.append(name)
+        except:
+            log.warn('Ignoring "{}" in zLinuxServicesNotModeled. '
+                     'Invalid Regular Expression.'.format(name))
+
+    return model_list, ignore_list
 
 
 SERVICE_MAP = {
@@ -183,7 +280,6 @@ SERVICE_MAP = {
         'regex': RE_SYSTEMD_SERVICE,
         'functions': {
             'services': systemd_getServices,
-            'processes': systemd_getProcesses
         }
     },
     'UPSTART': {
@@ -197,17 +293,18 @@ SERVICE_MAP = {
 
 
 class os_service(LinuxCommandPlugin):
-
+    requiredProperties = ('zLinuxServicesModeled', 'zLinuxServicesNotModeled')
+    deviceProperties = LinuxCommandPlugin.deviceProperties + requiredProperties
     command = ('export PATH=$PATH:/bin:/sbin:/usr/bin:/usr/sbin; '
                'if command -v systemctl >/dev/null 2>&1; then '
                 'echo "SYSTEMD"; '
-                'sudo systemctl list-units -t service --all --no-page --no-legend | sed /not-found/d | cut -d" " -f1 | xargs -n 1 sudo systemctl status -l -n 0 2>&1 || true; '
+                'sudo systemctl list-units -t service --all --no-page --no-legend | sed /not-found/d | cut -d" " -f1 | xargs -n 1 sudo systemctl status --no-pager -l -n 0 2>&1 || true; '
                'elif command -v initctl >/dev/null 2>&1; then '
                 'echo "UPSTART"; '
                 'sudo initctl list 2>&1 || true ; '
                'elif command -v service >/dev/null 2>&1; then '
                 'echo "SYSTEMV"; '
-                'sudo service --status-all 2>&1 || true; '
+                'sudo ls -l /etc/rc$(/sbin/runlevel | awk \'{print $2}\').d/ 2>&1 || true; '
                'else '
                 'echo "UNKNOWN"; '
                 'exit 127; '
@@ -217,23 +314,40 @@ class os_service(LinuxCommandPlugin):
     relname = 'linuxServices'
     modname = 'ZenPacks.zenoss.LinuxMonitor.LinuxService'
 
-    def populateRelMap(self, rm, services, regex, getProcesses, log):
+    def populateRelMap(self, rm, model_list, ignore_list, init_system,
+                       services, regex, log):
+        title_list = []
         for line in services:
             line = line.strip()
-            match = regex.match(line)
+            match = regex.search(line)
             if match:
                 groupdict = match.groupdict()
                 title = groupdict.get('title')
+
+                # Check zProperties for services to be modeled
+                if not check_services_modeled(model_list, ignore_list, title):
+                    continue
+
+                # For SYSTEMD, only model services that are loaded
+                loaded_status_string = groupdict.get('loaded_status', '')
+                if loaded_status_string:
+                    loaded_status = loaded_status_string.strip().split()[0]
+                    if loaded_status != 'loaded':
+                        continue
+
+                # Check for duplicates (systemV shows duplicates e.g. Firewall)
+                if title in title_list:
+                    continue
+
+                # create relmaps
                 om = self.objectMap()
-                om.id = self.prepId(title)
+                om.id = 'service_' + self.prepId(title)
                 om.title = title
-                om.loaded_status = groupdict.get('loaded_status')
-                om.active_status = groupdict.get('active_status')
-                om.main_pid = groupdict.get('main_pid')
+                om.init_system = init_system
                 om.description = groupdict.get('description', '').strip()
-                om.processes = getProcesses(line) if callable(getProcesses) \
-                    else groupdict.get('processes')
                 rm.append(om)
+                # Add service to title_list to check for duplicates later
+                title_list.append(title)
             else:
                 log.debug("Unmapped in populateRelMap(): %s", line)
                 continue
@@ -241,18 +355,21 @@ class os_service(LinuxCommandPlugin):
     def process(self, device, results, log):
         log.info("Processing the OS Service info for device %s", device.id)
         rm = self.relMap()
+        # validate regex and log warning message for invalid regex
+        model_list, ignore_list = validate_modeling_regex(device, log)
         services = results.splitlines()
-        initService = SERVICE_MAP.get(services[0])
+        init_system = services[0]
+        initService = SERVICE_MAP.get(init_system)
         if initService:
-            processesFunc = None
             services = services[1:]
             regex = initService.get('regex')
             functions = initService.get('functions')
             if functions:
                 services = functions.get('services')(services)
-                processesFunc = functions.get('processes')
-            self.populateRelMap(rm, services, regex, processesFunc, log)
-            log.debug("Init service: %s, Relationship: %s", initService, rm.relname)
+            self.populateRelMap(rm, model_list, ignore_list, init_system,
+                                services, regex, log)
+            log.debug("Init service: %s, Relationship: %s", initService,
+                      rm.relname)
         else:
             log.info("Can not parse OS services, init service is unknown!")
 

@@ -9,7 +9,7 @@
 
 """Event transform tests."""
 
-from .. import zenpacklib
+from ZenPacks.zenoss.ZenPackLib import zenpacklib
 from .. import transforms
 
 zenpacklib.enableTesting()

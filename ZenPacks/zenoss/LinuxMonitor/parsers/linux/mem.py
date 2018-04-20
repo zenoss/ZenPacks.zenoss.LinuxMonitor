@@ -43,6 +43,8 @@ class mem(CommandParser):
         # MemAvailable is useful, but only introduced in Linux 3.14.
         # https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/commit/?id=34e431b0ae398fc54ea69ff85ec700722c9da773
         if "MemAvailable" not in values:
+            if "MemFree" not in values:
+                return result
             # Naively use MemFree for MemAvailable on older kernels. It's
             # "pretty much guaranteed to be wrong today", but we don't have the
             # /proc/zoneinfo information to calculate MemAvailable here.
@@ -52,6 +54,10 @@ class mem(CommandParser):
         values["MemUsed"] = values["MemTotal"] - values["MemAvailable"]
         values["MemUsedPercent"] = (
             float(values["MemUsed"]) / float(values["MemTotal"])) * 100.0
+        if datapointMap.get("MemAdjustedUsed"):
+            values["MemAdjustedUsed"] = values["MemTotal"] - (values["MemFree"] + values["Buffers"] + values["Cached"])
+        if datapointMap.get("MemAdjustedUsedPercent"):
+            values["MemAdjustedUsedPercent"] = ((float(values["MemTotal"] - (values["MemFree"] + values["Buffers"] + values["Cached"])) )/ float(values["MemTotal"])) * 100.0
 
         # Add all requested values to result.
         result.values.extend(

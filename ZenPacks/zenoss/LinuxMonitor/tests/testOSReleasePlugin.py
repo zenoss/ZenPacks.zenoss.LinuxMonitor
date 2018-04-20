@@ -16,6 +16,7 @@ from Products.ZenTestCase.BaseTestCase import BaseTestCase
 
 from ZenPacks.zenoss.LinuxMonitor.modeler.plugins.zenoss.cmd.linux.os_release \
     import os_release
+from Products.DataCollector.plugins.DataMaps import MultiArgs
 
 
 LOG = logging.getLogger("zen.testcases")
@@ -51,7 +52,7 @@ class TestOSReleasePlugin(BaseTestCase):
         input = re.sub('\s{2,}', '\n', input.strip())
         om = self.plugin.process(self.device, input, LOG)
         self.assertEquals(
-            om.setOSProductKey, "Red Hat Enterprise Linux Server 7.2 (Maipo)")
+            str(om.setOSProductKey), str(MultiArgs("Red Hat Enterprise Linux Server 7.2 (Maipo)", "RedHat")))
 
     def testCentOSInput(self):
         input = """
@@ -78,7 +79,7 @@ class TestOSReleasePlugin(BaseTestCase):
         input = re.sub('\s{2,}', '\n', input.strip())
         om = self.plugin.process(self.device, input, LOG)
         self.assertEquals(
-            om.setOSProductKey, "CentOS Linux 7 (Core)")
+            str(om.setOSProductKey), str(MultiArgs("CentOS Linux 7 (Core)", "CentOS")))
 
     def testDebianInput(self):
         input = """
@@ -95,7 +96,7 @@ class TestOSReleasePlugin(BaseTestCase):
         input = re.sub('\s{2,}', '\n', input.strip())
         om = self.plugin.process(self.device, input, LOG)
         self.assertEquals(
-            om.setOSProductKey, "Debian GNU/Linux 7 (wheezy)")
+            str(om.setOSProductKey), str(MultiArgs("Debian GNU/Linux 7 (wheezy)","Debian")))
 
     def testUbuntuInput(self):
         input = """
@@ -116,7 +117,7 @@ class TestOSReleasePlugin(BaseTestCase):
         input = re.sub('\s{2,}', '\n', input.strip())
         om = self.plugin.process(self.device, input, LOG)
         self.assertEquals(
-            om.setOSProductKey, "Ubuntu 14.04.1 LTS")
+            str(om.setOSProductKey), str(MultiArgs("Ubuntu 14.04.1 LTS","Ubuntu")))
 
 
 def test_suite():
