@@ -139,6 +139,11 @@ class ps(CommandParser):
             primaryUrlPath = cmd.primaryUrlPath,
             generatedId    = cmd.generatedId)
 
+        if cmd.points:
+            failSeverity = cmd.points[0].data['failSeverity']
+        else:
+            failSeverity = cmd.severity
+
         def matches(processMetrics):
             pid, rss, cpu, cmdAndArgs = processMetrics
             return matcher.matches(cmdAndArgs)
@@ -178,7 +183,6 @@ class ps(CommandParser):
             else:
                 if 'count' in dp.id:
                     results.values.append((dp,0))
-                failSeverity = dp.data['failSeverity']
                 # alert on missing (the process set contains 0 processes...)
                 summary = 'Process set contains 0 running processes: %s' % processSet
                 message = "%s\n   Using regex \'%s\' \n   All Processes have stopped since the last model occurred. Last Modification time (%s)" \
@@ -246,7 +250,7 @@ class ps(CommandParser):
                 message=message,
                 component=cmd.component,
                 eventKey=cmd.generatedId,
-                severity=cmd.severity)
+                severity=failSeverity)
             log.info("(%s) %s", cmd.deviceConfig.device, message)
 
         # report alive processes
