@@ -22,4 +22,10 @@ class LinuxService(schema.LinuxService):
 
     """Model class for Linux OS Service."""
 
-    pass
+    def getRRDTemplates(self):
+        all_templates = super(LinuxService, self).getRRDTemplates()
+        used_templates = []
+        for template in all_templates:
+            if self.init_system in template.id:
+                used_templates.append(template)
+        return used_templates

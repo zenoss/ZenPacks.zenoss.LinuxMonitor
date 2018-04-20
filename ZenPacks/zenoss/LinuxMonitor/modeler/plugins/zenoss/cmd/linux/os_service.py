@@ -298,7 +298,7 @@ class os_service(LinuxCommandPlugin):
     command = ('export PATH=$PATH:/bin:/sbin:/usr/bin:/usr/sbin; '
                'if command -v systemctl >/dev/null 2>&1; then '
                 'echo "SYSTEMD"; '
-                'sudo systemctl list-units -t service --all --no-page --no-legend | sed /not-found/d | cut -d" " -f1 | xargs -n 1 sudo systemctl status -l -n 0 2>&1 || true; '
+                'sudo systemctl list-units -t service --all --no-page --no-legend | sed /not-found/d | cut -d" " -f1 | xargs -n 1 sudo systemctl status --no-pager -l -n 0 2>&1 || true; '
                'elif command -v initctl >/dev/null 2>&1; then '
                 'echo "UPSTART"; '
                 'sudo initctl list 2>&1 || true ; '
@@ -314,8 +314,8 @@ class os_service(LinuxCommandPlugin):
     relname = 'linuxServices'
     modname = 'ZenPacks.zenoss.LinuxMonitor.LinuxService'
 
-    def populateRelMap(self, rm, model_list, ignore_list, services, regex,
-                       log):
+    def populateRelMap(self, rm, model_list, ignore_list, init_system,
+                       services, regex, log):
         title_list = []
         for line in services:
             line = line.strip()
@@ -341,8 +341,9 @@ class os_service(LinuxCommandPlugin):
 
                 # create relmaps
                 om = self.objectMap()
-                om.id = self.prepId(title)
+                om.id = 'service_' + self.prepId(title)
                 om.title = title
+                om.init_system = init_system
                 om.description = groupdict.get('description', '').strip()
                 rm.append(om)
                 # Add service to title_list to check for duplicates later
@@ -357,14 +358,15 @@ class os_service(LinuxCommandPlugin):
         # validate regex and log warning message for invalid regex
         model_list, ignore_list = validate_modeling_regex(device, log)
         services = results.splitlines()
-        initService = SERVICE_MAP.get(services[0])
+        init_system = services[0]
+        initService = SERVICE_MAP.get(init_system)
         if initService:
             services = services[1:]
             regex = initService.get('regex')
             functions = initService.get('functions')
             if functions:
                 services = functions.get('services')(services)
-            self.populateRelMap(rm, model_list, ignore_list,
+            self.populateRelMap(rm, model_list, ignore_list, init_system,
                                 services, regex, log)
             log.debug("Init service: %s, Relationship: %s", initService,
                       rm.relname)

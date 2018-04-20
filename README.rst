@@ -120,11 +120,11 @@ OS Processes
     Severity
 
 OS Services
-    Attributes: Name, Description
+    Attributes: Name, Description, Init System
 
 .. Note::
-   On some Linux flavors some fields (Loaded Status, Processes,
-   Description) could be empty.
+   Prior to version 2.3.0, some columns (Loaded Status, Processes,
+   Description) may be empty. These columns are removed in version 2.3.0
 
 Set Linux Server Monitoring Credentials
 ---------------------------------------
@@ -291,23 +291,25 @@ Modeling and Monitoring OS Services
 The Linux OS services are modeled using the *zenoss.cmd.linux.os_service*
 modeler plugin. The following systems are supported:
 
-- RHEL 5 - systemV
-- RHEL 6 - upstart
-- RHEL 7 - systemd
-- CentOS 5 - systemV
-- CentOS 6 - upstart
-- CentOS 7 - systemd
-- Debian 8 - systemd
-- Debian 9 - systemd
-- Suse 12 - systemd
-- Ubuntu 12 - upstart
-- Ubuntu 14 - upstart
-- Ubuntu 15 - systemd
+- RHEL 5
+- RHEL 6
+- RHEL 7
+- CentOS 5
+- CentOS 6
+- CentOS 7
+- Debian 8
+- Debian 9
+- Suse 12
+- Ubuntu 12
+- Ubuntu 14
+- Ubuntu 15
 
 Version 2.3.0 supports monitoring of the status of **systemd**, **upstart**
-and **systemV** system services. The zProperties *zLinuxServicesModeled* and
-*zLinuxServicesNotModeled* restrict the services that are modeled and thereby
-monitored.
+and **systemV** system services. *OSService-SYSTEMD*, *OSService-UPSTART* and
+*OSService-SYSTEMD* monitoring templates are automatically bound to a service
+component based on the targets modeled init system value. The zProperties
+*zLinuxServicesModeled* and *zLinuxServicesNotModeled* restrict the services
+that are modeled and thereby monitored.
 
 +------------------------------+----------------------------------------------+
 | Name                         | Description                                  |
@@ -319,12 +321,12 @@ monitored.
 |                              | matches one or more services to not model    |
 +------------------------------+----------------------------------------------+
 
-Only *loaded* services are modeled. By default, both zProperties are empty. An
-empty value in ``zLinuxServiceModeled`` is treated as ``.*`` regex and models
-all loaded services. Both the zProperties can support multiple regex
-expressions when separated on new lines. The *OSService* monitoring template
-generates events on every collection cycle for a service that is down. The
-events are automatically cleared if the service is up again.
+Only *loaded* services are modeled. An empty value in ``zLinuxServiceModeled``
+is treated as ``.*`` regex and models all loaded services. Both the
+zProperties can support multiple regex expressions when separated on new lines.
+The *OSService* monitoring template generates events on every collection cycle
+for a service that is down. The events are automatically cleared if the service
+is up again.
 
 .. Note::
    ``zLinuxServicesNotModeled`` overrules ``zLinuxServicesModeled``. If a
@@ -383,7 +385,9 @@ Monitoring Templates
 -  VolumeGroup (in /Devices/Server/SSH/Linux)
 -  LogicalVolume (in /Devices/Server/SSH/Linux)
 -  OSProcess (in /Devices/Server/SSH/Linux)
--  OSService (in /Devices/Server/SSH/Linux)
+-  OSService-SYSTEMD (in /Devices/Server/SSH/Linux)
+-  OSService-UPSTART (in /Devices/Server/SSH/Linux)
+-  OSService-SYSTEMV (in /Devices/Server/SSH/Linux)
 -  ThinPool (in /Devices/Server/SSH/Linux)
 
 Monitoring Templates
@@ -651,7 +655,19 @@ OSProcess (in /Devices/Server/SSH/Linux)
    -  CPU Utilization
    -  Memory Usage
 
-OSService (in /Devices/Server/SSH/Linux)
+OSService-SYSTEMD (in /Devices/Server/SSH/Linux)
+
+-  Data Points
+
+   -  status
+
+OSService-UPSTART (in /Devices/Server/SSH/Linux)
+
+-  Data Points
+
+   -  status
+
+OSService-SYSTEMV (in /Devices/Server/SSH/Linux)
 
 -  Data Points
 
