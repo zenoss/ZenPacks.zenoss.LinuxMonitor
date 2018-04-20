@@ -9,7 +9,7 @@ Releases
 .. _Version-2.3.0: http://wiki.zenoss.org/download/zenpacks/ZenPacks.zenoss.LinuxMonitor/2.3.0/ZenPacks.zenoss.LinuxMonitor-2.3.0.egg
 
 Version-2.3.0_
-   | Released on TODO
+   | Released on 2018/20/4
    | Compatible with Zenoss 4.2.5 - 6.1
    | Requires `ZenPackLib ZenPack </product/zenpacks/zenpacklib>`_
 
