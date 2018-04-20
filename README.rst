@@ -84,6 +84,10 @@ File Systems
     Attributes: Mount Point, Storage Device, Total Bytes, Used Bytes,
     Free Bytes, % Util
 
+.. Note::
+   Some links between server and client of NFS File System and other storage
+   devices are intentionally removed as they significantly impact performance.
+
 Interfaces
     Attributes: IP Interface, IP Addresses, Description, MAC Address,
     Operational Status, Admin Status
@@ -303,6 +307,7 @@ modeler plugin. The following systems are supported:
 - Ubuntu 12
 - Ubuntu 14
 - Ubuntu 15
+- Ubuntu 16
 
 Version 2.3.0 supports monitoring of the status of **systemd**, **upstart**
 and **systemV** system services. *OSService-SYSTEMD*, *OSService-UPSTART* and
@@ -397,7 +402,9 @@ Device (in /Devices/Server/SSH/Linux)
 -  Data Points
 
    -  ssCpuIdlePerCpu
+   -  ssCpuNicePerCpu
    -  ssCpuUserPerCpu
+   -  ssCpuUsedPerCpu
    -  ssCpuSystemPerCpu
    -  ssCpuWaitPerCpu
    -  sysUpTime
@@ -431,6 +438,24 @@ Device (in /Devices/Server/SSH/Linux)
       and Free in the memory used calculation. These datapoints are not added by
       default. To use the datapoints you will need to create datapoints called
       MemAdjustedUsed and MemAdjustedUsedPercent in the mem datasource on the device template.
+
+CPU (in /Devices/Server/SSH/Linux)
+
+-  Data Points
+   -  ssCpuUsedPerCpu
+   -  ssCpuIdle
+   -  ssCpuNice
+   -  ssCpuUser
+   -  ssCpuSystem
+   -  ssCpuWait
+
+-  Thresholds
+
+   -  *None*
+
+-  Graphs
+
+   -  CPU Utilization
 
 HardDisk (in /Devices/Server/SSH/Linux)
 
@@ -660,17 +685,41 @@ OSService-SYSTEMD (in /Devices/Server/SSH/Linux)
 
    -  status
 
+-  Thresholds
+
+   -  *None*
+
+-  Graphs
+
+   -  *None*
+
 OSService-UPSTART (in /Devices/Server/SSH/Linux)
 
 -  Data Points
 
    -  status
 
+-  Thresholds
+
+   -  *None*
+
+-  Graphs
+
+   -  *None*
+
 OSService-SYSTEMV (in /Devices/Server/SSH/Linux)
 
 -  Data Points
 
    -  status
+
+-  Thresholds
+
+   -  *None*
+
+-  Graphs
+
+   -  *None*
 
 Service Impact
 --------------
@@ -725,7 +774,9 @@ Linux.
 +------------------------------+--------------------+--------------------+--------------------+
 |                              | 12.04 LTS          | April 2012         | April 2017         |
 +------------------------------+--------------------+--------------------+--------------------+
-| Debian                       | 8                  | July 2017          | April 2020         |
+| Debian                       | 8                  | April 2015         | April 2020         |
++------------------------------+--------------------+--------------------+--------------------+
+|                              | 9                  | June 2017          | June 2022          |
 +------------------------------+--------------------+--------------------+--------------------+
 | RedHat Enterprise Linux      | 7                  | June 2014          | June 2020          |
 +------------------------------+--------------------+--------------------+--------------------+
@@ -775,6 +826,8 @@ Changes
 
     -  VolumeGroup 1:MC ThinPool
     -  ThinPool 1:M LogicalVolume
+
+- Tested with Zenoss Resource Manager 4.2.5 RPS 743, 5.3.3 and 6.1.2 and Service Impact 5.3.0
 
 2.2.7
 
