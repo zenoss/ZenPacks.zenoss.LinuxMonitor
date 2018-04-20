@@ -364,7 +364,6 @@ Modeler Plugins
 -  zenoss.cmd.linux.sudo\_dmidecode
 -  zenoss.cmd.linux.os\_release
 -  zenoss.cmd.linux.os\_service
--  zenoss.cmd.linux.poolstats
 
 .. Note::
    As of version 2.3.0 the zenoss.cmd.linux.rpm and zenoss.cmd.linux.alt\_kernel\_name
@@ -431,7 +430,7 @@ Device (in /Devices/Server/SSH/Linux)
       MemAdjustedUsedPercent were added. Theses datapoints include Buffers, Cached
       and Free in the memory used calculation. These datapoints are not added by
       default. To use the datapoints you will need to create datapoints called
-      MemAdjustedUsed and MemAdjustedUsedPercent on the device template.
+      MemAdjustedUsed and MemAdjustedUsedPercent in the mem datasource on the device template.
 
 HardDisk (in /Devices/Server/SSH/Linux)
 
