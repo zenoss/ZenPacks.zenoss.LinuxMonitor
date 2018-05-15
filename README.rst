@@ -6,6 +6,13 @@ This ZenPack monitors the Linux Operating System.
 Releases
 --------
 
+.. _Version-2.3.1: http://wiki.zenoss.org/download/zenpacks/ZenPacks.zenoss.LinuxMonitor/2.3.1/ZenPacks.zenoss.LinuxMonitor-2.3.1.egg
+
+Version-2.3.1_
+   | Released on #FIXIT
+   | Compatible with Zenoss 4.2.5 - 6.1
+   | Requires `ZenPackLib ZenPack </product/zenpacks/zenpacklib>`_
+
 .. _Version-2.3.0: http://wiki.zenoss.org/download/zenpacks/ZenPacks.zenoss.LinuxMonitor/2.3.0/ZenPacks.zenoss.LinuxMonitor-2.3.0.egg
 
 Version-2.3.0_
@@ -797,6 +804,10 @@ Linux.
 
 Changes
 -------
+2.3.1
+
+- Fix CPU Busy metric on "CPU Utilization" graph. (ZPS-3531)
+
 2.3.0
 
 - The zenoss.cmd.linux.rpm modeler plugin is now disabled by default. (ZPS-1603)

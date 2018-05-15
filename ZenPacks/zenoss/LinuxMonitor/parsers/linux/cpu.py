@@ -1,6 +1,6 @@
 ##############################################################################
 #
-# Copyright (C) Zenoss, Inc. 2008, all rights reserved.
+# Copyright (C) Zenoss, Inc. 2008-2018, all rights reserved.
 #
 # This content is made available according to terms specified in
 # License.zenoss under the directory where your Zenoss product is installed.
@@ -9,6 +9,7 @@
 
 
 from Products.ZenRRD.CommandParser import CommandParser
+
 
 class cpu(CommandParser):
 
@@ -61,11 +62,13 @@ class cpu(CommandParser):
                         single_cpu_line = line
                         break
 
-            # Check if component or device cpu monitoting
+            # Check if component or device cpu monitoring
             if component:
                 perCpuValues = single_cpu_line.split()
-                # usedCpuPerCpu = userCpu + systemCpu
-                usedCpuPerCpu = float(perCpuValues[1]) + float(perCpuValues[3])
+                userCpuPerCpu = float(perCpuValues[1])
+                niceCpuPerCpu = float(perCpuValues[2])
+                systemCpuPerCpu = float(perCpuValues[3]) 
+                usedCpuPerCpu = userCpuPerCpu + niceCpuPerCpu + systemCpuPerCpu
             else:
                 # If we got a CPU count, set the normalized perCpu values
                 if cpuCount:
@@ -74,7 +77,7 @@ class cpu(CommandParser):
                     niceCpuPerCpu = float(perCpuValues[2]) / float(cpuCount)
                     systemCpuPerCpu = float(perCpuValues[3]) / float(cpuCount)
                     idleCpuPerCpu = float(perCpuValues[4]) / float(cpuCount)
-                    usedCpuPerCpu = userCpuPerCpu + systemCpuPerCpu
+                    usedCpuPerCpu = userCpuPerCpu + niceCpuPerCpu + systemCpuPerCpu 
                     waitCpuPerCpu = float(perCpuValues[5]) / float(cpuCount)
 
             values = perCpuValues[1:]
