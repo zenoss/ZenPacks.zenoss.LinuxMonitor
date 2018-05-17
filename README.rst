@@ -807,6 +807,7 @@ Changes
 2.3.1
 
 - Fix CPU Busy metric on "CPU Utilization" graph. (ZPS-3531)
+- Fix 'no volume group' warning events during modeling. (ZPS-3475)
 
 2.3.0
 
