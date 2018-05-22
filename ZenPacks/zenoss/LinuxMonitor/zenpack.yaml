@@ -614,6 +614,24 @@ device_classes:
                                 aliases:
                                     cpu_wait__pct: ""
 
+                            ssCpuInterruptPerCpu:
+                                rrdtype: DERIVE
+                                rrdmin: 0
+                                aliases:
+                                    cpu_irq__pct: ""
+
+                            ssCpuSoftInterruptPerCpu:
+                                rrdtype: DERIVE
+                                rrdmin: 0
+                                aliases:
+                                    cpu_softirq__pct: ""
+
+                            ssCpuStealPerCpu:
+                                rrdtype: DERIVE
+                                rrdmin: 0
+                                aliases:
+                                    cpu_steal__pct: ""
+
                     uptime:
                         type: COMMAND
                         usessh: true
@@ -737,6 +755,10 @@ device_classes:
                                 dpName: cpu_ssCpuUsedPerCpu
                                 format: "%7.2lf%%"
 
+                            Idle:
+                                dpName: cpu_ssCpuIdlePerCpu
+                                format: "%7.2lf%%"
+
                             User:
                                 dpName: cpu_ssCpuUserPerCpu
                                 format: "%7.2lf%%"
@@ -751,6 +773,18 @@ device_classes:
 
                             Wait:
                                 dpName: cpu_ssCpuWaitPerCpu
+                                format: "%7.2lf%%"
+
+                            Interrupt:
+                                dpName: cpu_ssCpuInterruptPerCpu
+                                format: "%7.2lf%%"
+
+                            Soft Interrupt:
+                                dpName: cpu_ssCpuSoftInterruptPerCpu
+                                format: "%7.2lf%%"
+
+                            Steal:
+                                dpName: cpu_ssCpuStealPerCpu
                                 format: "%7.2lf%%"
 
                     Load Average:
@@ -847,7 +881,7 @@ device_classes:
                         severity: Clear
 
                         datapoints:
-                            ssCpuUsedPerCpu:
+                            ssCpuUsed:
                                 rrdtype: DERIVE
                                 rrdmin: 0
 
@@ -871,6 +905,18 @@ device_classes:
                                 rrdtype: DERIVE
                                 rrdmin: 0
 
+                            ssCpuInterrupt:
+                                rrdtype: DERIVE
+                                rrdmin: 0
+
+                            ssCpuSoftInterrupt:
+                                rrdtype: DERIVE
+                                rrdmin: 0
+
+                            ssCpuSteal:
+                                rrdtype: DERIVE
+                                rrdmin: 0
+
                 graphs:
                     CPU Utilization:
                         units: percent
@@ -879,7 +925,11 @@ device_classes:
 
                         graphpoints:
                             Busy:
-                                dpName: cpu_ssCpuUsedPerCpu
+                                dpName: cpu_ssCpuUsed
+                                format: "%7.2lf%%"
+
+                            Idle:
+                                dpName: cpu_ssCpuIdle
                                 format: "%7.2lf%%"
 
                             User:
@@ -896,6 +946,18 @@ device_classes:
 
                             Wait:
                                 dpName: cpu_ssCpuWait
+                                format: "%7.2lf%%"
+
+                            Interrupt:
+                                dpName: cpu_ssCpuInterrupt
+                                format: "%7.2lf%%"
+
+                            Soft Interrupt:
+                                dpName: cpu_ssCpuSoftInterrupt
+                                format: "%7.2lf%%"
+
+                            Steal:
+                                dpName: cpu_ssCpuSteal
                                 format: "%7.2lf%%"
 
             ethernetCsmacd:
