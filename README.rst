@@ -408,12 +408,15 @@ Device (in /Devices/Server/SSH/Linux)
 
 -  Data Points
 
-   -  ssCpuIdlePerCpu
-   -  ssCpuNicePerCpu
-   -  ssCpuUserPerCpu
    -  ssCpuUsedPerCpu
+   -  ssCpuIdlePerCpu
+   -  ssCpuUserPerCpu
+   -  ssCpuNicePerCpu
    -  ssCpuSystemPerCpu
    -  ssCpuWaitPerCpu
+   -  ssCpuInterruptPerCpu
+   -  ssCpuSoftInterruptPerCpu
+   -  ssCpuStealPerCpu
    -  sysUpTime
    -  laLoadInt15
    -  laLoadInt5
@@ -449,12 +452,15 @@ Device (in /Devices/Server/SSH/Linux)
 CPU (in /Devices/Server/SSH/Linux)
 
 -  Data Points
-   -  ssCpuUsedPerCpu
+   -  ssCpuUsed
    -  ssCpuIdle
-   -  ssCpuNice
    -  ssCpuUser
+   -  ssCpuNice
    -  ssCpuSystem
    -  ssCpuWait
+   -  ssCpuInterrupt
+   -  ssCpuSoftInterrupt
+   -  ssCpuSteal
 
 -  Thresholds
 
@@ -808,6 +814,7 @@ Changes
 
 - Fix CPU Busy metric on "CPU Utilization" graph. (ZPS-3531)
 - Fix 'no volume group' warning events during modeling. (ZPS-3475)
+- Add Idle, Interrupt, Soft Interrupt, Steal metrics on CPU Utilization graph. (ZPS-3547)
 
 2.3.0
 
