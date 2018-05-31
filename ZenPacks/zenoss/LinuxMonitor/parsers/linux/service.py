@@ -7,6 +7,7 @@
 ##############################################################################
 
 import logging
+from Products.ZenEvents import ZenEventClasses
 from Products.ZenRRD.CommandParser import CommandParser
 from ZenPacks.zenoss.LinuxMonitor.modeler.plugins.zenoss.cmd.linux.os_service \
     import SERVICE_MAP
@@ -63,16 +64,20 @@ class service(CommandParser):
                 event_status = 'down'
                 severity = cmd.severity
 
-            result.events.append({
+            event = {
                 'device': cmd.deviceConfig.device,
                 'component': cmd.component,
                 'severity': severity,
-                'eventClass': cmd.eventClass,
-                'eventClassKey': "{}|{}".format("linux-services",
-                                                cmd.component),
+                'eventClassKey': 'linux-service-status',
                 'summary': 'OS Service is {}'.format(event_status),
                 'message': 'Exit status: ' + message
-                })
+            }
+
+            # Mappings can only work if eventClass isn't set.
+            if cmd.eventClass != ZenEventClasses.Unknown:
+                event["eventClass"] = cmd.eventClass
+
+            result.events.append(event)
 
             for dp in cmd.points:
                 if 'status' in dp.id:
@@ -116,17 +121,22 @@ class service(CommandParser):
                 status_value = 0    # STATUS OFF/INACTIVE
                 severity = cmd.severity
                 event_status = 'down'
-            # Send a event if down, else clear events
-            result.events.append({
+
+            event = {
                 'device': cmd.deviceConfig.device,
                 'component': cmd.component,
                 'severity': severity,
-                'eventClass': cmd.eventClass,
-                'eventClassKey': "{}|{}".format("linux-services",
-                                                cmd.component),
+                'eventClassKey': 'linux-service-status',
                 'summary': 'OS Service is {}'.format(event_status),
                 'message': active_status
-                })
+            }
+
+            # Mappings can only work if eventClass isn't set.
+            if cmd.eventClass != ZenEventClasses.Unknown:
+                event["eventClass"] = cmd.eventClass
+
+            # Send a event if down, else clear events
+            result.events.append(event)
             break
 
         for dp in cmd.points:

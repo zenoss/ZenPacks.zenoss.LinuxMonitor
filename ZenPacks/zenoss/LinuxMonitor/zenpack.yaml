@@ -1425,7 +1425,7 @@ device_classes:
                                            fi'
                         parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.service
                         component: "${here/id}"
-                        eventClass: /Status
+                        eventClass: /Unknown
                         severity: Warning
 
                         datapoints:
@@ -1452,7 +1452,7 @@ device_classes:
                                            fi'
                         parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.service
                         component: "${here/id}"
-                        eventClass: /Status
+                        eventClass: /Unknown
                         severity: Warning
 
                         datapoints:
@@ -1479,7 +1479,7 @@ device_classes:
                                            fi'
                         parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.service
                         component: "${here/id}"
-                        eventClass: /Status
+                        eventClass: /Unknown
                         severity: Warning
 
                         datapoints:
@@ -1928,6 +1928,6 @@ event_classes:
     /Status:
         remove: false
         mappings:
-            linux-services:
-                eventClassKey: linux-services
-                sequence: 100
+            linux-service-status:
+                eventClassKey: linux-service-status
+                sequence: 99
