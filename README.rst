@@ -815,6 +815,8 @@ Changes
 - Fix CPU Busy metric on "CPU Utilization" graph. (ZPS-3531)
 - Fix 'no volume group' warning events during modeling. (ZPS-3475)
 - Add Idle, Interrupt, Soft Interrupt, Steal metrics on CPU Utilization graph. (ZPS-3547)
+- Enable better management of service events. (ZPS-3616)
+- Tested with Zenoss Resource Manager 4.2.5 RPS 743, 5.3.3 and 6.1.2 and Service Impact 5.3.1.
 
 2.3.0
 
