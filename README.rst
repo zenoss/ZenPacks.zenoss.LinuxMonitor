@@ -323,6 +323,15 @@ component based on the targets modeled init system value. The zProperties
 *zLinuxServicesModeled* and *zLinuxServicesNotModeled* restrict the services
 that are modeled and thereby monitored.
 
+.. Note::
+   For **systemd**, only services that are enabled (or have "enabled-runtime"
+   status) and *not* inactive are modeled. Futhermore, oneshot services or
+   services with unmet conditions are not modeled or monitored. In order to
+   prevent a service from being modeled and monitored by Zenoss, the service
+   will have to be stopped and disabled. One of those actions alone won’t be
+   sufficient. Another way to prevent a service from modeling is to add it to
+   the ``zLinuxServicesNotModeled`` zProperty.
+
 +------------------------------+----------------------------------------------+
 | Name                         | Description                                  |
 +==============================+==============================================+
@@ -333,12 +342,11 @@ that are modeled and thereby monitored.
 |                              | matches one or more services to not model    |
 +------------------------------+----------------------------------------------+
 
-Only *loaded* services are modeled. An empty value in ``zLinuxServiceModeled``
-is treated as ``.*`` regex and models all loaded services. Both the
-zProperties can support multiple regex expressions when separated on new lines.
-The *OSService* monitoring template generates events on every collection cycle
-for a service that is down. The events are automatically cleared if the service
-is up again.
+An empty value in ``zLinuxServiceModeled`` is treated as ``.*`` regex and
+models all loaded services. Both the zProperties can support multiple regex
+expressions when separated on new lines. The *OSService* monitoring template
+generates events on every collection cycle for a service that is down. The
+events are automatically cleared if the service is up again.
 
 .. Note::
    ``zLinuxServicesNotModeled`` overrules ``zLinuxServicesModeled``. If a
@@ -816,6 +824,7 @@ Changes
 - Fix 'no volume group' warning events during modeling. (ZPS-3475)
 - Add Idle, Interrupt, Soft Interrupt, Steal metrics on CPU Utilization graph. (ZPS-3547)
 - Enable better management of service events. (ZPS-3616)
+- Update SystemD service modeling. (ZPS-3545)
 - Tested with Zenoss Resource Manager 4.2.5 RPS 743, 5.3.3 and 6.1.2 and Service Impact 5.3.1.
 
 2.3.0
