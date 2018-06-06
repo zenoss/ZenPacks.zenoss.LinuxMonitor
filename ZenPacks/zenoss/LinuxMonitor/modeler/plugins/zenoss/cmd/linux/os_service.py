@@ -9,7 +9,7 @@
 
 
 """
-Systemd output('systemctl list-units -t service --all --no-page --no-legend | cut -d" " -f1 | xargs -n 1 systemctl status -l -n 0'):
+Systemd perf output('systemctl list-units -t service --all --no-page --no-legend | cut -d" " -f1 | xargs -n 1 systemctl status -l -n 0'):
     ...
     systemd-udev-trigger.service - udev Coldplug all Devices
        Loaded: loaded (/usr/lib/systemd/system/systemd-udev-trigger.service; static; vendor preset: disabled)
@@ -60,6 +60,59 @@ Systemd output('systemctl list-units -t service --all --no-page --no-legend | cu
        Active: failed (Result: exit-code) since Tue 2018-03-06 12:05:18 CST; 2 days ago
        Process: 32754 ExecStart=/usr/bin/kdumpctl start (code=exited, status=1/FAILURE)
        Main PID: 32754 (code=exited, status=1/FAILURE)
+    ...
+
+
+Systemd model output('for i in $(sudo systemctl list-units -t service --all
+                --no-page --no-legend | sed /not-found/d | cut -d" " -f1) ;
+                do echo "__SPLIT__" ;
+                sudo systemctl show -p Names,Type,Description,LoadState,
+                ActiveState,UnitFileState,MainPID,ConditionResult $i ; done'):
+    ...
+    Type=oneshot
+    MainPID=0
+    Names=iscsi-shutdown.service
+    Description=Logout off all iSCSI sessions on shutdown
+    LoadState=loaded
+    ActiveState=active
+    UnitFileState=static
+    ConditionResult=yes
+    __SPLIT__
+    Type=oneshot
+    MainPID=0
+    Names=iscsi.service
+    Description=Login and scanning of iSCSI devices
+    LoadState=loaded
+    ActiveState=inactive
+    UnitFileState=enabled
+    ConditionResult=no
+    __SPLIT__
+    Type=forking
+    MainPID=0
+    Names=iscsid.service
+    Description=Open-iSCSI
+    LoadState=loaded
+    ActiveState=inactive
+    UnitFileState=disabled
+    ConditionResult=no
+    __SPLIT__
+    Type=forking
+    MainPID=0
+    Names=iscsiuio.service
+    Description=iSCSI UserSpace I/O driver
+    LoadState=loaded
+    ActiveState=inactive
+    UnitFileState=disabled
+    ConditionResult=no
+    __SPLIT__
+    Type=oneshot
+    MainPID=0
+    Names=kdump.service
+    Description=Crash recovery kernel arming
+    LoadState=loaded
+    ActiveState=inactive
+    UnitFileState=disabled
+    ConditionResult=no
     ...
 
 
@@ -198,15 +251,32 @@ Collect linux services information using appropriate init service command.
 """
 
 
-RE_SYSTEMD_SERVICE = re.compile(
-                        '(?P<title>[@\w\-\.:]+)\.service\s\-\s'          # service title
-                        '(?P<description>.+)\s+'                         # description
-                        'Loaded:\s(?P<loaded_status>\w.+\))\s+'          # loaded status
-                        '(Drop-In:(?P<drop_in>\s/\w[\w./].+)\s+)?'       # optional Drop-In
-                        'Active:\s+'
-                        '(?P<active_status>\w+\s\([\w:\s-]+\)(\ssince.+ago)?)' # active status
-                        '(.+Main\sPID:\s(?P<main_pid>\d+))?'             # optional sevicepid
-                        '.*')
+RE_SYSTEMD_SERVICE_PERF = re.compile(
+                            '(?P<title>[@\w\-\.:]+)\.service\s\-\s'          # service title
+                            '(?P<description>.+)\s+'                         # description
+                            'Loaded:\s(?P<loaded_status>\w.+\))\s+'          # loaded status
+                            '(Drop-In:(?P<drop_in>\s/\w[\w./].+)\s+)?'       # optional Drop-In
+                            'Active:\s+'
+                            '(?P<active_status>\w+\s\([\w:\s-]+\)(\ssince.+ago)?)' # active status
+                            '(.+Main\sPID:\s(?P<main_pid>\d+))?'             # optional sevicepid
+                            '.*')
+RE_SYSTEMD_SERVICE_MODEL = re.compile(
+                                # sysd_type
+                                'Type=(?P<sysd_type>\w+)\n'
+                                # main_pid
+                                'MainPID=(?P<main_pid>\d+)\n'
+                                # title
+                                'Names=(?P<title>[@\w\-\.:]+)\.service\n'
+                                # description
+                                'Description=(?P<description>.+)\n'
+                                # load status
+                                'LoadState=(?P<loaded_status>\w+)\n'
+                                # active status
+                                'ActiveState=(?P<active_status>\w+)\n'
+                                # unit file state
+                                'UnitFileState=(?P<unit_file_state>\w+)\n'
+                                # condition
+                                'ConditionResult=(?P<condition_result>\w+)')
 RE_UPSTART_SERVICE = re.compile('(?P<title>[\w\-]+(\s\([\w\/]+\))?)\s'   # service title
                                 '(?P<active_status>[\w\/]+)'             # active status
                                 '(.\sprocess\s(?P<main_pid>\d+))?')      # active status if exists
@@ -215,6 +285,15 @@ RE_UPSTART_SERVICE = re.compile('(?P<title>[\w\-]+(\s\([\w\/]+\))?)\s'   # servi
 #   lrwxrwxrwx 1 root root 16 Oct 15  2009 K36mysqld -> ../init.d/mysqld
 #   lrwxrwxrwx 1 root root 15 Oct 15  2009 S50snmpd -> ../init.d/snmpd
 RE_SYSTEMV_SERVICE = re.compile(ur'S\d+[\w-]+\s->\s\.\./init\.d/(?P<title>.+)')
+
+
+def systemd_processServices(results):
+    # Parse results by __SPLIT__ to get data per service
+    services = results.split("\n__SPLIT__\n")
+    # Remove last new line character at the last index value of serivce
+    services[-1] = services[-1][:-1]
+    # return service without 'SYSTEMD' in first index
+    return services[1:]
 
 
 def systemd_getServices(services):
@@ -274,12 +353,14 @@ def validate_modeling_regex(device, log):
 
     return model_list, ignore_list
 
-
+# Service Map is used for modeling and monitoringt
 SERVICE_MAP = {
     'SYSTEMD': {
-        'regex': RE_SYSTEMD_SERVICE,
+        'regex': RE_SYSTEMD_SERVICE_MODEL,
+        'regex_perf': RE_SYSTEMD_SERVICE_PERF,
         'functions': {
-            'services': systemd_getServices,
+            'modeling': systemd_processServices,
+            'monitoring': systemd_getServices,
         }
     },
     'UPSTART': {
@@ -298,7 +379,10 @@ class os_service(LinuxCommandPlugin):
     command = ('export PATH=$PATH:/bin:/sbin:/usr/bin:/usr/sbin; '
                'if command -v systemctl >/dev/null 2>&1; then '
                 'echo "SYSTEMD"; '
-                'sudo systemctl list-units -t service --all --no-page --no-legend | sed /not-found/d | cut -d" " -f1 | xargs -n 1 sudo systemctl status --no-pager -l -n 0 2>&1 || true; '
+                'for i in $(sudo systemctl list-units -t service --all --no-page --no-legend | sed /not-found/d | cut -d" " -f1) ; '
+                 'do echo "__SPLIT__" ; '
+                 'sudo systemctl show -p Names,Type,Description,LoadState,ActiveState,UnitFileState,MainPID,ConditionResult $i ; '
+                 'done; '
                'elif command -v initctl >/dev/null 2>&1; then '
                 'echo "UPSTART"; '
                 'sudo initctl list 2>&1 || true ; '
@@ -316,7 +400,6 @@ class os_service(LinuxCommandPlugin):
 
     def populateRelMap(self, rm, model_list, ignore_list, init_system,
                        services, regex, log):
-        title_list = []
         for line in services:
             line = line.strip()
             match = regex.search(line)
@@ -328,26 +411,34 @@ class os_service(LinuxCommandPlugin):
                 if not check_services_modeled(model_list, ignore_list, title):
                     continue
 
-                # For SYSTEMD, only model services that are loaded
-                loaded_status_string = groupdict.get('loaded_status', '')
-                if loaded_status_string:
-                    loaded_status = loaded_status_string.strip().split()[0]
-                    if loaded_status != 'loaded':
-                        continue
-
-                # Check for duplicates (systemV shows duplicates e.g. Firewall)
-                if title in title_list:
+                # SYSTEMD
+                unit_file_state = groupdict.get('unit_file_state', None)
+                active_status = groupdict.get('active_status', '')
+                sysd_type = groupdict.get('sysd_type', '')
+                condition_result = groupdict.get('condition_result', '')
+                # For sysd, Model services that are enabled or enabled-runtime
+                # (UnitFileState) and not inactive (Active State). Oneshot
+                # (Type) and services whose conditions are not met
+                # (ConditionResult) should not be modeled.
+                sysd_any_rules = [unit_file_state not in ('enabled',
+                                                          'enabled-runtime',
+                                                          None),
+                                  sysd_type == 'oneshot',
+                                  condition_result == 'no']
+                sysd_all_rules = [unit_file_state not in ('enabled',
+                                                          'enabled-runtime',
+                                                          None),
+                                  active_status == 'inactive']
+                if any(sysd_any_rules) or all(sysd_all_rules):
                     continue
 
-                # create relmaps
+                # Create relmaps
                 om = self.objectMap()
                 om.id = 'service_' + self.prepId(title)
                 om.title = title
                 om.init_system = init_system
                 om.description = groupdict.get('description', '').strip()
                 rm.append(om)
-                # Add service to title_list to check for duplicates later
-                title_list.append(title)
             else:
                 log.debug("Unmapped in populateRelMap(): %s", line)
                 continue
@@ -355,7 +446,7 @@ class os_service(LinuxCommandPlugin):
     def process(self, device, results, log):
         log.info("Processing the OS Service info for device %s", device.id)
         rm = self.relMap()
-        # validate regex and log warning message for invalid regex
+        # Validate regex and log warning message for invalid regex
         model_list, ignore_list = validate_modeling_regex(device, log)
         services = results.splitlines()
         init_system = services[0]
@@ -365,7 +456,7 @@ class os_service(LinuxCommandPlugin):
             regex = initService.get('regex')
             functions = initService.get('functions')
             if functions:
-                services = functions.get('services')(services)
+                services = functions.get('modeling')(results)
             self.populateRelMap(rm, model_list, ignore_list, init_system,
                                 services, regex, log)
             log.debug("Init service: %s, Relationship: %s", initService,

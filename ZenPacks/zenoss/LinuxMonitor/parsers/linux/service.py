@@ -87,16 +87,16 @@ class service(CommandParser):
 
         # Continues code for SystemD and Upstart
         initService = SERVICE_MAP.get(services[0])
-
         if not initService:
             log.debug("Cannot parse OS services, init service is unknown!")
             return result
 
         services = services[1:]
-        regex = initService.get('regex')
+        # regex_perf used for sysd where modeling/perf commands are different
+        regex = initService.get('regex_perf') or initService.get('regex')
         functions = initService.get('functions')
         if functions:
-            services = functions.get('services')(services)
+            services = functions.get('monitoring')(services)
 
         # Get comp name over id (id does not have special chars like '@')
         for dp in cmd.points:
@@ -113,7 +113,6 @@ class service(CommandParser):
             title = groupdict.get('title')
             if name != title:
                 continue
-
             active_status = groupdict.get('active_status')
             status_string = active_status.split()[0]
             # Check if status is active or running
