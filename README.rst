@@ -825,6 +825,7 @@ Changes
 - Add Idle, Interrupt, Soft Interrupt, Steal metrics on CPU Utilization graph. (ZPS-3547)
 - Enable better management of service events. (ZPS-3616)
 - Update SystemD service modeling. (ZPS-3545)
+- Fix OSService template binding errors in zenhub. (ZPS-3709)
 - Tested with Zenoss Resource Manager 4.2.5 RPS 743, 5.3.3 and 6.1.2 and Service Impact 5.3.1.
 
 2.3.0
