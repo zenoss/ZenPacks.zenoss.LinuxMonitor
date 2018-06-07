@@ -386,6 +386,8 @@ class os_service(LinuxCommandPlugin):
                'elif command -v initctl >/dev/null 2>&1; then '
                 'echo "UPSTART"; '
                 'sudo initctl list 2>&1 || true ; '
+                'echo "SYSV_SERVICES"; '
+                'sudo ls -l /etc/rc$(/sbin/runlevel | awk \'{print $2}\').d/ 2>&1 || true; '
                'elif command -v service >/dev/null 2>&1; then '
                 'echo "SYSTEMV"; '
                 'sudo ls -l /etc/rc$(/sbin/runlevel | awk \'{print $2}\').d/ 2>&1 || true; '
@@ -402,6 +404,10 @@ class os_service(LinuxCommandPlugin):
                        services, regex, log):
         for line in services:
             line = line.strip()
+            # Upstart models both sysv and upstart services (ZPS-3478)
+            if line == "SYSV_SERVICES":
+                regex = SERVICE_MAP["SYSTEMV"]["regex"]
+                init_system = "SYSTEMV"
             match = regex.search(line)
             if match:
                 groupdict = match.groupdict()

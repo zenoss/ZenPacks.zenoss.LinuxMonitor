@@ -323,14 +323,20 @@ component based on the targets modeled init system value. The zProperties
 *zLinuxServicesModeled* and *zLinuxServicesNotModeled* restrict the services
 that are modeled and thereby monitored.
 
-.. Note::
-   For **systemd**, only services that are enabled (or have "enabled-runtime"
-   status) and *not* inactive are modeled. Futhermore, oneshot services or
-   services with unmet conditions are not modeled or monitored. In order to
-   prevent a service from being modeled and monitored by Zenoss, the service
-   will have to be stopped and disabled. One of those actions alone won’t be
-   sufficient. Another way to prevent a service from modeling is to add it to
-   the ``zLinuxServicesNotModeled`` zProperty.
+For **systemd**, only services that are enabled (or have "enabled-runtime"
+status) and *not* inactive are modeled. Futhermore, oneshot services or
+services with unmet conditions are not modeled or monitored. In order to
+prevent a service from being modeled and monitored by Zenoss, the service
+will have to be stopped and disabled. One of those actions alone won’t be
+sufficient. Another way to prevent a service from modeling is to add it to
+the ``zLinuxServicesNotModeled`` zProperty.
+
+**Upstart** devices monitor all services managed by **upstart** and
+additionally also monitors **systemV** services that run in the current
+runlevel of the same device. The *Init System* property, found in the *Details*
+menu of the service, displays which init system the service is managed by.
+
+**SystemV** devices model and monitor all services in the current runlevel.
 
 +------------------------------+----------------------------------------------+
 | Name                         | Description                                  |
@@ -826,6 +832,7 @@ Changes
 - Enable better management of service events. (ZPS-3616)
 - Update SystemD service modeling. (ZPS-3545)
 - Fix OSService template binding errors in zenhub. (ZPS-3709)
+- Add systemV services to upstart devices. (ZPS-3478)
 - Tested with Zenoss Resource Manager 4.2.5 RPS 743, 5.3.3 and 6.1.2 and Service Impact 5.3.1.
 
 2.3.0
@@ -834,7 +841,7 @@ Changes
 - Fix netmask as hex parsing and KeyError when meminfo is absent. (ZPS-2462)
 - Added ZenPackLib requirement. (ZPS-3000)
 - Fix custom banner errors and disabled zenoss.cmd.linux.alt\_kernel\_name modeler plugin by default. (ZPS-2998)
-- Support OS Service Monitoring. (ZPS-2722)
+- Additionally supports OS service monitoring for service modeling released in 2.0.0. (ZPS-2722)
 - Add dpkg support to zenoss.cmd.linux.rpm modeler plugin. (ZPS-1474)
 - Added support for Thin Pool Monitoring. (ZPS-2494)
 - Fixed alert spam for services. (ZPS-1625)

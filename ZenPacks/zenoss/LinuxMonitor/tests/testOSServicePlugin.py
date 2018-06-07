@@ -99,7 +99,13 @@ UPSTART_OUTPUT = """UPSTART
     start-ttys stop/waiting
     readahead-disable-services stop/waiting
     rcS-sulogin stop/waiting
-    serial stop/waiting"""
+    serial stop/waiting
+    SYSV_SERVICES
+    lrwxrwxrwx 1 root root 14 Oct  1  2009 K89pand -> ../init.d/pand
+    lrwxrwxrwx 1 root root 15 Oct  1  2009 K89rdisc -> ../init.d/rdisc
+    lrwxrwxrwx 1 root root 14 Oct  1  2009 K91capi -> ../init.d/capi
+    lrwxrwxrwx 1 root root 23 Oct  1  2009 S00microcode_ctl -> ../init.d/microcode_ctl
+    lrwxrwxrwx 1 root root 22 Oct  1  2009 S02lvm2-monitor -> ../init.d/lvm2-monitor"""
 
 SYSTEMV_OUTPUT = """SYSTEMV
     total 288
@@ -206,7 +212,7 @@ class ServiceModelerTests(unittest.TestCase):
         rm = self.plugin.process(self.device, SYSTEMD_OUTPUT, LOG)
         self.assertEqual(len(rm[0].maps), 3)
         rm = self.plugin.process(self.device, UPSTART_OUTPUT, LOG)
-        self.assertEqual(len(rm[0].maps), 21)
+        self.assertEqual(len(rm[0].maps), 23)
         rm = self.plugin.process(self.device, SYSTEMV_OUTPUT, LOG)
         self.assertEqual(len(rm[0].maps), 51)
 
@@ -243,7 +249,7 @@ class ServiceModelerTests(unittest.TestCase):
         rm = self.plugin.process(self.device, SYSTEMD_OUTPUT, LOG)
         self.assertEqual(len(rm[0].maps), 3)
         rm = self.plugin.process(self.device, UPSTART_OUTPUT, LOG)
-        self.assertEqual(len(rm[0].maps), 21)
+        self.assertEqual(len(rm[0].maps), 23)
         rm = self.plugin.process(self.device, SYSTEMV_OUTPUT, LOG)
         self.assertEqual(len(rm[0].maps), 51)
 
@@ -252,7 +258,7 @@ class ServiceModelerTests(unittest.TestCase):
         rm = self.plugin.process(self.device, SYSTEMD_OUTPUT, LOG)
         self.assertEqual(len(rm[0].maps), 1)
         rm = self.plugin.process(self.device, UPSTART_OUTPUT, LOG)
-        self.assertEqual(len(rm[0].maps), 21)
+        self.assertEqual(len(rm[0].maps), 23)
         rm = self.plugin.process(self.device, SYSTEMV_OUTPUT, LOG)
         self.assertEqual(len(rm[0].maps), 51)
 
@@ -261,7 +267,7 @@ class ServiceModelerTests(unittest.TestCase):
         rm = self.plugin.process(self.device, SYSTEMD_OUTPUT, LOG)
         self.assertEqual(len(rm[0].maps), 3)
         rm = self.plugin.process(self.device, UPSTART_OUTPUT, LOG)
-        self.assertEqual(len(rm[0].maps), 15)
+        self.assertEqual(len(rm[0].maps), 17)
         rm = self.plugin.process(self.device, SYSTEMV_OUTPUT, LOG)
         self.assertEqual(len(rm[0].maps), 51)
 
@@ -270,6 +276,6 @@ class ServiceModelerTests(unittest.TestCase):
         rm = self.plugin.process(self.device, SYSTEMD_OUTPUT, LOG)
         self.assertEqual(len(rm[0].maps), 3)
         rm = self.plugin.process(self.device, UPSTART_OUTPUT, LOG)
-        self.assertEqual(len(rm[0].maps), 18)
+        self.assertEqual(len(rm[0].maps), 20)
         rm = self.plugin.process(self.device, SYSTEMV_OUTPUT, LOG)
         self.assertEqual(len(rm[0].maps), 49)
