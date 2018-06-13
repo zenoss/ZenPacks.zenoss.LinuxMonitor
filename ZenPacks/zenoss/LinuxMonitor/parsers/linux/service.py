@@ -15,8 +15,7 @@ from ZenPacks.zenoss.LinuxMonitor.modeler.plugins.zenoss.cmd.linux.os_service \
 log = logging.getLogger("zen.command.parsers.service")
 
 ON_STATUS = ['active',                  # Systemd status up
-             'start/running',           # Upstart status up
-             'running']                 # SystemV status up
+             'running']                 # SystemV and Upstart status up
 
 SYSV_EXIT_CODE = {
     '0': 'program is running or service is OK',

@@ -277,9 +277,9 @@ RE_SYSTEMD_SERVICE_MODEL = re.compile(
                                 'UnitFileState=(?P<unit_file_state>\w+)\n'
                                 # condition
                                 'ConditionResult=(?P<condition_result>\w+)')
-RE_UPSTART_SERVICE = re.compile('(?P<title>[\w\-]+(\s\([\w\/]+\))?)\s'   # service title
-                                '(?P<active_status>[\w\/]+)'             # active status
-                                '(.\sprocess\s(?P<main_pid>\d+))?')      # active status if exists
+RE_UPSTART_SERVICE = re.compile('(?P<title>[\w\-]+(\s\([\w\/]+\))?)\s'    # service title
+                                '(?P<goal>([\w]+)?)/(?P<active_status>([\w]+)?)' # active status
+                                '(.\sprocess\s(?P<main_pid>\d+))?')       # active status if exists
 # Only links that start with 'S' are running in current runlevel
 # Matches output of "ls -l /etc/rc${CURRENT_RUNLEVEL}.d/"
 #   lrwxrwxrwx 1 root root 16 Oct 15  2009 K36mysqld -> ../init.d/mysqld
@@ -319,10 +319,13 @@ def check_services_modeled(model_list, ignore_list, title):
         if re.match(name, title):
             return False
 
-    for name in model_list:
-        if re.match(name, title):
-            return True
-    return False
+    if model_list:
+        for name in model_list:
+            if re.match(name, title):
+                return True
+        return False
+    else:
+        return None
 
 
 def validate_modeling_regex(device, log):
@@ -330,9 +333,7 @@ def validate_modeling_regex(device, log):
     model_list, ignore_list = [], []
 
     zLinuxServicesModeled = getattr(device, 'zLinuxServicesModeled', [])
-    # Regex '.*' or empty list will model all services by default
-    if not len(zLinuxServicesModeled):
-        model_list.append('.*')
+
     # Make list for services to be modeled
     for name in zLinuxServicesModeled:
         try:
@@ -353,7 +354,7 @@ def validate_modeling_regex(device, log):
 
     return model_list, ignore_list
 
-# Service Map is used for modeling and monitoringt
+# Service Map is used for modeling and monitoring
 SERVICE_MAP = {
     'SYSTEMD': {
         'regex': RE_SYSTEMD_SERVICE_MODEL,
@@ -374,7 +375,7 @@ SERVICE_MAP = {
 
 
 class os_service(LinuxCommandPlugin):
-    requiredProperties = ('zLinuxServicesModeled', 'zLinuxServicesNotModeled')
+    requiredProperties = ('zLinuxServicesModeled', 'zLinuxServicesNotModeled', 'zLinuxModelAllActiveServices')
     deviceProperties = LinuxCommandPlugin.deviceProperties + requiredProperties
     command = ('export PATH=$PATH:/bin:/sbin:/usr/bin:/usr/sbin; '
                'if command -v systemctl >/dev/null 2>&1; then '
@@ -401,7 +402,7 @@ class os_service(LinuxCommandPlugin):
     modname = 'ZenPacks.zenoss.LinuxMonitor.LinuxService'
 
     def populateRelMap(self, rm, model_list, ignore_list, init_system,
-                       services, regex, log):
+                       services, regex, device, log):
         for line in services:
             line = line.strip()
             # Upstart models both sysv and upstart services (ZPS-3478)
@@ -412,31 +413,36 @@ class os_service(LinuxCommandPlugin):
             if match:
                 groupdict = match.groupdict()
                 title = groupdict.get('title')
-
                 # Check zProperties for services to be modeled
-                if not check_services_modeled(model_list, ignore_list, title):
+                model_override = check_services_modeled(model_list,
+                                                        ignore_list,
+                                                        title)
+
+                # Service is in zLinuxServicesModeled (override)
+                if model_override is True:
+                    # Service will end up modeled.
+                    pass
+
+                # Service is in zLinuxServicesNotModeled (override)
+                elif model_override is False:
+                    # Service will not be modeled.
                     continue
 
-                # SYSTEMD
-                unit_file_state = groupdict.get('unit_file_state', None)
-                active_status = groupdict.get('active_status', '')
-                sysd_type = groupdict.get('sysd_type', '')
-                condition_result = groupdict.get('condition_result', '')
-                # For sysd, Model services that are enabled or enabled-runtime
-                # (UnitFileState) and not inactive (Active State). Oneshot
-                # (Type) and services whose conditions are not met
-                # (ConditionResult) should not be modeled.
-                sysd_any_rules = [unit_file_state not in ('enabled',
-                                                          'enabled-runtime',
-                                                          None),
-                                  sysd_type == 'oneshot',
-                                  condition_result == 'no']
-                sysd_all_rules = [unit_file_state not in ('enabled',
-                                                          'enabled-runtime',
-                                                          None),
-                                  active_status == 'inactive']
-                if any(sysd_any_rules) or all(sysd_all_rules):
-                    continue
+                # Service not in zLinuxServicesModeled or
+                # zLinuxServicesNotModeled
+                else:
+                    if init_system == "UPSTART":
+                        expected_running = upstart_expected_running(device,
+                                                                    groupdict)
+                    elif init_system == "SYSTEMD":
+                        expected_running = sysd_expected_running(device,
+                                                                 groupdict)
+                    else:
+                        # SYSTEMV requires no addtional processing beyond regex
+                        expected_running = True
+
+                    if not expected_running:
+                        continue
 
                 # Create relmaps
                 om = self.objectMap()
@@ -464,10 +470,56 @@ class os_service(LinuxCommandPlugin):
             if functions:
                 services = functions.get('modeling')(results)
             self.populateRelMap(rm, model_list, ignore_list, init_system,
-                                services, regex, log)
+                                services, regex, device, log)
             log.debug("Init service: %s, Relationship: %s", initService,
                       rm.relname)
         else:
-            log.info("Can not parse OS services, init service is unknown!")
+            log.info("Cannot parse OS services, init service is unknown!")
 
         return [rm]
+
+
+def upstart_expected_running(device, groupdict):
+    """Return True if service in groupdict is expected to be running."""
+    active_status = groupdict.get('active_status', '')
+    goal = groupdict.get('goal', '')
+
+    # Higher level "enabled" concept.
+    enabled = (goal == "start")
+
+    # Higher level "active" concept.
+    active = (active_status == "running")
+
+    model_all_active_services = getattr(
+        device, "zLinuxModelAllActiveServices", False)
+
+    if enabled or (active and model_all_active_services):
+        return True
+
+    return False
+
+
+def sysd_expected_running(device, groupdict):
+    """Return True if service in groupdict is expected to be running."""
+    unit_file_state = groupdict.get('unit_file_state', None)
+    active_status = groupdict.get('active_status', '')
+    sysd_type = groupdict.get('sysd_type', '')
+    condition_result = groupdict.get('condition_result', '')
+
+    # Not expected to be running if any of these conditions are true.
+    if sysd_type == "oneshot" or condition_result == "no":
+        return False
+
+    # Higher level "enabled" concept.
+    enabled = unit_file_state in ("enabled", "enabled-runtime")
+
+    # Higher level "active" concept.
+    active = (active_status in ("active", "activating", "reloading"))
+
+    model_all_active_services = getattr(
+        device, "zLinuxModelAllActiveServices", False)
+
+    if enabled or (active and model_all_active_services):
+        return True
+
+    return False

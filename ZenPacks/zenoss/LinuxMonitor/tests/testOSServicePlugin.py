@@ -27,7 +27,7 @@ __SPLIT__
 Type=forking
 MainPID=0
 Names=unitfilestate-disabled.service
-Description=Test case for unitfilestate-disabled, should not model
+Description=Test for unitfilestate-disabled, zLinuxModelAllActiveServices only
 LoadState=loaded
 ActiveState=active
 UnitFileState=disabled
@@ -212,7 +212,7 @@ class ServiceModelerTests(unittest.TestCase):
         rm = self.plugin.process(self.device, SYSTEMD_OUTPUT, LOG)
         self.assertEqual(len(rm[0].maps), 3)
         rm = self.plugin.process(self.device, UPSTART_OUTPUT, LOG)
-        self.assertEqual(len(rm[0].maps), 23)
+        self.assertEqual(len(rm[0].maps), 8)
         rm = self.plugin.process(self.device, SYSTEMV_OUTPUT, LOG)
         self.assertEqual(len(rm[0].maps), 51)
 
@@ -234,7 +234,7 @@ class ServiceModelerTests(unittest.TestCase):
         rm = self.plugin.process(self.device, SYSTEMV_OUTPUT, LOG)
         self.assertEqual(len(rm[0].maps), 0)
 
-        # Test with SYSTEMD services with regex
+        # Test with SYSTEMV services with regex
         self.device.zLinuxServicesModeled = ['^readahead.*']
         rm = self.plugin.process(self.device, SYSTEMD_OUTPUT, LOG)
         self.assertEqual(len(rm[0].maps), 0)
@@ -249,7 +249,7 @@ class ServiceModelerTests(unittest.TestCase):
         rm = self.plugin.process(self.device, SYSTEMD_OUTPUT, LOG)
         self.assertEqual(len(rm[0].maps), 3)
         rm = self.plugin.process(self.device, UPSTART_OUTPUT, LOG)
-        self.assertEqual(len(rm[0].maps), 23)
+        self.assertEqual(len(rm[0].maps), 8)
         rm = self.plugin.process(self.device, SYSTEMV_OUTPUT, LOG)
         self.assertEqual(len(rm[0].maps), 51)
 
@@ -258,7 +258,7 @@ class ServiceModelerTests(unittest.TestCase):
         rm = self.plugin.process(self.device, SYSTEMD_OUTPUT, LOG)
         self.assertEqual(len(rm[0].maps), 1)
         rm = self.plugin.process(self.device, UPSTART_OUTPUT, LOG)
-        self.assertEqual(len(rm[0].maps), 23)
+        self.assertEqual(len(rm[0].maps), 8)
         rm = self.plugin.process(self.device, SYSTEMV_OUTPUT, LOG)
         self.assertEqual(len(rm[0].maps), 51)
 
@@ -267,15 +267,34 @@ class ServiceModelerTests(unittest.TestCase):
         rm = self.plugin.process(self.device, SYSTEMD_OUTPUT, LOG)
         self.assertEqual(len(rm[0].maps), 3)
         rm = self.plugin.process(self.device, UPSTART_OUTPUT, LOG)
-        self.assertEqual(len(rm[0].maps), 17)
+        self.assertEqual(len(rm[0].maps), 2)
         rm = self.plugin.process(self.device, SYSTEMV_OUTPUT, LOG)
         self.assertEqual(len(rm[0].maps), 51)
 
-        # Test with SYSTEMD services with regex
+        # Test with SYSTEMV services with regex
         self.device.zLinuxServicesNotModeled = ['^readahead.*']
         rm = self.plugin.process(self.device, SYSTEMD_OUTPUT, LOG)
         self.assertEqual(len(rm[0].maps), 3)
         rm = self.plugin.process(self.device, UPSTART_OUTPUT, LOG)
-        self.assertEqual(len(rm[0].maps), 20)
+        self.assertEqual(len(rm[0].maps), 8)
         rm = self.plugin.process(self.device, SYSTEMV_OUTPUT, LOG)
         self.assertEqual(len(rm[0].maps), 49)
+
+    def test_zLinuxModelAllActiveServices(self):
+        # Test with default/blank value
+        self.device.zLinuxModelAllActiveServices = False
+        rm = self.plugin.process(self.device, SYSTEMD_OUTPUT, LOG)
+        self.assertEqual(len(rm[0].maps), 3)
+        rm = self.plugin.process(self.device, UPSTART_OUTPUT, LOG)
+        self.assertEqual(len(rm[0].maps), 8)
+        rm = self.plugin.process(self.device, SYSTEMV_OUTPUT, LOG)
+        self.assertEqual(len(rm[0].maps), 51)
+
+        # Test with default/blank value
+        self.device.zLinuxModelAllActiveServices = True
+        rm = self.plugin.process(self.device, SYSTEMD_OUTPUT, LOG)
+        self.assertEqual(len(rm[0].maps), 4)
+        rm = self.plugin.process(self.device, UPSTART_OUTPUT, LOG)
+        self.assertEqual(len(rm[0].maps), 8)
+        rm = self.plugin.process(self.device, SYSTEMV_OUTPUT, LOG)
+        self.assertEqual(len(rm[0].maps), 51)
