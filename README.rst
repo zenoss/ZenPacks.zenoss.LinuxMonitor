@@ -207,8 +207,8 @@ allow the **zenmonitor** user to run the commands.
         Cmnd_Alias ZENOSS_LVM_CMDS = /sbin/pvs, /sbin/vgs, /sbin/lvs, \
             /usr/sbin/pvs, /usr/sbin/vgs, /usr/sbin/lvs
         Cmnd_Alias ZENOSS_SVC_CMDS = /bin/systemctl list-units *, \
-            /bin/systemctl status *, /sbin/initctl list, /sbin/service --status-all, \
-            /usr/sbin/dmidecode
+            /bin/systemctl show *, /sbin/initctl list, /sbin/service *, \
+            /sbin/runlevel, /usr/sbin/dmidecode, /bin/ls -l /etc/rc?.d/
         Cmnd_Alias ZENOSS_NET_CMDS = /bin/dmesg
         Cmnd_Alias ZENOSS_DF_CMDS = /bin/df
         zenmonitor ALL=(ALL) NOPASSWD: ZENOSS_LVM_CMDS, ZENOSS_SVC_CMDS, ZENOSS_NET_CMDS, ZENOSS_DF_CMDS
@@ -320,17 +320,24 @@ Version 2.3.0 supports monitoring of the status of **systemd**, **upstart**
 and **systemV** system services. *OSService-SYSTEMD*, *OSService-UPSTART* and
 *OSService-SYSTEMD* monitoring templates are automatically bound to a service
 component based on the targets modeled init system value. The zProperties
-*zLinuxServicesModeled* and *zLinuxServicesNotModeled* restrict the services
-that are modeled and thereby monitored.
+``zLinuxServicesModeled`` and ``zLinuxServicesNotModeled`` restrict the
+services that are modeled and thereby monitored.
 
-.. Note::
-   For **systemd**, only services that are enabled (or have "enabled-runtime"
-   status) and *not* inactive are modeled. Futhermore, oneshot services or
-   services with unmet conditions are not modeled or monitored. In order to
-   prevent a service from being modeled and monitored by Zenoss, the service
-   will have to be stopped and disabled. One of those actions alone won’t be
-   sufficient. Another way to prevent a service from modeling is to add it to
-   the ``zLinuxServicesNotModeled`` zProperty.
+For **systemd**, only services that are enabled (or have "enabled-runtime"
+status). Futhermore, oneshot services or services with unmet conditions are not
+modeled or monitored. In order to prevent a service from being modeled and
+monitored by Zenoss, the service will have to be stopped and disabled. One of
+those actions alone won’t be sufficient. Another way to prevent a service from
+modeling is to add it to the ``zLinuxServicesNotModeled`` zProperty. To also
+model disabled active services, the ``zLinuxModelAllActiveServices`` zProperty
+should be set to *True*.
+
+**Upstart** devices monitor all enabled services managed by **upstart** and
+additionally also monitors **systemV** services that run in the current
+runlevel of the same device. The *Init System* property, found in the *Details*
+menu of the service, displays which init system the service is managed by.
+
+**SystemV** devices model and monitor all services in the current runlevel.
 
 +------------------------------+----------------------------------------------+
 | Name                         | Description                                  |
@@ -341,12 +348,17 @@ that are modeled and thereby monitored.
 | zLinuxServicesNotModeled     | Accepts regular expressions that             |
 |                              | matches one or more services to not model    |
 +------------------------------+----------------------------------------------+
+| zLinuxModelAllActiveServices | Boolean value used for systemD services that |
+|                              | models active services that are also disabled|
++------------------------------+----------------------------------------------+
 
-An empty value in ``zLinuxServiceModeled`` is treated as ``.*`` regex and
-models all loaded services. Both the zProperties can support multiple regex
-expressions when separated on new lines. The *OSService* monitoring template
-generates events on every collection cycle for a service that is down. The
-events are automatically cleared if the service is up again.
+``zLinuxServiceModeled`` and ``zLinuxServiceNotModeled`` can support multiple
+regex expressions when separated on new lines. Although the
+``zLinuxModelAllActiveServices`` property models all active services that are
+also disabled when checked, this property will still not model onseshot
+services or those services whose conditions are not met. The *OSService*
+monitoring template generates events on every collection cycle for a service
+that is down. The events are automatically cleared if the service is up again.
 
 .. Note::
    ``zLinuxServicesNotModeled`` overrules ``zLinuxServicesModeled``. If a
@@ -826,6 +838,8 @@ Changes
 - Enable better management of service events. (ZPS-3616)
 - Update SystemD service modeling. (ZPS-3545)
 - Fix OSService template binding errors in zenhub. (ZPS-3709)
+- Add systemV services to upstart devices. (ZPS-3478)
+- Added new zProperty and migration script to change the default value of zLinuxServicesModeled.
 - Tested with Zenoss Resource Manager 4.2.5 RPS 743, 5.3.3 and 6.1.2 and Service Impact 5.3.1.
 
 2.3.0
@@ -834,7 +848,7 @@ Changes
 - Fix netmask as hex parsing and KeyError when meminfo is absent. (ZPS-2462)
 - Added ZenPackLib requirement. (ZPS-3000)
 - Fix custom banner errors and disabled zenoss.cmd.linux.alt\_kernel\_name modeler plugin by default. (ZPS-2998)
-- Support OS Service Monitoring. (ZPS-2722)
+- Additionally supports OS service monitoring for service modeling released in 2.0.0. (ZPS-2722)
 - Add dpkg support to zenoss.cmd.linux.rpm modeler plugin. (ZPS-1474)
 - Added support for Thin Pool Monitoring. (ZPS-2494)
 - Fixed alert spam for services. (ZPS-1625)
