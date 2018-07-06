@@ -261,12 +261,14 @@ RE_SYSTEMD_SERVICE_PERF = re.compile(
                             '(.+Main\sPID:\s(?P<main_pid>\d+))?'             # optional sevicepid
                             '.*')
 RE_SYSTEMD_SERVICE_MODEL = re.compile(
+                                # title
+                                'Title=(?P<title>[@\w\-\.:]+)\.service\n'
                                 # sysd_type
                                 'Type=(?P<sysd_type>\w+)\n'
                                 # main_pid
                                 'MainPID=(?P<main_pid>\d+)\n'
-                                # title
-                                'Names=(?P<title>[@\w\-\.:]+)\.service\n'
+                                # names
+                                'Names=(?P<names>.*)\n'
                                 # description
                                 'Description=(?P<description>.+)\n'
                                 # load status
@@ -277,7 +279,7 @@ RE_SYSTEMD_SERVICE_MODEL = re.compile(
                                 'UnitFileState=(?P<unit_file_state>\w+)\n'
                                 # condition
                                 'ConditionResult=(?P<condition_result>\w+)')
-RE_UPSTART_SERVICE = re.compile('(?P<title>[\w\-]+(\s\([\w\/]+\))?)\s'    # service title
+RE_UPSTART_SERVICE = re.compile('(?P<title>[\w\-]+(\s\([\w\/-]+\))?)\s'    # service title
                                 '(?P<goal>([\w]+)?)/(?P<active_status>([\w]+)?)' # active status
                                 '(.\sprocess\s(?P<main_pid>\d+))?')       # active status if exists
 # Only links that start with 'S' are running in current runlevel
@@ -382,6 +384,7 @@ class os_service(LinuxCommandPlugin):
                 'echo "SYSTEMD"; '
                 'for i in $(sudo systemctl list-units -t service --all --no-page --no-legend | sed /not-found/d | cut -d" " -f1) ; '
                  'do echo "__SPLIT__" ; '
+                 'echo "Title="$i ; '
                  'sudo systemctl show -p Names,Type,Description,LoadState,ActiveState,UnitFileState,MainPID,ConditionResult $i ; '
                  'done; '
                'elif command -v initctl >/dev/null 2>&1; then '
