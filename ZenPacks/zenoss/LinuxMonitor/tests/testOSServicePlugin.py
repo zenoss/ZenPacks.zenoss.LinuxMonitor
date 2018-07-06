@@ -15,6 +15,7 @@ from ZenPacks.zenoss.LinuxMonitor.modeler.plugins.zenoss.cmd.linux.os_service \
 
 SYSTEMD_OUTPUT = """SYSTEMD
 __SPLIT__
+Title=type-oneshot.service
 Type=oneshot
 MainPID=0
 Names=type-oneshot.service
@@ -24,6 +25,7 @@ ActiveState=active
 UnitFileState=enabled
 ConditionResult=yes
 __SPLIT__
+Title=unitfilestate-disabled.service
 Type=forking
 MainPID=0
 Names=unitfilestate-disabled.service
@@ -33,6 +35,7 @@ ActiveState=active
 UnitFileState=disabled
 ConditionResult=yes
 __SPLIT__
+Title=conditionresult-no.service
 Type=forking
 MainPID=0
 Names=conditionresult-no.service
@@ -42,6 +45,7 @@ ActiveState=active
 UnitFileState=enabled
 ConditionResult=no
 __SPLIT__
+Title=mixed.service
 Type=oneshot
 MainPID=0
 Names=mixed.service
@@ -51,6 +55,7 @@ ActiveState=inactive
 UnitFileState=disabled
 ConditionResult=no
 __SPLIT__
+Title=rtkit-daemon.service
 Type=dbus
 MainPID=736
 Names=rtkit-daemon.service
@@ -60,6 +65,7 @@ ActiveState=active
 UnitFileState=enabled
 ConditionResult=yes
 __SPLIT__
+Title=rtkit2-daemon.service
 Type=dbus
 MainPID=732
 Names=rtkit2-daemon.service
@@ -69,6 +75,7 @@ ActiveState=active
 UnitFileState=enabled
 ConditionResult=yes
 __SPLIT__
+Title=temp-daemon.service
 Type=dbus
 MainPID=731
 Names=temp-daemon.service
