@@ -38,8 +38,8 @@ class ZenPack(schema.ZenPack):
             'label': 'Regex expressions to ignore services from modeling'},
         'zLinuxModelAllActiveServices': {
             'type': 'boolean',
-            'description': 'Models disabled active SYSTEMD services but not oneshot or unmet conditions',
-            'label': 'Additionally models disabled active SYSTEMD services'},
+            'description': 'Models all active SYSTEMD services but not oneshot or unmet conditions',
+            'label': 'Models active SYSTEMD services of all unitFileStates'},
     }
 
     def install(self, app):
