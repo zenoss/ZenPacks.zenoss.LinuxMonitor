@@ -72,7 +72,7 @@ Names=rtkit2-daemon.service
 Description=Another test case for service that should model
 LoadState=loaded
 ActiveState=active
-UnitFileState=enabled
+UnitFileState=enabled-runtime
 ConditionResult=yes
 __SPLIT__
 Title=temp-daemon.service
@@ -83,6 +83,16 @@ Description=Test case for service that is enabled but inactive, should model.
 LoadState=loaded
 ActiveState=inactive
 UnitFileState=enabled
+ConditionResult=yes
+__SPLIT__
+Title=blank-unitFileState.service
+Type=dbus
+MainPID=732
+Names=blank-unitFileState.service
+Description=Models only when zLinuxModelAllActiveServices is true.
+LoadState=loaded
+ActiveState=active
+UnitFileState=
 ConditionResult=yes"""
 
 UPSTART_OUTPUT = """UPSTART
@@ -300,7 +310,7 @@ class ServiceModelerTests(unittest.TestCase):
         # Test with default/blank value
         self.device.zLinuxModelAllActiveServices = True
         rm = self.plugin.process(self.device, SYSTEMD_OUTPUT, LOG)
-        self.assertEqual(len(rm[0].maps), 4)
+        self.assertEqual(len(rm[0].maps), 5)
         rm = self.plugin.process(self.device, UPSTART_OUTPUT, LOG)
         self.assertEqual(len(rm[0].maps), 8)
         rm = self.plugin.process(self.device, SYSTEMV_OUTPUT, LOG)

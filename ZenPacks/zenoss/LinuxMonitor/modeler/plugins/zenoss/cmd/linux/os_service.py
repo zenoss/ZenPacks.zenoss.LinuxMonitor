@@ -276,7 +276,7 @@ RE_SYSTEMD_SERVICE_MODEL = re.compile(
                                 # active status
                                 'ActiveState=(?P<active_status>\w+)\n'
                                 # unit file state
-                                'UnitFileState=(?P<unit_file_state>\w+)\n'
+                                'UnitFileState=(?P<unit_file_state>[\w\-]*)\n'
                                 # condition
                                 'ConditionResult=(?P<condition_result>\w+)')
 RE_UPSTART_SERVICE = re.compile('(?P<title>[\w\-]+(\s\([\w\/-]+\))?)\s'    # service title

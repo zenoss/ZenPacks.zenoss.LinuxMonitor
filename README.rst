@@ -329,8 +329,8 @@ modeled or monitored. In order to prevent a service from being modeled and
 monitored by Zenoss, the service will have to be stopped and disabled. One of
 those actions alone won’t be sufficient. Another way to prevent a service from
 modeling is to add it to the ``zLinuxServicesNotModeled`` zProperty. To also
-model disabled active services, the ``zLinuxModelAllActiveServices`` zProperty
-should be set to *True*.
+model active services of any UnitFileState (enabled, disabled, static, etc.),
+the ``zLinuxModelAllActiveServices`` zProperty should be set to *True*.
 
 **Upstart** devices monitor all enabled services managed by **upstart** and
 additionally also monitors **systemV** services that run in the current
@@ -348,8 +348,8 @@ menu of the service, displays which init system the service is managed by.
 | zLinuxServicesNotModeled     | Accepts regular expressions that             |
 |                              | matches one or more services to not model    |
 +------------------------------+----------------------------------------------+
-| zLinuxModelAllActiveServices | Boolean value used for systemD services that |
-|                              | models active services that are also disabled|
+| zLinuxModelAllActiveServices | Boolean value used for systemd services that |
+|                              | models active services of any UnitFileState  |
 +------------------------------+----------------------------------------------+
 
 ``zLinuxServiceModeled`` and ``zLinuxServiceNotModeled`` can support multiple
@@ -836,10 +836,11 @@ Changes
 - Fix 'no volume group' warning events during modeling. (ZPS-3475)
 - Add Idle, Interrupt, Soft Interrupt, Steal metrics on CPU Utilization graph. (ZPS-3547)
 - Enable better management of service events. (ZPS-3616)
-- Update SystemD service modeling. (ZPS-3545)
 - Fix OSService template binding errors in zenhub. (ZPS-3709)
 - Add systemV services to upstart devices. (ZPS-3478)
-- Added new zProperty and migration script to change the default value of zLinuxServicesModeled.
+- Update systemd services to not model oneshot or unmet conditions. (ZPS-3478, ZPS-3545)
+- Added new zProperty for systemd, zLinuxModelAllActiveServices. (ZPS-3478)
+- Added migration script to change the default value of zLinuxServicesModeled.
 - Tested with Zenoss Resource Manager 4.2.5 RPS 743, 5.3.3 and 6.1.2 and Service Impact 5.3.1.
 
 2.3.0
