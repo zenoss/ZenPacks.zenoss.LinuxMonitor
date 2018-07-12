@@ -9,14 +9,14 @@ Releases
 .. _Version-2.3.1: http://wiki.zenoss.org/download/zenpacks/ZenPacks.zenoss.LinuxMonitor/2.3.1/ZenPacks.zenoss.LinuxMonitor-2.3.1.egg
 
 Version-2.3.1_
-   | Released on #FIXIT
+   | Released on 2018/12/07
    | Compatible with Zenoss 4.2.5 - 6.1
    | Requires `ZenPackLib ZenPack </product/zenpacks/zenpacklib>`_
 
 .. _Version-2.3.0: http://wiki.zenoss.org/download/zenpacks/ZenPacks.zenoss.LinuxMonitor/2.3.0/ZenPacks.zenoss.LinuxMonitor-2.3.0.egg
 
 Version-2.3.0_
-   | Released on 2018/20/4
+   | Released on 2018/20/04
    | Compatible with Zenoss 4.2.5 - 6.1
    | Requires `ZenPackLib ZenPack </product/zenpacks/zenpacklib>`_
 
@@ -327,7 +327,7 @@ For **systemd**, only services that are enabled (or have "enabled-runtime"
 status). Futhermore, oneshot services or services with unmet conditions are not
 modeled or monitored. In order to prevent a service from being modeled and
 monitored by Zenoss, the service will have to be stopped and disabled. One of
-those actions alone won’t be sufficient. Another way to prevent a service from
+those actions alone won't be sufficient. Another way to prevent a service from
 modeling is to add it to the ``zLinuxServicesNotModeled`` zProperty. To also
 model active services of any UnitFileState (enabled, disabled, static, etc.),
 the ``zLinuxModelAllActiveServices`` zProperty should be set to *True*.
