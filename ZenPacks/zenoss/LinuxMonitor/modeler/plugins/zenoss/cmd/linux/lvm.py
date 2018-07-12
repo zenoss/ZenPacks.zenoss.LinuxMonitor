@@ -93,8 +93,8 @@ class lvm(CommandPlugin):
                'sudo pvs --units b --nosuffix -o pv_name,pv_fmt,pv_attr,pv_size,pv_free,pv_uuid,vg_name 2>&1; '
                'sudo vgs --units b --nosuffix -o vg_name,vg_attr,vg_size,vg_free,vg_uuid 2>&1; '
                'if command -v thin_check >/dev/null 2>&1; then '
-               '''sudo lvs --separator ' '  --units b --nosuffix -o lv_name,vg_name,lv_attr,lv_size,lv_uuid,origin,lv_metadata_size,pool_lv; else '''
-               '''sudo lvs --separator ' '  --units b --nosuffix -o lv_name,vg_name,lv_attr,lv_size,lv_uuid,origin; fi; '''
+               '''sudo lvs --separator ' ' --units b --nosuffix -o lv_name,vg_name,lv_attr,lv_size,lv_uuid,origin,lv_metadata_size,pool_lv 2>&1; else '''
+               '''sudo lvs --separator ' ' --units b --nosuffix -o lv_name,vg_name,lv_attr,lv_size,lv_uuid,origin 2>&1; fi; '''
                'echo "DISK_BY_ID  LINK" 2>&1; '
                'find /dev/disk/by-id -type l ! -name "*-part*" -printf "%P %l\\n" 2>&1'
                )

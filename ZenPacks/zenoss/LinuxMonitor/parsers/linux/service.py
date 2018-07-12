@@ -7,6 +7,7 @@
 ##############################################################################
 
 import logging
+from Products.ZenEvents import ZenEventClasses
 from Products.ZenRRD.CommandParser import CommandParser
 from ZenPacks.zenoss.LinuxMonitor.modeler.plugins.zenoss.cmd.linux.os_service \
     import SERVICE_MAP
@@ -14,8 +15,7 @@ from ZenPacks.zenoss.LinuxMonitor.modeler.plugins.zenoss.cmd.linux.os_service \
 log = logging.getLogger("zen.command.parsers.service")
 
 ON_STATUS = ['active',                  # Systemd status up
-             'start/running',           # Upstart status up
-             'running']                 # SystemV status up
+             'running']                 # SystemV and Upstart status up
 
 SYSV_EXIT_CODE = {
     '0': 'program is running or service is OK',
@@ -63,16 +63,20 @@ class service(CommandParser):
                 event_status = 'down'
                 severity = cmd.severity
 
-            result.events.append({
+            event = {
                 'device': cmd.deviceConfig.device,
                 'component': cmd.component,
                 'severity': severity,
-                'eventClass': cmd.eventClass,
-                'eventClassKey': "{}|{}".format("linux-services",
-                                                cmd.component),
+                'eventClassKey': 'linux-service-status',
                 'summary': 'OS Service is {}'.format(event_status),
                 'message': 'Exit status: ' + message
-                })
+            }
+
+            # Mappings can only work if eventClass isn't set.
+            if cmd.eventClass != ZenEventClasses.Unknown:
+                event["eventClass"] = cmd.eventClass
+
+            result.events.append(event)
 
             for dp in cmd.points:
                 if 'status' in dp.id:
@@ -82,16 +86,16 @@ class service(CommandParser):
 
         # Continues code for SystemD and Upstart
         initService = SERVICE_MAP.get(services[0])
-
         if not initService:
             log.debug("Cannot parse OS services, init service is unknown!")
             return result
 
         services = services[1:]
-        regex = initService.get('regex')
+        # regex_perf used for sysd where modeling/perf commands are different
+        regex = initService.get('regex_perf') or initService.get('regex')
         functions = initService.get('functions')
         if functions:
-            services = functions.get('services')(services)
+            services = functions.get('monitoring')(services)
 
         # Get comp name over id (id does not have special chars like '@')
         for dp in cmd.points:
@@ -108,7 +112,6 @@ class service(CommandParser):
             title = groupdict.get('title')
             if name != title:
                 continue
-
             active_status = groupdict.get('active_status')
             status_string = active_status.split()[0]
             # Check if status is active or running
@@ -116,17 +119,22 @@ class service(CommandParser):
                 status_value = 0    # STATUS OFF/INACTIVE
                 severity = cmd.severity
                 event_status = 'down'
-            # Send a event if down, else clear events
-            result.events.append({
+
+            event = {
                 'device': cmd.deviceConfig.device,
                 'component': cmd.component,
                 'severity': severity,
-                'eventClass': cmd.eventClass,
-                'eventClassKey': "{}|{}".format("linux-services",
-                                                cmd.component),
+                'eventClassKey': 'linux-service-status',
                 'summary': 'OS Service is {}'.format(event_status),
                 'message': active_status
-                })
+            }
+
+            # Mappings can only work if eventClass isn't set.
+            if cmd.eventClass != ZenEventClasses.Unknown:
+                event["eventClass"] = cmd.eventClass
+
+            # Send a event if down, else clear events
+            result.events.append(event)
             break
 
         for dp in cmd.points:

@@ -13,53 +13,87 @@ from Products.DataCollector.DeviceProxy import DeviceProxy
 from ZenPacks.zenoss.LinuxMonitor.modeler.plugins.zenoss.cmd.linux.os_service \
                                                         import os_service
 
-SYSTEMD_OUTPUT = """SYSTEMD\n\xe2\x97\x8f abrt-ccpp.service - Install ABRT coredump hook
-   Loaded: loaded (/usr/lib/systemd/system/abrt-ccpp.service; enabled; vendor preset: enabled)
-   Active: active (exited) since Tue 2017-09-05 14:52:45 CDT; 6 months 0 days ago
-  Process: 762 ExecStart=/usr/sbin/abrt-install-ccpp-hook install (code=exited, status=0/SUCCESS)
- Main PID: 762 (code=exited, status=0/SUCCESS)
-   CGroup: /system.slice/abrt-ccpp.service
-\n\xe2\x97\x8f abrt-oops.service - ABRT kernel log watcher
-   Loaded: loaded (/usr/lib/systemd/system/abrt-oops.service; enabled; vendor preset: enabled)
-   Active: active (running) since Tue 2017-09-05 14:52:44 CDT; 6 months 0 days ago
- Main PID: 764 (abrt-watch-log)
-   CGroup: /system.slice/abrt-oops.service
-           \xe2\x94\x94\xe2\x94\x80764 /usr/bin/abrt-watch-log -F BUG: WARNING: at WARNING: CPU: INFO: possible recursive locking detected ernel BUG at list_del corruption list_add corruption do_IRQ: stack overflow: ear stack overflow (cur: eneral protection fault nable to handle kernel ouble fault: RTNL: assertion failed eek! page_mapcount(page) went negative! adness at NETDEV WATCHDOG ysctl table check failed : nobody cared IRQ handler type mismatch Machine Check Exception: Machine check events logged divide error: bounds: coprocessor segment overrun: invalid TSS: segment not present: invalid opcode: alignment check: stack segment: fpu exception: simd exception: iret exception: /var/log/messages -- /usr/bin/abrt-dump-oops -xtD
-\n\xe2\x97\x8f abrt-vmcore.service - Harvest vmcores for ABRT
-   Loaded: loaded (/usr/lib/systemd/system/abrt-vmcore.service; enabled; vendor preset: enabled)
-   Active: inactive (dead)
-Condition: start condition failed at Tue 2018-03-06 12:04:12 CST; 1 day 5h ago
-           ConditionDirectoryNotEmpty=/var/crash was not met
-\n\xe2\x97\x8f abrt-xorg.service - ABRT Xorg log watcher
-   Loaded: loaded (/usr/lib/systemd/system/abrt-xorg.service; enabled; vendor preset: enabled)
-   Active: active (running) since Tue 2017-09-05 14:52:44 CDT; 6 months 0 days ago
- Main PID: 763 (abrt-watch-log)
-   CGroup: /system.slice/abrt-xorg.service
-           \xe2\x94\x94\xe2\x94\x80763 /usr/bin/abrt-watch-log -F Backtrace /var/log/Xorg.0.log -- /usr/bin/abrt-dump-xorg -xD
-\n\xe2\x97\x8f abrtd.service - ABRT Automated Bug Reporting Tool
-   Loaded: loaded (/usr/lib/systemd/system/abrtd.service; enabled; vendor preset: enabled)
-   Active: active (running) since Tue 2017-09-05 14:52:44 CDT; 6 months 0 days ago
- Main PID: 761 (abrtd)
-   CGroup: /system.slice/abrtd.service
-           \xe2\x94\x94\xe2\x94\x80761 /usr/sbin/abrtd -d -s
-\n\xe2\x97\x8f accounts-daemon.service - Accounts Service
-   Loaded: loaded (/usr/lib/systemd/system/accounts-daemon.service; enabled; vendor preset: enabled)
-   Active: active (running) since Tue 2017-09-05 14:52:44 CDT; 6 months 0 days ago
- Main PID: 696 (accounts-daemon)
-   CGroup: /system.slice/accounts-daemon.service
-           \xe2\x94\x94\xe2\x94\x80696 /usr/libexec/accounts-daemon
-\n\xe2\x97\x8f alsa-restore.service - Save/Restore Sound Card State
-   Loaded: loaded (/usr/lib/systemd/system/alsa-restore.service; static; vendor preset: disabled)
-   Active: inactive (dead)
-Condition: start condition failed at Tue 2017-09-05 14:52:44 CDT; 6 months 0 days ago
-           ConditionPathExists=!/etc/alsa/state-daemon.conf was not met
-\n\xe2\x97\x8f alsa-state.service - Manage Sound Card State (restore and store)
-   Loaded: not-found (/usr/lib/systemd/system/alsa-state.service; static; vendor preset: disabled)
-   Active: active (running) since Tue 2017-09-05 14:52:44 CDT; 6 months 0 days ago
- Main PID: 703 (alsactl)
-   CGroup: /system.slice/alsa-state.service
-           \xe2\x94\x94\xe2\x94\x80703 /usr/sbin/alsactl -s -n 19 -c -E ALSA_CONFIG_PATH=/etc/alsa/alsactl.conf --initfile=/lib/alsa/init/00main rdaemon
-Unit apparmor.service could not be found."""
+SYSTEMD_OUTPUT = """SYSTEMD
+__SPLIT__
+Title=type-oneshot.service
+Type=oneshot
+MainPID=0
+Names=type-oneshot.service
+Description=Test case for type-oneshot, should not model
+LoadState=loaded
+ActiveState=active
+UnitFileState=enabled
+ConditionResult=yes
+__SPLIT__
+Title=unitfilestate-disabled.service
+Type=forking
+MainPID=0
+Names=unitfilestate-disabled.service
+Description=Test for unitfilestate-disabled, zLinuxModelAllActiveServices only
+LoadState=loaded
+ActiveState=active
+UnitFileState=disabled
+ConditionResult=yes
+__SPLIT__
+Title=conditionresult-no.service
+Type=forking
+MainPID=0
+Names=conditionresult-no.service
+Description=Test case for conditionresult-no, should not model
+LoadState=loaded
+ActiveState=active
+UnitFileState=enabled
+ConditionResult=no
+__SPLIT__
+Title=mixed.service
+Type=oneshot
+MainPID=0
+Names=mixed.service
+Description=Test case for mixed no models, should not model
+LoadState=loaded
+ActiveState=inactive
+UnitFileState=disabled
+ConditionResult=no
+__SPLIT__
+Title=rtkit-daemon.service
+Type=dbus
+MainPID=736
+Names=rtkit-daemon.service
+Description=Test case for service that should model
+LoadState=loaded
+ActiveState=active
+UnitFileState=enabled
+ConditionResult=yes
+__SPLIT__
+Title=rtkit2-daemon.service
+Type=dbus
+MainPID=732
+Names=rtkit2-daemon.service
+Description=Another test case for service that should model
+LoadState=loaded
+ActiveState=active
+UnitFileState=enabled-runtime
+ConditionResult=yes
+__SPLIT__
+Title=temp-daemon.service
+Type=dbus
+MainPID=731
+Names=temp-daemon.service
+Description=Test case for service that is enabled but inactive, should model.
+LoadState=loaded
+ActiveState=inactive
+UnitFileState=enabled
+ConditionResult=yes
+__SPLIT__
+Title=blank-unitFileState.service
+Type=dbus
+MainPID=732
+Names=blank-unitFileState.service
+Description=Models only when zLinuxModelAllActiveServices is true.
+LoadState=loaded
+ActiveState=active
+UnitFileState=
+ConditionResult=yes"""
 
 UPSTART_OUTPUT = """UPSTART
     rc stop/waiting
@@ -82,7 +116,13 @@ UPSTART_OUTPUT = """UPSTART
     start-ttys stop/waiting
     readahead-disable-services stop/waiting
     rcS-sulogin stop/waiting
-    serial stop/waiting"""
+    serial stop/waiting
+    SYSV_SERVICES
+    lrwxrwxrwx 1 root root 14 Oct  1  2009 K89pand -> ../init.d/pand
+    lrwxrwxrwx 1 root root 15 Oct  1  2009 K89rdisc -> ../init.d/rdisc
+    lrwxrwxrwx 1 root root 14 Oct  1  2009 K91capi -> ../init.d/capi
+    lrwxrwxrwx 1 root root 23 Oct  1  2009 S00microcode_ctl -> ../init.d/microcode_ctl
+    lrwxrwxrwx 1 root root 22 Oct  1  2009 S02lvm2-monitor -> ../init.d/lvm2-monitor"""
 
 SYSTEMV_OUTPUT = """SYSTEMV
     total 288
@@ -187,16 +227,16 @@ class ServiceModelerTests(unittest.TestCase):
         # Test with default/blank value for systemd, upstart and systemv
         self.device.zLinuxServicesModeled = []
         rm = self.plugin.process(self.device, SYSTEMD_OUTPUT, LOG)
-        self.assertEqual(len(rm[0].maps), 7)
+        self.assertEqual(len(rm[0].maps), 3)
         rm = self.plugin.process(self.device, UPSTART_OUTPUT, LOG)
-        self.assertEqual(len(rm[0].maps), 21)
+        self.assertEqual(len(rm[0].maps), 8)
         rm = self.plugin.process(self.device, SYSTEMV_OUTPUT, LOG)
         self.assertEqual(len(rm[0].maps), 51)
 
         # Test with SYSTEMD services with regex
-        self.device.zLinuxServicesModeled = ['^abrt.*']
+        self.device.zLinuxServicesModeled = ['^rtkit*']
         rm = self.plugin.process(self.device, SYSTEMD_OUTPUT, LOG)
-        self.assertEqual(len(rm[0].maps), 5)
+        self.assertEqual(len(rm[0].maps), 2)
         rm = self.plugin.process(self.device, UPSTART_OUTPUT, LOG)
         self.assertEqual(len(rm[0].maps), 0)
         rm = self.plugin.process(self.device, SYSTEMV_OUTPUT, LOG)
@@ -211,7 +251,7 @@ class ServiceModelerTests(unittest.TestCase):
         rm = self.plugin.process(self.device, SYSTEMV_OUTPUT, LOG)
         self.assertEqual(len(rm[0].maps), 0)
 
-        # Test with SYSTEMD services with regex
+        # Test with SYSTEMV services with regex
         self.device.zLinuxServicesModeled = ['^readahead.*']
         rm = self.plugin.process(self.device, SYSTEMD_OUTPUT, LOG)
         self.assertEqual(len(rm[0].maps), 0)
@@ -224,35 +264,54 @@ class ServiceModelerTests(unittest.TestCase):
         # Test with default/blank value
         self.device.zLinuxServicesNotModeled = []
         rm = self.plugin.process(self.device, SYSTEMD_OUTPUT, LOG)
-        self.assertEqual(len(rm[0].maps), 7)
+        self.assertEqual(len(rm[0].maps), 3)
         rm = self.plugin.process(self.device, UPSTART_OUTPUT, LOG)
-        self.assertEqual(len(rm[0].maps), 21)
+        self.assertEqual(len(rm[0].maps), 8)
         rm = self.plugin.process(self.device, SYSTEMV_OUTPUT, LOG)
         self.assertEqual(len(rm[0].maps), 51)
 
         # Test with SYSTEMD services with regex
-        self.device.zLinuxServicesNotModeled = ['^abrt.*']
+        self.device.zLinuxServicesNotModeled = ['^rtkit*']
         rm = self.plugin.process(self.device, SYSTEMD_OUTPUT, LOG)
-        self.assertEqual(len(rm[0].maps), 2)
+        self.assertEqual(len(rm[0].maps), 1)
         rm = self.plugin.process(self.device, UPSTART_OUTPUT, LOG)
-        self.assertEqual(len(rm[0].maps), 21)
+        self.assertEqual(len(rm[0].maps), 8)
         rm = self.plugin.process(self.device, SYSTEMV_OUTPUT, LOG)
         self.assertEqual(len(rm[0].maps), 51)
 
         # Test with UPSTART services with regex
         self.device.zLinuxServicesNotModeled = ['^tty.*']
         rm = self.plugin.process(self.device, SYSTEMD_OUTPUT, LOG)
-        self.assertEqual(len(rm[0].maps), 7)
+        self.assertEqual(len(rm[0].maps), 3)
         rm = self.plugin.process(self.device, UPSTART_OUTPUT, LOG)
-        self.assertEqual(len(rm[0].maps), 15)
+        self.assertEqual(len(rm[0].maps), 2)
         rm = self.plugin.process(self.device, SYSTEMV_OUTPUT, LOG)
         self.assertEqual(len(rm[0].maps), 51)
 
-        # Test with SYSTEMD services with regex
+        # Test with SYSTEMV services with regex
         self.device.zLinuxServicesNotModeled = ['^readahead.*']
         rm = self.plugin.process(self.device, SYSTEMD_OUTPUT, LOG)
-        self.assertEqual(len(rm[0].maps), 7)
+        self.assertEqual(len(rm[0].maps), 3)
         rm = self.plugin.process(self.device, UPSTART_OUTPUT, LOG)
-        self.assertEqual(len(rm[0].maps), 18)
+        self.assertEqual(len(rm[0].maps), 8)
         rm = self.plugin.process(self.device, SYSTEMV_OUTPUT, LOG)
         self.assertEqual(len(rm[0].maps), 49)
+
+    def test_zLinuxModelAllActiveServices(self):
+        # Test with default/blank value
+        self.device.zLinuxModelAllActiveServices = False
+        rm = self.plugin.process(self.device, SYSTEMD_OUTPUT, LOG)
+        self.assertEqual(len(rm[0].maps), 3)
+        rm = self.plugin.process(self.device, UPSTART_OUTPUT, LOG)
+        self.assertEqual(len(rm[0].maps), 8)
+        rm = self.plugin.process(self.device, SYSTEMV_OUTPUT, LOG)
+        self.assertEqual(len(rm[0].maps), 51)
+
+        # Test with default/blank value
+        self.device.zLinuxModelAllActiveServices = True
+        rm = self.plugin.process(self.device, SYSTEMD_OUTPUT, LOG)
+        self.assertEqual(len(rm[0].maps), 5)
+        rm = self.plugin.process(self.device, UPSTART_OUTPUT, LOG)
+        self.assertEqual(len(rm[0].maps), 8)
+        rm = self.plugin.process(self.device, SYSTEMV_OUTPUT, LOG)
+        self.assertEqual(len(rm[0].maps), 51)
