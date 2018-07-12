@@ -1,14 +1,14 @@
 ##############################################################################
 #
-# Copyright (C) Zenoss, Inc. 2008, all rights reserved.
+# Copyright (C) Zenoss, Inc. 2008-2018, all rights reserved.
 #
 # This content is made available according to terms specified in
 # License.zenoss under the directory where your Zenoss product is installed.
 #
 ##############################################################################
 
-
 from Products.ZenRRD.CommandParser import CommandParser
+
 
 class cpu(CommandParser):
 
@@ -17,32 +17,8 @@ class cpu(CommandParser):
         Process the results of "cat /proc/stat".  Take the first line (the cpu
         line) and pick out the values for the various datapoints.
         """
-
         if cmd.result.output:
             datapointMap = dict([(dp.id, dp) for dp in cmd.points])
-
-            # ssCpuSteal does not show up on all systems
-            ids = ['ssCpuUser',
-                   'ssCpuNice',
-                   'ssCpuSystem',
-                   'ssCpuIdle',
-                   'ssCpuWait',
-                   'ssCpuInterrupt',
-                   'ssCpuSoftInterrupt',
-                   'ssCpuSteal',
-                   'ssCpuUserPerCpu',
-                   'ssCpuSystemPerCpu',
-                   'ssCpuIdlePerCpu',
-                   'ssCpuUsedPerCpu',
-                   'ssCpuWaitPerCpu']
-
-            # New ids for Device CPU
-            userCpuPerCpu = None
-            niceCpuPerCpu = None
-            systemCpuPerCpu = None
-            idleCpuPerCpu = None
-            usedCpuPerCpu = None
-            waitCpuPerCpu = None
 
             # Component cpu returns socket value, device cpu return empty str
             component = getattr(cmd, 'component', None)
@@ -61,34 +37,47 @@ class cpu(CommandParser):
                         single_cpu_line = line
                         break
 
-            # Check if component or device cpu monitoting
+            valueMap = {}
+
+            # Check if component or device cpu monitoring
             if component:
                 perCpuValues = single_cpu_line.split()
-                # usedCpuPerCpu = userCpu + systemCpu
-                usedCpuPerCpu = float(perCpuValues[1]) + float(perCpuValues[3])
-            else:
-                # If we got a CPU count, set the normalized perCpu values
-                if cpuCount:
-                    perCpuValues = cmd.result.output.splitlines()[0].split()
-                    userCpuPerCpu = float(perCpuValues[1]) / float(cpuCount)
-                    niceCpuPerCpu = float(perCpuValues[2]) / float(cpuCount)
-                    systemCpuPerCpu = float(perCpuValues[3]) / float(cpuCount)
-                    idleCpuPerCpu = float(perCpuValues[4]) / float(cpuCount)
-                    usedCpuPerCpu = userCpuPerCpu + systemCpuPerCpu
-                    waitCpuPerCpu = float(perCpuValues[5]) / float(cpuCount)
+                values = map(int, perCpuValues[1:])
 
-            values = perCpuValues[1:]
+                valueMap = {
+                    'ssCpuUser': values[0],
+                    'ssCpuNice': values[1],
+                    'ssCpuSystem': values[2],
+                    'ssCpuUsed': values[0] + values[1] + values[2],
+                    'ssCpuIdle': values[3],
+                    'ssCpuWait': values[4],
+                    'ssCpuInterrupt': values[5],
+                    'ssCpuSoftInterrupt': values[6],
+                    'ssCpuSteal': values[7]}
 
-            valueMap = dict(zip(ids, values))
-            valueMap['ssCpuUserPerCpu'] = userCpuPerCpu
-            valueMap['ssCpuNicePerCpu'] = niceCpuPerCpu
-            valueMap['ssCpuSystemPerCpu'] = systemCpuPerCpu
-            valueMap['ssCpuIdlePerCpu'] = idleCpuPerCpu
-            valueMap['ssCpuUsedPerCpu'] = usedCpuPerCpu
-            valueMap['ssCpuWaitPerCpu'] = waitCpuPerCpu
+            # If we got a CPU count, set the normalized perCpu values
+            if not component and cpuCount:
+                perCpuValues = cmd.result.output.splitlines()[0].split()
+                values = [
+                    float(value) / cpuCount for value in perCpuValues[1:]]
 
-            for id in valueMap:
-                if id in datapointMap:
-                    result.values.append((datapointMap[id],
-                                          long(valueMap[id])))
+                valueMap = {
+                    'ssCpuUserPerCpu': values[0],
+                    'ssCpuNicePerCpu': values[1],
+                    'ssCpuSystemPerCpu': values[2],
+                    'ssCpuUsedPerCpu': values[0] + values[1] + values[2],
+                    'ssCpuIdlePerCpu': values[3],
+                    'ssCpuWaitPerCpu': values[4],
+                    'ssCpuInterruptPerCpu': values[5],
+                    'ssCpuSoftInterruptPerCpu': values[6],
+                    'ssCpuStealPerCpu': values[7]}
+
+            if not valueMap:
+                return result
+
+            for dp_id in valueMap:
+                if dp_id in datapointMap:
+                    result.values.append(
+                        (datapointMap[dp_id], long(valueMap[dp_id])),)
+
         return result

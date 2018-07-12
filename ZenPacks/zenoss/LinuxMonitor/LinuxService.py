@@ -25,6 +25,8 @@ class LinuxService(schema.LinuxService):
     def getRRDTemplates(self):
         all_templates = super(LinuxService, self).getRRDTemplates()
         used_templates = []
+        if not self.init_system:
+            return used_templates
         for template in all_templates:
             if self.init_system in template.id:
                 used_templates.append(template)
