@@ -10,7 +10,7 @@ Releases
 
 Version-2.3.1_
    | Released on 2018/12/07
-   | Compatible with Zenoss 4.2.5 - 6.1
+   | Compatible with Zenoss 4.2.5 - 6.2 and Zenoss Cloud
    | Requires `ZenPackLib ZenPack </product/zenpacks/zenpacklib>`_
 
 .. _Version-2.3.0: http://wiki.zenoss.org/download/zenpacks/ZenPacks.zenoss.LinuxMonitor/2.3.0/ZenPacks.zenoss.LinuxMonitor-2.3.0.egg
