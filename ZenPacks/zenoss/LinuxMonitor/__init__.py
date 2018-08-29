@@ -18,6 +18,10 @@ skinsDir = os.path.join(os.path.dirname(__file__), 'skins')
 if os.path.isdir(skinsDir):
     registerDirectory(skinsDir, globals())
 
+# Modeler plugin versioning to coordinate between modeling and monitoring.
+MODELER_VERSION_PROPERTY = "modeler_version"
+OS_SERVICE_MODELER_VERSION = 1
+
 # CFG is necessary when using zenpacklib.TestCase.
 CFG = zenpacklib.load_yaml()
 

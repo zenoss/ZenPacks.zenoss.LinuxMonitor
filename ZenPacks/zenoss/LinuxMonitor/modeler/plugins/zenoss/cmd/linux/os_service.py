@@ -245,6 +245,7 @@ import re
 
 from Products.DataCollector.plugins.CollectorPlugin import LinuxCommandPlugin
 
+from ZenPacks.zenoss.LinuxMonitor import OS_SERVICE_MODELER_VERSION
 
 __doc__ = """os_service
 Collect linux services information using appropriate init service command.
@@ -453,6 +454,7 @@ class os_service(LinuxCommandPlugin):
                 om.title = title
                 om.init_system = init_system
                 om.description = groupdict.get('description', '').strip()
+                om.modeler_version = OS_SERVICE_MODELER_VERSION
                 rm.append(om)
             else:
                 log.debug("Unmapped in populateRelMap(): %s", line)
