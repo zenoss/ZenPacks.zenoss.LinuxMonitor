@@ -51,6 +51,11 @@ classes:
                 order: 1.3
                 grid_display: False
 
+            modeler_version:
+                label: Modeler Plugin Version
+                type: int
+                grid_display: false
+
         monitoring_templates:
             - OSService-SYSTEMD
             - OSService-UPSTART

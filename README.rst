@@ -830,6 +830,11 @@ Linux.
 
 Changes
 -------
+
+2.3.2
+
+- Guard against out of date sudoers configuration in service monitoring. (ZPS-4334)
+
 2.3.1
 
 - Fix CPU Busy metric on "CPU Utilization" graph. (ZPS-3531)
