@@ -834,6 +834,7 @@ Changes
 2.3.2
 
 - Guard against out of date sudoers configuration in service monitoring. (ZPS-4334)
+- Allow filesystem modeling and monitoring to work with or without sudo access. (ZPS-4340)
 
 2.3.1
 

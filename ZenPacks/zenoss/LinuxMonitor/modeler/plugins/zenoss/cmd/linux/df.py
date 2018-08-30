@@ -1,19 +1,46 @@
 ##############################################################################
 #
-# Copyright (C) Zenoss, Inc. 2016, all rights reserved.
+# Copyright (C) Zenoss, Inc. 2016-2018, all rights reserved.
 #
 # This content is made available according to terms specified in
 # License.zenoss under the directory where your Zenoss product is installed.
 #
 ##############################################################################
+
+"""Model Linux file systems by running "df -PTk"."""
+
 import re
+
 from Products.DataCollector.plugins.CollectorPlugin import CommandPlugin
 from Products.ZenUtils.IpUtil import getHostByName
 
 
+COMMAND_WRAP_TEMPLATE = """
+export PATH=$PATH:/bin:/sbin:/usr/bin:/usr/sbin
+if command -v timeout >/dev/null 2>&1
+then
+    if ! timeout {timeout} /usr/bin/env sudo {command} 2>/dev/null
+    then
+        timeout {timeout} /usr/bin/env {command}
+    fi
+else
+    if ! /usr/bin/env sudo {command} 2>/dev/null
+    then
+        /usr/bin/env {command}
+    fi
+fi
+""".strip()
+
+
+def wrap_command(command, timeout=30):
+    return COMMAND_WRAP_TEMPLATE.format(
+        command=command,
+        timeout=timeout)
+
+
 class df(CommandPlugin):
     maptype = "FilesystemMap"
-    command = 'export PATH=$PATH:/bin:/sbin:/usr/bin:/usr/sbin; if command -v timeout > /dev/null 2>&1; then timeout 30 /usr/bin/env sudo df -PTk; else /usr/bin/env sudo df -PTk; fi'
+    command = wrap_command("df -PTk", timeout=30)
     compname = "os"
     relname = "filesystems"
     modname = "ZenPacks.zenoss.LinuxMonitor.FileSystem"
