@@ -835,6 +835,7 @@ Changes
 
 - Guard against out of date sudoers configuration in service monitoring. (ZPS-4334)
 - Allow filesystem modeling and monitoring to work with or without sudo access. (ZPS-4340)
+- Fix LVM monitoring when */sbin not in user's path. (ZPS-4349)
 
 2.3.1
 
