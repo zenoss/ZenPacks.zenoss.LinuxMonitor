@@ -1133,6 +1133,7 @@ device_classes:
                     disk:
                         type: COMMAND
                         commandTemplate: |-
+                            $$ZENOTHING
                             export PATH=$$PATH:/bin:/sbin:/usr/bin:/usr/sbin
                             if command -v timeout >/dev/null 2>&1
                             then
@@ -1172,6 +1173,7 @@ device_classes:
                     idisk:
                         type: COMMAND
                         commandTemplate: |-
+                            $$ZENOTHING
                             export PATH=$$PATH:/bin:/sbin:/usr/bin:/usr/sbin
                             if command -v timeout >/dev/null 2>&1
                             then
@@ -1274,6 +1276,7 @@ device_classes:
                     disk:
                         type: COMMAND
                         commandTemplate: |-
+                            $$ZENOTHING
                             export PATH=$$PATH:/bin:/sbin:/usr/bin:/usr/sbin
                             if command -v timeout >/dev/null 2>&1
                             then
@@ -1313,6 +1316,7 @@ device_classes:
                     idisk:
                         type: COMMAND
                         commandTemplate: |-
+                            $$ZENOTHING
                             export PATH=$$PATH:/bin:/sbin:/usr/bin:/usr/sbin
                             if command -v timeout >/dev/null 2>&1
                             then
@@ -1560,8 +1564,11 @@ device_classes:
                 datasources:
                     volume:
                         type: COMMAND
+                        commandTemplate: |-
+                            $$ZENOTHING
+                            export PATH=/bin:/sbin:/usr/bin:/usr/sbin
+                            /usr/bin/env sudo pvs --noheadings --units b --nosuffix -o pv_name,pv_size,pv_free
                         usessh: true
-                        commandTemplate: '/usr/bin/env sudo pvs --noheadings --units b --nosuffix -o pv_name,pv_size,pv_free'
                         parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.pvvgstats
                         component: "${here/id}"
                         eventClass: /Ignore
@@ -1583,8 +1590,12 @@ device_classes:
 
                     status:
                         type: COMMAND
+                        commandTemplate: |-
+                            $$ZENOTHING
+                            export PATH=/bin:/sbin:/usr/bin:/usr/sbin
+                            /usr/bin/env sudo pvs --noheadings -o pv_name,pv_attr \
+                                | awk '{split($$2, chars, ""); printf("%s ", $$1); for (i=1;i<=3;i++) printf("%d ", chars[i]=="-" ? 0 : 1); printf("\n")}'
                         usessh: true
-                        commandTemplate: "/usr/bin/env sudo pvs --noheadings -o pv_name,pv_attr | awk '{split($$2, chars, \"\"); printf(\"%s \", $$1); for (i=1;i<=3;i++) printf(\"%d \", chars[i]==\"-\" ? 0 : 1); printf(\"\\n\")}'"
                         parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.pvsstatus
                         component: "${here/id}"
                         eventClass: /Ignore
@@ -1643,8 +1654,11 @@ device_classes:
                 datasources:
                     group:
                         type: COMMAND
+                        commandTemplate: |-
+                            $$ZENOTHING
+                            export PATH=/bin:/sbin:/usr/bin:/usr/sbin
+                            /usr/bin/env sudo vgs --noheadings --units b --nosuffix -o vg_name,vg_size,vg_free
                         usessh: true
-                        commandTemplate: "/usr/bin/env sudo vgs --noheadings --units b --nosuffix -o vg_name,vg_size,vg_free"
                         parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.pvvgstats
                         component: "${here/id}"
                         eventClass: /Ignore
@@ -1666,8 +1680,12 @@ device_classes:
 
                     status:
                         type: COMMAND
+                        commandTemplate: |-
+                            $$ZENOTHING
+                            export PATH=/bin:/sbin:/usr/bin:/usr/sbin
+                            /usr/bin/env sudo vgs --noheadings -o vg_name,vg_attr \
+                                | awk '{split($$2, chars, ""); printf("%s ", $$1); for (i=1;i<=3;i++) printf("%d ", chars[i]=="-" ? 0 : 1); printf("\n")}'
                         usessh: true
-                        commandTemplate: "/usr/bin/env sudo vgs --noheadings -o vg_name,vg_attr | awk '{split($$2, chars, \"\"); printf(\"%s \", $$1); for (i=1;i<=3;i++) printf(\"%d \", chars[i]==\"-\" ? 0 : 1); printf(\"\\n\")}'"
                         parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.vgsstatus
                         component: "${here/id}"
                         eventClass: /Ignore
@@ -1705,8 +1723,11 @@ device_classes:
                 datasources:
                     status:
                         type: COMMAND
+                        commandTemplate: |-
+                            $$ZENOTHING
+                            export PATH=/bin:/sbin:/usr/bin:/usr/sbin
+                            /usr/bin/env sudo lvs --noheadings -o vg_name,lv_name,lv_attr
                         usessh: true
-                        commandTemplate: "/usr/bin/env sudo lvs --noheadings -o vg_name,lv_name,lv_attr"
                         parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.lvsstatus
                         component: "${here/id}"
                         eventClass: /Status
@@ -1732,8 +1753,11 @@ device_classes:
                 datasources:
                     status:
                         type: COMMAND
+                        commandTemplate: |-
+                            $$ZENOTHING
+                            export PATH=/bin:/sbin:/usr/bin:/usr/sbin
+                            /usr/bin/env sudo lvs --noheadings -o vg_name,lv_name,lv_attr
                         usessh: true
-                        commandTemplate: "/usr/bin/env sudo lvs --noheadings -o vg_name,lv_name,lv_attr"
                         parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.lvsstatus
                         component: "${here/id}"
                         eventClass: /Status
@@ -1930,8 +1954,11 @@ device_classes:
                 datasources:
                     poolstats:
                         type: COMMAND
+                        commandTemplate: |-
+                            $$ZENOTHING
+                            export PATH=/bin:/sbin:/usr/bin:/usr/sbin
+                            /usr/bin/env sudo lvs --noheadings -o vg_name,lv_name,data_percent,metadata_percent
                         usessh: true
-                        commandTemplate: "/usr/bin/env sudo lvs --noheadings -o vg_name,lv_name,data_percent,metadata_percent"
                         parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.poolstats
                         component: "${here/id}"
                         eventClass: /Ignore
@@ -1948,8 +1975,11 @@ device_classes:
                                     lv_pool_metadatapercent: ""
                     status:
                         type: COMMAND
+                        commandTemplate: |-
+                            $$ZENOTHING
+                            export PATH=/bin:/sbin:/usr/bin:/usr/sbin
+                            /usr/bin/env sudo lvs --noheadings -o vg_name,lv_name,lv_attr
                         usessh: true
-                        commandTemplate: "/usr/bin/env sudo lvs --noheadings -o vg_name,lv_name,lv_attr"
                         parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.lvsstatus
                         component: "${here/id}"
                         eventClass: /Status
