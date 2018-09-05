@@ -93,9 +93,11 @@ class service(CommandParser):
         services = services[1:]
         # regex_perf used for sysd where modeling/perf commands are different
         regex = initService.get('regex_perf') or initService.get('regex')
-        functions = initService.get('functions')
-        if functions:
-            services = functions.get('monitoring')(services)
+
+        # Per-init-system pre-processing of lines of command output.
+        func = initService.get("functions", {}).get("monitoring")
+        if func:
+            services = func(services)
 
         # Get comp name over id (id does not have special chars like '@')
         for dp in cmd.points:
@@ -112,8 +114,14 @@ class service(CommandParser):
             title = groupdict.get('title')
             if name != title:
                 continue
+
             active_status = groupdict.get('active_status')
-            status_string = active_status.split()[0]
+            if not active_status:
+                status_string = groupdict.get("active")
+                active_status = "{} ({})".format(groupdict.get("active"), groupdict.get("active_sub"))
+            else:
+                status_string = active_status.split()[0]
+
             # Check if status is active or running
             if status_string not in ON_STATUS:
                 status_value = 0    # STATUS OFF/INACTIVE

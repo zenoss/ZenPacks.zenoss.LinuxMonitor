@@ -204,14 +204,27 @@ allow the **zenmonitor** user to run the commands.
      supported) and add the following lines to the bottom of the file::
 
         Defaults:zenmonitor !requiretty
-        Cmnd_Alias ZENOSS_LVM_CMDS = /sbin/pvs, /sbin/vgs, /sbin/lvs, \
-            /usr/sbin/pvs, /usr/sbin/vgs, /usr/sbin/lvs
-        Cmnd_Alias ZENOSS_SVC_CMDS = /bin/systemctl list-units *, \
-            /bin/systemctl show *, /sbin/initctl list, /sbin/service *, \
-            /sbin/runlevel, /usr/sbin/dmidecode, /bin/ls -l /etc/rc?.d/
-        Cmnd_Alias ZENOSS_NET_CMDS = /bin/dmesg
-        Cmnd_Alias ZENOSS_DF_CMDS = /bin/df
-        zenmonitor ALL=(ALL) NOPASSWD: ZENOSS_LVM_CMDS, ZENOSS_SVC_CMDS, ZENOSS_NET_CMDS, ZENOSS_DF_CMDS
+
+        Cmnd_Alias ZENOSS_CMDS = \
+            /usr/sbin/dmidecode, \
+            /bin/df, \
+            /bin/dmesg
+
+        Cmnd_Alias ZENOSS_LVM_CMDS = \
+            /sbin/pvs, /usr/sbin/pvs, \
+            /sbin/vgs, /usr/sbin/vgs, \
+            /sbin/lvs, /usr/sbin/lvs
+
+        Cmnd_Alias ZENOSS_SVC_CMDS = \
+            /sbin/initctl list, \
+            /sbin/service *, \
+            /sbin/runlevel, \
+            /bin/ls -l /etc/rc?.d/
+
+        zenmonitor ALL=(ALL) NOPASSWD: \
+            ZENOSS_CMDS, \
+            ZENOSS_LVM_CMDS, \
+            ZENOSS_SVC_CMDS
 
    - Save, ensuring all paths for these commands are correct
 
@@ -836,6 +849,8 @@ Changes
 - Guard against out of date sudoers configuration in service monitoring. (ZPS-4334)
 - Allow filesystem modeling and monitoring to work with or without sudo access. (ZPS-4340)
 - Fix LVM monitoring when */sbin not in user's path. (ZPS-4349)
+- Fix undocumented sudo usage of "systemctl status". (ZPS-4121)
+- Update reduced recommended sudoers configuration. (ZPS-4121)
 
 2.3.1
 

@@ -1,6 +1,6 @@
 ##############################################################################
 #
-# Copyright (C) Zenoss, Inc. 2016, all rights reserved.
+# Copyright (C) Zenoss, Inc. 2016-2018, all rights reserved.
 #
 # This content is made available according to terms specified in
 # License.zenoss under the directory where your Zenoss product is installed.
@@ -9,64 +9,28 @@
 
 
 """
-Systemd perf output('systemctl list-units -t service --all --no-page --no-legend | cut -d" " -f1 | xargs -n 1 systemctl status -l -n 0'):
+Systemd perf output('systemctl list-units --all --type=service --plain --full --no-page --no-legend')
+
     ...
-    systemd-udev-trigger.service - udev Coldplug all Devices
-       Loaded: loaded (/usr/lib/systemd/system/systemd-udev-trigger.service; static; vendor preset: disabled)
-       Active: active (exited) since Tue 2016-02-02 12:47:58 UTC; 3 weeks 6 days ago
-         Docs: man:udev(7)
-               man:systemd-udevd.service(8)
-      Process: 436 ExecStart=/usr/bin/udevadm trigger --type=devices --action=add (code=exited, status=0/SUCCESS)
-      Process: 434 ExecStart=/usr/bin/udevadm trigger --type=subsystems --action=add (code=exited, status=0/SUCCESS)
-     Main PID: 436 (code=exited, status=0/SUCCESS)
-       Memory: 0B
-       CGroup: /system.slice/systemd-udev-trigger.service
-    systemd-udevd.service - udev Kernel Device Manager
-       Loaded: loaded (/usr/lib/systemd/system/systemd-udevd.service; static; vendor preset: disabled)
-       Active: active (running) since Tue 2016-02-02 12:47:59 UTC; 3 weeks 6 days ago
-         Docs: man:systemd-udevd.service(8)
-               man:udev(7)
-     Main PID: 445 (systemd-udevd)
-       Memory: 496.0K
-       CGroup: /system.slice/systemd-udevd.service
-               445 /usr/lib/systemd/systemd-udevd
-    systemd-update-done.service - Update is Completed
-       Loaded: loaded (/usr/lib/systemd/system/systemd-update-done.service; static; vendor preset: disabled)
-       Active: inactive (dead)
-    Condition: start condition failed at Tue 2016-02-02 12:48:04 UTC; 3 weeks 6 days ago
-               none of the trigger conditions were met
-         Docs: man:systemd-update-done.service(8)
-    systemd-update-utmp-runlevel.service - Update UTMP about System Runlevel Changes
-       Loaded: loaded (/usr/lib/systemd/system/systemd-update-utmp-runlevel.service; static; vendor preset: disabled)
-       Active: inactive (dead) since Tue 2016-02-02 13:04:10 UTC; 3 weeks 6 days ago
-         Docs: man:systemd-update-utmp.service(8)
-               man:utmp(5)
-      Process: 2547 ExecStart=/usr/lib/systemd/systemd-update-utmp runlevel (code=exited, status=0/SUCCESS)
-     Main PID: 2547 (code=exited, status=0/SUCCESS)
-    systemd-update-utmp.service - Update UTMP about System Boot/Shutdown
-       Loaded: loaded (/usr/lib/systemd/system/systemd-update-utmp.service; static; vendor preset: disabled)
-       Active: active (exited) since Tue 2016-02-02 12:48:05 UTC; 3 weeks 6 days ago
-         Docs: man:systemd-update-utmp.service(8)
-               man:utmp(5)
-      Process: 629 ExecStart=/usr/lib/systemd/systemd-update-utmp reboot (code=exited, status=0/SUCCESS)
-     Main PID: 629 (code=exited, status=0/SUCCESS)
-       Memory: 0B
-       CGroup: /system.slice/systemd-update-utmp.service
-       display-manager.service
-       Loaded: not-found (Reason: No such file or directory)
-       Active: inactive (dead)
-     kdump.service - Crash recovery kernel arming
-       Loaded: loaded (/usr/lib/systemd/system/kdump.service; disabled; vendor preset: enabled)
-       Active: failed (Result: exit-code) since Tue 2018-03-06 12:05:18 CST; 2 days ago
-       Process: 32754 ExecStart=/usr/bin/kdumpctl start (code=exited, status=1/FAILURE)
-       Main PID: 32754 (code=exited, status=1/FAILURE)
+    accounts-daemon.service    loaded    active   running Accounts Service
+    acpid.service              loaded    active   running ACPI event daemon
+    alsa-restore.service       loaded    active   exited  Save/Restore Sound Card State
+    alsa-state.service         loaded    inactive dead    Manage Sound Card State (restore and store)
+    anacron.service            loaded    inactive dead    Run anacron jobs
+    apparmor.service           loaded    active   exited  AppArmor initialization
+    apport.service             loaded    active   exited  LSB: automatic crash report generation
+    apt-daily-upgrade.service  loaded    inactive dead    Daily apt upgrade and clean activities
+    apt-daily.service          loaded    inactive dead    Daily apt download activities
+    auditd.service             not-found inactive dead    auditd.service
+    auth-rpcgss-module.service loaded    inactive dead    Kernel Module supporting RPCSEC_GSS
+    avahi-daemon.service       loaded    active   running Avahi mDNS/DNS-SD Stack
     ...
 
 
-Systemd model output('for i in $(sudo systemctl list-units -t service --all
+Systemd model output('for i in $(systemctl list-units -t service --all
                 --no-page --no-legend | sed /not-found/d | cut -d" " -f1) ;
                 do echo "__SPLIT__" ;
-                sudo systemctl show -p Names,Type,Description,LoadState,
+                systemctl show -p Names,Type,Description,LoadState,
                 ActiveState,UnitFileState,MainPID,ConditionResult $i ; done'):
     ...
     Type=oneshot
@@ -251,16 +215,16 @@ __doc__ = """os_service
 Collect linux services information using appropriate init service command.
 """
 
-
+# systemctl list-units --all --type=service --plain --full --no-page --no-legend
+#
+#   accounts-daemon.service    loaded    active   running Accounts Service
 RE_SYSTEMD_SERVICE_PERF = re.compile(
-                            '(?P<title>[@\w\-\.:]+)\.service\s\-\s'          # service title
-                            '(?P<description>.+)\s+'                         # description
-                            'Loaded:\s(?P<loaded_status>\w.+\))\s+'          # loaded status
-                            '(Drop-In:(?P<drop_in>\s/\w[\w./].+)\s+)?'       # optional Drop-In
-                            'Active:\s+'
-                            '(?P<active_status>\w+\s\([\w:\s-]+\)(\ssince.+ago)?)' # active status
-                            '(.+Main\sPID:\s(?P<main_pid>\d+))?'             # optional sevicepid
-                            '.*')
+    r'(?P<title>[@\w\-\.:]+)\.service\s+'
+    r'(?P<loaded_status>\S+)\s+'
+    r'(?P<active>\S+)\s+'
+    r'(?P<active_sub>\S+)\s+'
+    r'.*')
+
 RE_SYSTEMD_SERVICE_MODEL = re.compile(
                                 # title
                                 'Title=(?P<title>[@\w\-\.:]+)\.service\n'
@@ -297,23 +261,6 @@ def systemd_processServices(results):
     services[-1] = services[-1][:-1]
     # return service without 'SYSTEMD' in first index
     return services[1:]
-
-
-def systemd_getServices(services):
-    """
-    Build a list of services.
-    The delimiter of a new service line is BLACK CIRCLE unicode char.
-    """
-    uServices = unicode(''.join(services), 'utf-8')
-    # remove these unicode chars before we splitlines() and parse
-    if re.match(ur'.*\u2514\u2500.*', uServices):
-        uServices = re.sub(ur'\u2514\u2500', ' ', uServices)
-
-    if re.match(ur'\u25cf', uServices):
-        return re.sub(ur'\u25cf', '\n', uServices).splitlines()
-    else:
-        uServices = unicode('\n'.join(services), 'utf-8')
-        return re.sub(r'\n([\s\w])', '\\1', uServices).splitlines()
 
 
 def check_services_modeled(model_list, ignore_list, title):
@@ -364,7 +311,6 @@ SERVICE_MAP = {
         'regex_perf': RE_SYSTEMD_SERVICE_PERF,
         'functions': {
             'modeling': systemd_processServices,
-            'monitoring': systemd_getServices,
         }
     },
     'UPSTART': {
@@ -383,10 +329,10 @@ class os_service(LinuxCommandPlugin):
     command = ('export PATH=$PATH:/bin:/sbin:/usr/bin:/usr/sbin; '
                'if command -v systemctl >/dev/null 2>&1; then '
                 'echo "SYSTEMD"; '
-                'for i in $(sudo systemctl list-units -t service --all --no-page --no-legend | sed /not-found/d | cut -d" " -f1) ; '
+                'for i in $(systemctl list-units --all --type=service --plain --full --no-page --no-legend | sed /not-found/d | cut -d" " -f1) ; '
                  'do echo "__SPLIT__" ; '
                  'echo "Title="$i ; '
-                 'sudo systemctl show -p Names,Type,Description,LoadState,ActiveState,UnitFileState,MainPID,ConditionResult $i ; '
+                 'systemctl show -p Names,Type,Description,LoadState,ActiveState,UnitFileState,MainPID,ConditionResult $i ; '
                  'done; '
                'elif command -v initctl >/dev/null 2>&1; then '
                 'echo "UPSTART"; '
