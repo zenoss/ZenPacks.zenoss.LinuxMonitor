@@ -230,23 +230,22 @@ RE_SYSTEMD_SERVICE_MODEL = re.compile(
                                 'Title=(?P<title>[@\w\-\.:]+)\.service\n'
                                 # sysd_type
                                 'Type=(?P<sysd_type>\w+)\n'
-                                # main_pid
-                                'MainPID=(?P<main_pid>\d+)\n'
-                                # names
-                                'Names=(?P<names>.*)\n'
                                 # description
                                 'Description=(?P<description>.+)\n'
-                                # load status
-                                'LoadState=(?P<loaded_status>\w+)\n'
                                 # active status
                                 'ActiveState=(?P<active_status>\w+)\n'
                                 # unit file state
                                 'UnitFileState=(?P<unit_file_state>[\w\-]*)\n'
                                 # condition
                                 'ConditionResult=(?P<condition_result>\w+)')
-RE_UPSTART_SERVICE = re.compile('(?P<title>[\w\-]+(\s\([\w\/-]+\))?)\s'    # service title
-                                '(?P<goal>([\w]+)?)/(?P<active_status>([\w]+)?)' # active status
-                                '(.\sprocess\s(?P<main_pid>\d+))?')       # active status if exists
+
+# resolvconf start/running
+# ssh start/running, process 874
+RE_UPSTART_SERVICE = re.compile(
+    r'^(?P<title>.+?)\s+'
+    r'(?P<goal>(start|stop))\/(?P<active_status>[\w\-]+)'
+    r'(,\s+process (?P<main_pid>\d+))?')
+
 # Only links that start with 'S' are running in current runlevel
 # Matches output of "ls -l /etc/rc${CURRENT_RUNLEVEL}.d/"
 #   lrwxrwxrwx 1 root root 16 Oct 15  2009 K36mysqld -> ../init.d/mysqld
@@ -322,30 +321,44 @@ SERVICE_MAP = {
     'UNKNOWN': None
 }
 
+COMMAND = """
+export PATH=$PATH:/bin:/sbin:/usr/bin:/usr/sbin
+if command -v systemctl >/dev/null 2>&1
+then
+    echo SYSTEMD
+    for i in $(systemctl list-units --all --type=service --plain --full --no-page --no-legend | sed /not-found/d | cut -d" " -f1)
+    do
+        echo __SPLIT__
+        echo Title=$i
+        systemctl show -p Type,Description,ActiveState,UnitFileState,ConditionResult "$i"
+    done
+elif command -v initctl >/dev/null 2>&1
+then
+    echo UPSTART
+    initctl list 2>&1 || true
+    echo SYSV_SERVICES
+    if sudo -S service NEVER-A-SERVICE status <&- 2>&1 | grep '^NEVER-A-SERVICE' >/dev/null
+    then
+        ls -l /etc/rc$(runlevel | awk '{print $2}').d/ 2>&1 || true
+    else
+        echo '##ERROR##:user requires sudo access to "service <example> status"'
+    fi
+elif command -v service >/dev/null 2>&1
+then
+    echo SYSTEMV
+    if sudo -S service NEVER-A-SERVICE status <&- 2>&1 | grep '^NEVER-A-SERVICE' >/dev/null
+    then
+        ls -l /etc/rc$(runlevel | awk '{print $2}').d/ 2>&1 || true
+    else
+        echo '##ERROR##:user requires sudo access to "service <example> status"'
+    fi
+fi
+"""
 
 class os_service(LinuxCommandPlugin):
     requiredProperties = ('zLinuxServicesModeled', 'zLinuxServicesNotModeled', 'zLinuxModelAllActiveServices')
     deviceProperties = LinuxCommandPlugin.deviceProperties + requiredProperties
-    command = ('export PATH=$PATH:/bin:/sbin:/usr/bin:/usr/sbin; '
-               'if command -v systemctl >/dev/null 2>&1; then '
-                'echo "SYSTEMD"; '
-                'for i in $(systemctl list-units --all --type=service --plain --full --no-page --no-legend | sed /not-found/d | cut -d" " -f1) ; '
-                 'do echo "__SPLIT__" ; '
-                 'echo "Title="$i ; '
-                 'systemctl show -p Names,Type,Description,LoadState,ActiveState,UnitFileState,MainPID,ConditionResult $i ; '
-                 'done; '
-               'elif command -v initctl >/dev/null 2>&1; then '
-                'echo "UPSTART"; '
-                'sudo initctl list 2>&1 || true ; '
-                'echo "SYSV_SERVICES"; '
-                'sudo ls -l /etc/rc$(/sbin/runlevel | awk \'{print $2}\').d/ 2>&1 || true; '
-               'elif command -v service >/dev/null 2>&1; then '
-                'echo "SYSTEMV"; '
-                'sudo ls -l /etc/rc$(/sbin/runlevel | awk \'{print $2}\').d/ 2>&1 || true; '
-               'else '
-                'echo "UNKNOWN"; '
-                'exit 127; '
-               'fi')
+    command = COMMAND
 
     compname = ''
     relname = 'linuxServices'
@@ -355,6 +368,11 @@ class os_service(LinuxCommandPlugin):
                        services, regex, device, log):
         for line in services:
             line = line.strip()
+
+            if line.startswith("##ERROR##"):
+                log.error("%s: %s", device.id, line.split(":", 1)[-1])
+                continue
+
             # Upstart models both sysv and upstart services (ZPS-3478)
             if line == "SYSV_SERVICES":
                 regex = SERVICE_MAP["SYSTEMV"]["regex"]
@@ -407,27 +425,44 @@ class os_service(LinuxCommandPlugin):
                 continue
 
     def process(self, device, results, log):
-        log.info("Processing the OS Service info for device %s", device.id)
-        rm = self.relMap()
+        log.info("%s: processing services", device.id)
         # Validate regex and log warning message for invalid regex
         model_list, ignore_list = validate_modeling_regex(device, log)
+
+        rm = self.relMap()
+
         services = results.splitlines()
+        if not services:
+            log.error("%s: no output from services commands", device.id)
+            return rm
+
         init_system = services[0]
         initService = SERVICE_MAP.get(init_system)
-        if initService:
-            services = services[1:]
-            regex = initService.get('regex')
-            functions = initService.get('functions')
-            if functions:
-                services = functions.get('modeling')(results)
-            self.populateRelMap(rm, model_list, ignore_list, init_system,
-                                services, regex, device, log)
-            log.debug("Init service: %s, Relationship: %s", initService,
-                      rm.relname)
-        else:
-            log.info("Cannot parse OS services, init service is unknown!")
+        if not initService:
+            log.error(
+                "%s: no services; %r init system unknown",
+                device.id,
+                init_system)
 
-        return [rm]
+            return rm
+
+        services = services[1:]
+        regex = initService.get('regex')
+        functions = initService.get('functions')
+        if functions:
+            services = functions.get('modeling')(results)
+
+        self.populateRelMap(
+            rm,
+            model_list,
+            ignore_list,
+            init_system,
+            services,
+            regex,
+            device,
+            log)
+
+        return rm
 
 
 def upstart_expected_running(device, groupdict):

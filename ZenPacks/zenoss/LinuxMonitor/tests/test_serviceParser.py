@@ -98,14 +98,14 @@ class ServiceParserTests(BaseTestCase):
         self.cmd.component = 'brandbot'
         self.cmd.points[0]['data']['id'] = 'brandbot'
         service().processResults(self.cmd, result)
-        self.assertEqual(result.events[0]['summary'], 'OS Service is down')
+        self.assertEqual(result.events[0]['summary'], 'service is down')
 
         # Test Event is Up
         result = ParsedResults()
         self.cmd.component = 'auditd'
         self.cmd.points[0]['data']['id'] = 'auditd'
         service().processResults(self.cmd, result)
-        self.assertEqual(result.events[0]['summary'], 'OS Service is up')
+        self.assertEqual(result.events[0]['summary'], 'service is up')
 
     def test_UpstartEvents(self):
         self.cmd.result.output = UPSTART_OUTPUT
@@ -115,14 +115,14 @@ class ServiceParserTests(BaseTestCase):
         self.cmd.component = 'plymouth-shutdown'
         self.cmd.points[0]['data']['id'] = 'plymouth-shutdown'
         service().processResults(self.cmd, result)
-        self.assertEqual(result.events[0]['summary'], 'OS Service is down')
+        self.assertEqual(result.events[0]['summary'], 'service is down')
 
         # Test Event is Up
         result = ParsedResults()
         self.cmd.component = 'tty (_dev_tty6)'
         self.cmd.points[0]['data']['id'] = 'tty (/dev/tty6)'
         service().processResults(self.cmd, result)
-        self.assertEqual(result.events[0]['summary'], 'OS Service is up')
+        self.assertEqual(result.events[0]['summary'], 'service is up')
 
     def test_SystemVEvents(self):
         # Test Event is Up
@@ -131,7 +131,7 @@ class ServiceParserTests(BaseTestCase):
         self.cmd.points[0]['data']['id'] = 'test_service'
         self.cmd.result.output = 'SYSTEMV\n0\n'
         service().processResults(self.cmd, result)
-        self.assertEqual(result.events[0]['summary'], 'OS Service is up')
+        self.assertEqual(result.events[0]['summary'], 'service is up')
         self.assertEqual(result.events[0]['message'], 'Exit status: ' +
                          'program is running or service is OK')
 
@@ -141,7 +141,7 @@ class ServiceParserTests(BaseTestCase):
         self.cmd.points[0]['data']['id'] = 'test_service'
         self.cmd.result.output = 'SYSTEMV\n1\n'
         service().processResults(self.cmd, result)
-        self.assertEqual(result.events[0]['summary'], 'OS Service is down')
+        self.assertEqual(result.events[0]['summary'], 'service is down')
         self.assertEqual(result.events[0]['message'], 'Exit status: ' +
                          'program is dead and /var/run pid file exists')
 
@@ -151,7 +151,7 @@ class ServiceParserTests(BaseTestCase):
         self.cmd.points[0]['data']['id'] = 'test_service'
         self.cmd.result.output = 'SYSTEMV\n2\n'
         service().processResults(self.cmd, result)
-        self.assertEqual(result.events[0]['summary'], 'OS Service is down')
+        self.assertEqual(result.events[0]['summary'], 'service is down')
         self.assertEqual(result.events[0]['message'], 'Exit status: ' +
                          'program is dead and /var/lock lock file exists')
 
@@ -161,7 +161,7 @@ class ServiceParserTests(BaseTestCase):
         self.cmd.points[0]['data']['id'] = 'test_service'
         self.cmd.result.output = 'SYSTEMV\n3\n'
         service().processResults(self.cmd, result)
-        self.assertEqual(result.events[0]['summary'], 'OS Service is down')
+        self.assertEqual(result.events[0]['summary'], 'service is down')
         self.assertEqual(result.events[0]['message'], 'Exit status: ' +
                          'program is not running')
 
@@ -171,7 +171,7 @@ class ServiceParserTests(BaseTestCase):
         self.cmd.points[0]['data']['id'] = 'test_service'
         self.cmd.result.output = 'SYSTEMV\n4\n'
         service().processResults(self.cmd, result)
-        self.assertEqual(result.events[0]['summary'], 'OS Service is down')
+        self.assertEqual(result.events[0]['summary'], 'service is down')
         self.assertEqual(result.events[0]['message'], 'Exit status: ' +
                          'program or service status is unknown')
 
@@ -181,7 +181,7 @@ class ServiceParserTests(BaseTestCase):
         self.cmd.points[0]['data']['id'] = 'test_service'
         self.cmd.result.output = 'SYSTEMV\n10\n'
         service().processResults(self.cmd, result)
-        self.assertEqual(result.events[0]['summary'], 'OS Service is down')
+        self.assertEqual(result.events[0]['summary'], 'service is down')
         self.assertEqual(result.events[0]['message'], 'Exit status: ' +
                          'Reserved for future LSB use')
 
@@ -191,7 +191,7 @@ class ServiceParserTests(BaseTestCase):
         self.cmd.points[0]['data']['id'] = 'test_service'
         self.cmd.result.output = 'SYSTEMV\n140\n'
         service().processResults(self.cmd, result)
-        self.assertEqual(result.events[0]['summary'], 'OS Service is down')
+        self.assertEqual(result.events[0]['summary'], 'service is down')
         self.assertEqual(result.events[0]['message'], 'Exit status: ' +
                          'Reserved for distribution use')
 
@@ -201,7 +201,7 @@ class ServiceParserTests(BaseTestCase):
         self.cmd.points[0]['data']['id'] = 'test_service'
         self.cmd.result.output = 'SYSTEMV\n155\n'
         service().processResults(self.cmd, result)
-        self.assertEqual(result.events[0]['summary'], 'OS Service is down')
+        self.assertEqual(result.events[0]['summary'], 'service is down')
         self.assertEqual(result.events[0]['message'], 'Exit status: ' +
                          'Reserved for application use')
 

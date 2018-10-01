@@ -217,7 +217,7 @@ allow the **zenmonitor** user to run the commands.
 
         Cmnd_Alias ZENOSS_SVC_CMDS = \
             /sbin/initctl list, \
-            /sbin/service *, \
+            /sbin/service *, /usr/sbin/service *, \
             /sbin/runlevel, \
             /bin/ls -l /etc/rc?.d/
 

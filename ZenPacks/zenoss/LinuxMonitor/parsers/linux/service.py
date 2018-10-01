@@ -68,7 +68,7 @@ class service(CommandParser):
                 'component': cmd.component,
                 'severity': severity,
                 'eventClassKey': 'linux-service-status',
-                'summary': 'OS Service is {}'.format(event_status),
+                'summary': 'service is {}'.format(event_status),
                 'message': 'Exit status: ' + message
             }
 
@@ -133,7 +133,7 @@ class service(CommandParser):
                 'component': cmd.component,
                 'severity': severity,
                 'eventClassKey': 'linux-service-status',
-                'summary': 'OS Service is {}'.format(event_status),
+                'summary': 'service is {}'.format(event_status),
                 'message': active_status
             }
 
