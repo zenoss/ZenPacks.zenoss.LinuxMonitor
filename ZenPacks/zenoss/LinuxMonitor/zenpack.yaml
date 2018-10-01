@@ -562,6 +562,24 @@ device_classes:
                 - zenoss.cmd.linux.os_release
                 - zenoss.cmd.linux.os_service
 
+            zLinuxServicesNotModeled:
+                - anacron
+                - bluetooth
+                - cpuspeed
+                - ondemand
+                - firstboot
+                - irqbalance
+                - isdn
+                - lvm2-monitor
+                - mcstrans
+                - mdmonitor
+                - portreserve
+                - pppd-dns
+                - rpcgssd
+                - rsync
+                - sudo
+                - sysstat
+
         templates:
             Device:
                 description: "Linux device monitoring via SSH."
@@ -1511,15 +1529,18 @@ device_classes:
                 datasources:
                     service:
                         type: COMMAND
+                        commandTemplate: |
+                            $$ZENOTHING
+                            export PATH=$$PATH:/bin:/sbin:/usr/bin:/usr/sbin
+                            if command -v initctl >/dev/null 2>&1
+                            then
+                                echo UPSTART
+                                initctl list 2>&1 || true
+                            else
+                                echo UNKNOWN
+                                exit 127
+                            fi
                         usessh: true
-                        # Check for upstart for services
-                        commandTemplate: >
-                                           /bin/sh -c 'export PATH=$$PATH:/bin:/sbin:/usr/bin:/usr/sbin;
-                                           if command -v initctl >/dev/null 2>&1;
-                                           then echo "UPSTART"; sudo initctl list 2>&1 || true;
-                                           else echo "UNKNOWN";
-                                           exit 127;
-                                           fi'
                         parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.service
                         component: "${here/id}"
                         eventClass: /Unknown
@@ -1538,15 +1559,19 @@ device_classes:
                 datasources:
                     service:
                         type: COMMAND
+                        commandTemplate: |
+                            $$ZENOTHING
+                            export PATH=$$PATH:/bin:/sbin:/usr/bin:/usr/sbin
+                            if command -v service >/dev/null 2>&1
+                            then
+                                echo SYSTEMV
+                                sudo -S service ${here/title} status <&- >/dev/null 2>&1
+                                echo $$? || true
+                            else
+                                echo UNKNOWN
+                                exit 127
+                            fi
                         usessh: true
-                        # Check for systemv for services
-                        commandTemplate: >
-                                           /bin/sh -c 'export PATH=$$PATH:/bin:/sbin:/usr/bin:/usr/sbin;
-                                           if command -v service >/dev/null 2>&1;
-                                           then echo "SYSTEMV"; sudo /sbin/service ${here/title} status > /dev/null 2>&1; echo $$? || true;
-                                           else echo "UNKNOWN";
-                                           exit 127;
-                                           fi'
                         parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.service
                         component: "${here/id}"
                         eventClass: /Unknown

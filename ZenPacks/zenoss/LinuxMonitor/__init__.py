@@ -20,7 +20,7 @@ if os.path.isdir(skinsDir):
 
 # Modeler plugin versioning to coordinate between modeling and monitoring.
 MODELER_VERSION_PROPERTY = "modeler_version"
-OS_SERVICE_MODELER_VERSION = 1
+OS_SERVICE_MODELER_VERSION = 2
 
 # CFG is necessary when using zenpacklib.TestCase.
 CFG = zenpacklib.load_yaml()
