@@ -563,6 +563,7 @@ device_classes:
                 - zenoss.cmd.linux.os_service
 
             zLinuxServicesNotModeled:
+                - addhostname
                 - anacron
                 - bluetooth
                 - cpuspeed

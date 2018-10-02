@@ -60,4 +60,7 @@ class UpdateModeledServices(ZenPackMigration):
                     "bluetooth",
                     "portreserve",
                     "sysstat",
+
+                    # No good status: CentOS 7
+                    "addhostname",
                     ]))
