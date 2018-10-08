@@ -14,53 +14,19 @@ from Products.ZenRRD.CommandParser import ParsedResults
 
 from ZenPacks.zenoss.LinuxMonitor.parsers.linux.service import service
 
-SYSTEMD_OUTPUT = """SYSTEMD\n\xe2\x97\x8f abrt-ccpp.service - Install ABRT coredump hook
-   Loaded: loaded (/usr/lib/systemd/system/abrt-ccpp.service; enabled; vendor preset: enabled)
-   Active: active (exited) since Tue 2017-09-05 14:52:45 CDT; 6 months 0 days ago
-  Process: 762 ExecStart=/usr/sbin/abrt-install-ccpp-hook install (code=exited, status=0/SUCCESS)
- Main PID: 762 (code=exited, status=0/SUCCESS)
-   CGroup: /system.slice/abrt-ccpp.service
-\n\xe2\x97\x8f abrt-oops.service - ABRT kernel log watcher
-   Loaded: loaded (/usr/lib/systemd/system/abrt-oops.service; enabled; vendor preset: enabled)
-   Active: inactive (running) since Tue 2017-09-05 14:52:44 CDT; 6 months 0 days ago
- Main PID: 764 (abrt-watch-log)
-   CGroup: /system.slice/abrt-oops.service
-           \xe2\x94\x94\xe2\x94\x80764 /usr/bin/abrt-watch-log -F BUG: WARNING: at WARNING: CPU: INFO: possible recursive locking detected ernel BUG at list_del corruption list_add corruption do_IRQ: stack overflow: ear stack overflow (cur: eneral protection fault nable to handle kernel ouble fault: RTNL: assertion failed eek! page_mapcount(page) went negative! adness at NETDEV WATCHDOG ysctl table check failed : nobody cared IRQ handler type mismatch Machine Check Exception: Machine check events logged divide error: bounds: coprocessor segment overrun: invalid TSS: segment not present: invalid opcode: alignment check: stack segment: fpu exception: simd exception: iret exception: /var/log/messages -- /usr/bin/abrt-dump-oops -xtD
-\n\xe2\x97\x8f abrt-vmcore.service - Harvest vmcores for ABRT
-   Loaded: loaded (/usr/lib/systemd/system/abrt-vmcore.service; enabled; vendor preset: enabled)
-   Active: inactive (dead)
-Condition: start condition failed at Tue 2018-03-06 12:04:12 CST; 1 day 5h ago
-           ConditionDirectoryNotEmpty=/var/crash was not met
-\n\xe2\x97\x8f abrt-xorg.service - ABRT Xorg log watcher
-   Loaded: loaded (/usr/lib/systemd/system/abrt-xorg.service; enabled; vendor preset: enabled)
-   Active: active (running) since Tue 2017-09-05 14:52:44 CDT; 6 months 0 days ago
- Main PID: 763 (abrt-watch-log)
-   CGroup: /system.slice/abrt-xorg.service
-           \xe2\x94\x94\xe2\x94\x80763 /usr/bin/abrt-watch-log -F Backtrace /var/log/Xorg.0.log -- /usr/bin/abrt-dump-xorg -xD
-\n\xe2\x97\x8f abrtd.service - ABRT Automated Bug Reporting Tool
-   Loaded: loaded (/usr/lib/systemd/system/abrtd.service; enabled; vendor preset: enabled)
-   Active: active (running) since Tue 2017-09-05 14:52:44 CDT; 6 months 0 days ago
- Main PID: 761 (abrtd)
-   CGroup: /system.slice/abrtd.service
-           \xe2\x94\x94\xe2\x94\x80761 /usr/sbin/abrtd -d -s
-\n\xe2\x97\x8f accounts-daemon.service - Accounts Service
-   Loaded: loaded (/usr/lib/systemd/system/accounts-daemon.service; enabled; vendor preset: enabled)
-   Active: active (running) since Tue 2017-09-05 14:52:44 CDT; 6 months 0 days ago
- Main PID: 696 (accounts-daemon)
-   CGroup: /system.slice/accounts-daemon.service
-           \xe2\x94\x94\xe2\x94\x80696 /usr/libexec/accounts-daemon
-\n\xe2\x97\x8f alsa-restore.service - Save/Restore Sound Card State
-   Loaded: loaded (/usr/lib/systemd/system/alsa-restore.service; static; vendor preset: disabled)
-   Active: inactive (dead)
-Condition: start condition failed at Tue 2017-09-05 14:52:44 CDT; 6 months 0 days ago
-           ConditionPathExists=!/etc/alsa/state-daemon.conf was not met
-\n\xe2\x97\x8f alsa-state.service - Manage Sound Card State (restore and store)
-   Loaded: not-found (/usr/lib/systemd/system/alsa-state.service; static; vendor preset: disabled)
-   Active: active (running) since Tue 2017-09-05 14:52:44 CDT; 6 months 0 days ago
- Main PID: 703 (alsactl)
-   CGroup: /system.slice/alsa-state.service
-           \xe2\x94\x94\xe2\x94\x80703 /usr/sbin/alsactl -s -n 19 -c -E ALSA_CONFIG_PATH=/etc/alsa/alsactl.conf --initfile=/lib/alsa/init/00main rdaemon
-Unit apparmor.service could not be found."""
+SYSTEMD_OUTPUT = """
+SYSTEMD
+auditd.service                         loaded    active   running Security Auditing Service
+brandbot.service                       loaded    inactive dead    Flexible Branding Service
+cpupower.service                       loaded    inactive dead    Configure CPU power related settings
+crond.service                          loaded    active   running Command Scheduler
+dbus.service                           loaded    active   running D-Bus System Message Bus
+display-manager.service                not-found inactive dead    display-manager.service
+dm-event.service                       loaded    active   running Device-mapper event daemon
+dracut-shutdown.service                loaded    inactive dead    Restore /run/initramfs
+emergency.service                      loaded    inactive dead    Emergency Shell
+exim.service                           not-found inactive dead    exim.service
+""".strip()
 
 UPSTART_OUTPUT = """UPSTART
     rc stop/waiting
@@ -129,17 +95,17 @@ class ServiceParserTests(BaseTestCase):
 
         # Test Event is Down
         result = ParsedResults()
-        self.cmd.component = 'abrt-oops'
-        self.cmd.points[0]['data']['id'] = 'abrt-oops'
+        self.cmd.component = 'brandbot'
+        self.cmd.points[0]['data']['id'] = 'brandbot'
         service().processResults(self.cmd, result)
-        self.assertEqual(result.events[0]['summary'], 'OS Service is down')
+        self.assertEqual(result.events[0]['summary'], 'service is down')
 
         # Test Event is Up
         result = ParsedResults()
-        self.cmd.component = 'abrt-ccpp'
-        self.cmd.points[0]['data']['id'] = 'abrt-ccpp'
+        self.cmd.component = 'auditd'
+        self.cmd.points[0]['data']['id'] = 'auditd'
         service().processResults(self.cmd, result)
-        self.assertEqual(result.events[0]['summary'], 'OS Service is up')
+        self.assertEqual(result.events[0]['summary'], 'service is up')
 
     def test_UpstartEvents(self):
         self.cmd.result.output = UPSTART_OUTPUT
@@ -149,14 +115,14 @@ class ServiceParserTests(BaseTestCase):
         self.cmd.component = 'plymouth-shutdown'
         self.cmd.points[0]['data']['id'] = 'plymouth-shutdown'
         service().processResults(self.cmd, result)
-        self.assertEqual(result.events[0]['summary'], 'OS Service is down')
+        self.assertEqual(result.events[0]['summary'], 'service is down')
 
         # Test Event is Up
         result = ParsedResults()
         self.cmd.component = 'tty (_dev_tty6)'
         self.cmd.points[0]['data']['id'] = 'tty (/dev/tty6)'
         service().processResults(self.cmd, result)
-        self.assertEqual(result.events[0]['summary'], 'OS Service is up')
+        self.assertEqual(result.events[0]['summary'], 'service is up')
 
     def test_SystemVEvents(self):
         # Test Event is Up
@@ -165,7 +131,7 @@ class ServiceParserTests(BaseTestCase):
         self.cmd.points[0]['data']['id'] = 'test_service'
         self.cmd.result.output = 'SYSTEMV\n0\n'
         service().processResults(self.cmd, result)
-        self.assertEqual(result.events[0]['summary'], 'OS Service is up')
+        self.assertEqual(result.events[0]['summary'], 'service is up')
         self.assertEqual(result.events[0]['message'], 'Exit status: ' +
                          'program is running or service is OK')
 
@@ -175,7 +141,7 @@ class ServiceParserTests(BaseTestCase):
         self.cmd.points[0]['data']['id'] = 'test_service'
         self.cmd.result.output = 'SYSTEMV\n1\n'
         service().processResults(self.cmd, result)
-        self.assertEqual(result.events[0]['summary'], 'OS Service is down')
+        self.assertEqual(result.events[0]['summary'], 'service is down')
         self.assertEqual(result.events[0]['message'], 'Exit status: ' +
                          'program is dead and /var/run pid file exists')
 
@@ -185,7 +151,7 @@ class ServiceParserTests(BaseTestCase):
         self.cmd.points[0]['data']['id'] = 'test_service'
         self.cmd.result.output = 'SYSTEMV\n2\n'
         service().processResults(self.cmd, result)
-        self.assertEqual(result.events[0]['summary'], 'OS Service is down')
+        self.assertEqual(result.events[0]['summary'], 'service is down')
         self.assertEqual(result.events[0]['message'], 'Exit status: ' +
                          'program is dead and /var/lock lock file exists')
 
@@ -195,7 +161,7 @@ class ServiceParserTests(BaseTestCase):
         self.cmd.points[0]['data']['id'] = 'test_service'
         self.cmd.result.output = 'SYSTEMV\n3\n'
         service().processResults(self.cmd, result)
-        self.assertEqual(result.events[0]['summary'], 'OS Service is down')
+        self.assertEqual(result.events[0]['summary'], 'service is down')
         self.assertEqual(result.events[0]['message'], 'Exit status: ' +
                          'program is not running')
 
@@ -205,7 +171,7 @@ class ServiceParserTests(BaseTestCase):
         self.cmd.points[0]['data']['id'] = 'test_service'
         self.cmd.result.output = 'SYSTEMV\n4\n'
         service().processResults(self.cmd, result)
-        self.assertEqual(result.events[0]['summary'], 'OS Service is down')
+        self.assertEqual(result.events[0]['summary'], 'service is down')
         self.assertEqual(result.events[0]['message'], 'Exit status: ' +
                          'program or service status is unknown')
 
@@ -215,7 +181,7 @@ class ServiceParserTests(BaseTestCase):
         self.cmd.points[0]['data']['id'] = 'test_service'
         self.cmd.result.output = 'SYSTEMV\n10\n'
         service().processResults(self.cmd, result)
-        self.assertEqual(result.events[0]['summary'], 'OS Service is down')
+        self.assertEqual(result.events[0]['summary'], 'service is down')
         self.assertEqual(result.events[0]['message'], 'Exit status: ' +
                          'Reserved for future LSB use')
 
@@ -225,7 +191,7 @@ class ServiceParserTests(BaseTestCase):
         self.cmd.points[0]['data']['id'] = 'test_service'
         self.cmd.result.output = 'SYSTEMV\n140\n'
         service().processResults(self.cmd, result)
-        self.assertEqual(result.events[0]['summary'], 'OS Service is down')
+        self.assertEqual(result.events[0]['summary'], 'service is down')
         self.assertEqual(result.events[0]['message'], 'Exit status: ' +
                          'Reserved for distribution use')
 
@@ -235,7 +201,7 @@ class ServiceParserTests(BaseTestCase):
         self.cmd.points[0]['data']['id'] = 'test_service'
         self.cmd.result.output = 'SYSTEMV\n155\n'
         service().processResults(self.cmd, result)
-        self.assertEqual(result.events[0]['summary'], 'OS Service is down')
+        self.assertEqual(result.events[0]['summary'], 'service is down')
         self.assertEqual(result.events[0]['message'], 'Exit status: ' +
                          'Reserved for application use')
 

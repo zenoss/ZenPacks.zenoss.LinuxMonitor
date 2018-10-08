@@ -1,6 +1,6 @@
 ##############################################################################
 #
-# Copyright (C) Zenoss, Inc. 2016, all rights reserved.
+# Copyright (C) Zenoss, Inc. 2016-2018, all rights reserved.
 #
 # This content is made available according to terms specified in
 # License.zenoss under the directory where your Zenoss product is installed.
@@ -9,64 +9,28 @@
 
 
 """
-Systemd perf output('systemctl list-units -t service --all --no-page --no-legend | cut -d" " -f1 | xargs -n 1 systemctl status -l -n 0'):
+Systemd perf output('systemctl list-units --all --type=service --plain --full --no-page --no-legend')
+
     ...
-    systemd-udev-trigger.service - udev Coldplug all Devices
-       Loaded: loaded (/usr/lib/systemd/system/systemd-udev-trigger.service; static; vendor preset: disabled)
-       Active: active (exited) since Tue 2016-02-02 12:47:58 UTC; 3 weeks 6 days ago
-         Docs: man:udev(7)
-               man:systemd-udevd.service(8)
-      Process: 436 ExecStart=/usr/bin/udevadm trigger --type=devices --action=add (code=exited, status=0/SUCCESS)
-      Process: 434 ExecStart=/usr/bin/udevadm trigger --type=subsystems --action=add (code=exited, status=0/SUCCESS)
-     Main PID: 436 (code=exited, status=0/SUCCESS)
-       Memory: 0B
-       CGroup: /system.slice/systemd-udev-trigger.service
-    systemd-udevd.service - udev Kernel Device Manager
-       Loaded: loaded (/usr/lib/systemd/system/systemd-udevd.service; static; vendor preset: disabled)
-       Active: active (running) since Tue 2016-02-02 12:47:59 UTC; 3 weeks 6 days ago
-         Docs: man:systemd-udevd.service(8)
-               man:udev(7)
-     Main PID: 445 (systemd-udevd)
-       Memory: 496.0K
-       CGroup: /system.slice/systemd-udevd.service
-               445 /usr/lib/systemd/systemd-udevd
-    systemd-update-done.service - Update is Completed
-       Loaded: loaded (/usr/lib/systemd/system/systemd-update-done.service; static; vendor preset: disabled)
-       Active: inactive (dead)
-    Condition: start condition failed at Tue 2016-02-02 12:48:04 UTC; 3 weeks 6 days ago
-               none of the trigger conditions were met
-         Docs: man:systemd-update-done.service(8)
-    systemd-update-utmp-runlevel.service - Update UTMP about System Runlevel Changes
-       Loaded: loaded (/usr/lib/systemd/system/systemd-update-utmp-runlevel.service; static; vendor preset: disabled)
-       Active: inactive (dead) since Tue 2016-02-02 13:04:10 UTC; 3 weeks 6 days ago
-         Docs: man:systemd-update-utmp.service(8)
-               man:utmp(5)
-      Process: 2547 ExecStart=/usr/lib/systemd/systemd-update-utmp runlevel (code=exited, status=0/SUCCESS)
-     Main PID: 2547 (code=exited, status=0/SUCCESS)
-    systemd-update-utmp.service - Update UTMP about System Boot/Shutdown
-       Loaded: loaded (/usr/lib/systemd/system/systemd-update-utmp.service; static; vendor preset: disabled)
-       Active: active (exited) since Tue 2016-02-02 12:48:05 UTC; 3 weeks 6 days ago
-         Docs: man:systemd-update-utmp.service(8)
-               man:utmp(5)
-      Process: 629 ExecStart=/usr/lib/systemd/systemd-update-utmp reboot (code=exited, status=0/SUCCESS)
-     Main PID: 629 (code=exited, status=0/SUCCESS)
-       Memory: 0B
-       CGroup: /system.slice/systemd-update-utmp.service
-       display-manager.service
-       Loaded: not-found (Reason: No such file or directory)
-       Active: inactive (dead)
-     kdump.service - Crash recovery kernel arming
-       Loaded: loaded (/usr/lib/systemd/system/kdump.service; disabled; vendor preset: enabled)
-       Active: failed (Result: exit-code) since Tue 2018-03-06 12:05:18 CST; 2 days ago
-       Process: 32754 ExecStart=/usr/bin/kdumpctl start (code=exited, status=1/FAILURE)
-       Main PID: 32754 (code=exited, status=1/FAILURE)
+    accounts-daemon.service    loaded    active   running Accounts Service
+    acpid.service              loaded    active   running ACPI event daemon
+    alsa-restore.service       loaded    active   exited  Save/Restore Sound Card State
+    alsa-state.service         loaded    inactive dead    Manage Sound Card State (restore and store)
+    anacron.service            loaded    inactive dead    Run anacron jobs
+    apparmor.service           loaded    active   exited  AppArmor initialization
+    apport.service             loaded    active   exited  LSB: automatic crash report generation
+    apt-daily-upgrade.service  loaded    inactive dead    Daily apt upgrade and clean activities
+    apt-daily.service          loaded    inactive dead    Daily apt download activities
+    auditd.service             not-found inactive dead    auditd.service
+    auth-rpcgss-module.service loaded    inactive dead    Kernel Module supporting RPCSEC_GSS
+    avahi-daemon.service       loaded    active   running Avahi mDNS/DNS-SD Stack
     ...
 
 
-Systemd model output('for i in $(sudo systemctl list-units -t service --all
+Systemd model output('for i in $(systemctl list-units -t service --all
                 --no-page --no-legend | sed /not-found/d | cut -d" " -f1) ;
                 do echo "__SPLIT__" ;
-                sudo systemctl show -p Names,Type,Description,LoadState,
+                systemctl show -p Names,Type,Description,LoadState,
                 ActiveState,UnitFileState,MainPID,ConditionResult $i ; done'):
     ...
     Type=oneshot
@@ -245,43 +209,43 @@ import re
 
 from Products.DataCollector.plugins.CollectorPlugin import LinuxCommandPlugin
 
+from ZenPacks.zenoss.LinuxMonitor import OS_SERVICE_MODELER_VERSION
 
 __doc__ = """os_service
 Collect linux services information using appropriate init service command.
 """
 
-
+# systemctl list-units --all --type=service --plain --full --no-page --no-legend
+#
+#   accounts-daemon.service    loaded    active   running Accounts Service
 RE_SYSTEMD_SERVICE_PERF = re.compile(
-                            '(?P<title>[@\w\-\.:]+)\.service\s\-\s'          # service title
-                            '(?P<description>.+)\s+'                         # description
-                            'Loaded:\s(?P<loaded_status>\w.+\))\s+'          # loaded status
-                            '(Drop-In:(?P<drop_in>\s/\w[\w./].+)\s+)?'       # optional Drop-In
-                            'Active:\s+'
-                            '(?P<active_status>\w+\s\([\w:\s-]+\)(\ssince.+ago)?)' # active status
-                            '(.+Main\sPID:\s(?P<main_pid>\d+))?'             # optional sevicepid
-                            '.*')
+    r'(?P<title>[@\w\-\.:]+)\.service\s+'
+    r'(?P<loaded_status>\S+)\s+'
+    r'(?P<active>\S+)\s+'
+    r'(?P<active_sub>\S+)\s+'
+    r'.*')
+
 RE_SYSTEMD_SERVICE_MODEL = re.compile(
                                 # title
                                 'Title=(?P<title>[@\w\-\.:]+)\.service\n'
                                 # sysd_type
                                 'Type=(?P<sysd_type>\w+)\n'
-                                # main_pid
-                                'MainPID=(?P<main_pid>\d+)\n'
-                                # names
-                                'Names=(?P<names>.*)\n'
                                 # description
                                 'Description=(?P<description>.+)\n'
-                                # load status
-                                'LoadState=(?P<loaded_status>\w+)\n'
                                 # active status
                                 'ActiveState=(?P<active_status>\w+)\n'
                                 # unit file state
                                 'UnitFileState=(?P<unit_file_state>[\w\-]*)\n'
                                 # condition
                                 'ConditionResult=(?P<condition_result>\w+)')
-RE_UPSTART_SERVICE = re.compile('(?P<title>[\w\-]+(\s\([\w\/-]+\))?)\s'    # service title
-                                '(?P<goal>([\w]+)?)/(?P<active_status>([\w]+)?)' # active status
-                                '(.\sprocess\s(?P<main_pid>\d+))?')       # active status if exists
+
+# resolvconf start/running
+# ssh start/running, process 874
+RE_UPSTART_SERVICE = re.compile(
+    r'^(?P<title>.+?)\s+'
+    r'(?P<goal>(start|stop))\/(?P<active_status>[\w\-]+)'
+    r'(,\s+process (?P<main_pid>\d+))?')
+
 # Only links that start with 'S' are running in current runlevel
 # Matches output of "ls -l /etc/rc${CURRENT_RUNLEVEL}.d/"
 #   lrwxrwxrwx 1 root root 16 Oct 15  2009 K36mysqld -> ../init.d/mysqld
@@ -296,23 +260,6 @@ def systemd_processServices(results):
     services[-1] = services[-1][:-1]
     # return service without 'SYSTEMD' in first index
     return services[1:]
-
-
-def systemd_getServices(services):
-    """
-    Build a list of services.
-    The delimiter of a new service line is BLACK CIRCLE unicode char.
-    """
-    uServices = unicode(''.join(services), 'utf-8')
-    # remove these unicode chars before we splitlines() and parse
-    if re.match(ur'.*\u2514\u2500.*', uServices):
-        uServices = re.sub(ur'\u2514\u2500', ' ', uServices)
-
-    if re.match(ur'\u25cf', uServices):
-        return re.sub(ur'\u25cf', '\n', uServices).splitlines()
-    else:
-        uServices = unicode('\n'.join(services), 'utf-8')
-        return re.sub(r'\n([\s\w])', '\\1', uServices).splitlines()
 
 
 def check_services_modeled(model_list, ignore_list, title):
@@ -363,7 +310,6 @@ SERVICE_MAP = {
         'regex_perf': RE_SYSTEMD_SERVICE_PERF,
         'functions': {
             'modeling': systemd_processServices,
-            'monitoring': systemd_getServices,
         }
     },
     'UPSTART': {
@@ -375,30 +321,44 @@ SERVICE_MAP = {
     'UNKNOWN': None
 }
 
+COMMAND = """
+export PATH=$PATH:/bin:/sbin:/usr/bin:/usr/sbin
+if command -v systemctl >/dev/null 2>&1
+then
+    echo SYSTEMD
+    for i in $(systemctl list-units --all --type=service --plain --full --no-page --no-legend | sed /not-found/d | cut -d" " -f1)
+    do
+        echo __SPLIT__
+        echo Title=$i
+        systemctl show -p Type,Description,ActiveState,UnitFileState,ConditionResult "$i"
+    done
+elif command -v initctl >/dev/null 2>&1
+then
+    echo UPSTART
+    initctl list 2>&1 || true
+    echo SYSV_SERVICES
+    if sudo -S service NEVER-A-SERVICE status <&- 2>&1 | grep '^NEVER-A-SERVICE' >/dev/null
+    then
+        ls -l /etc/rc$(runlevel | awk '{print $2}').d/ 2>&1 || true
+    else
+        echo '##ERROR##:user requires sudo access to "service <example> status"'
+    fi
+elif command -v service >/dev/null 2>&1
+then
+    echo SYSTEMV
+    if sudo -S service NEVER-A-SERVICE status <&- 2>&1 | grep '^NEVER-A-SERVICE' >/dev/null
+    then
+        ls -l /etc/rc$(runlevel | awk '{print $2}').d/ 2>&1 || true
+    else
+        echo '##ERROR##:user requires sudo access to "service <example> status"'
+    fi
+fi
+"""
 
 class os_service(LinuxCommandPlugin):
     requiredProperties = ('zLinuxServicesModeled', 'zLinuxServicesNotModeled', 'zLinuxModelAllActiveServices')
     deviceProperties = LinuxCommandPlugin.deviceProperties + requiredProperties
-    command = ('export PATH=$PATH:/bin:/sbin:/usr/bin:/usr/sbin; '
-               'if command -v systemctl >/dev/null 2>&1; then '
-                'echo "SYSTEMD"; '
-                'for i in $(sudo systemctl list-units -t service --all --no-page --no-legend | sed /not-found/d | cut -d" " -f1) ; '
-                 'do echo "__SPLIT__" ; '
-                 'echo "Title="$i ; '
-                 'sudo systemctl show -p Names,Type,Description,LoadState,ActiveState,UnitFileState,MainPID,ConditionResult $i ; '
-                 'done; '
-               'elif command -v initctl >/dev/null 2>&1; then '
-                'echo "UPSTART"; '
-                'sudo initctl list 2>&1 || true ; '
-                'echo "SYSV_SERVICES"; '
-                'sudo ls -l /etc/rc$(/sbin/runlevel | awk \'{print $2}\').d/ 2>&1 || true; '
-               'elif command -v service >/dev/null 2>&1; then '
-                'echo "SYSTEMV"; '
-                'sudo ls -l /etc/rc$(/sbin/runlevel | awk \'{print $2}\').d/ 2>&1 || true; '
-               'else '
-                'echo "UNKNOWN"; '
-                'exit 127; '
-               'fi')
+    command = COMMAND
 
     compname = ''
     relname = 'linuxServices'
@@ -408,6 +368,11 @@ class os_service(LinuxCommandPlugin):
                        services, regex, device, log):
         for line in services:
             line = line.strip()
+
+            if line.startswith("##ERROR##"):
+                log.error("%s: %s", device.id, line.split(":", 1)[-1])
+                continue
+
             # Upstart models both sysv and upstart services (ZPS-3478)
             if line == "SYSV_SERVICES":
                 regex = SERVICE_MAP["SYSTEMV"]["regex"]
@@ -453,33 +418,51 @@ class os_service(LinuxCommandPlugin):
                 om.title = title
                 om.init_system = init_system
                 om.description = groupdict.get('description', '').strip()
+                om.modeler_version = OS_SERVICE_MODELER_VERSION
                 rm.append(om)
             else:
                 log.debug("Unmapped in populateRelMap(): %s", line)
                 continue
 
     def process(self, device, results, log):
-        log.info("Processing the OS Service info for device %s", device.id)
-        rm = self.relMap()
+        log.info("%s: processing services", device.id)
         # Validate regex and log warning message for invalid regex
         model_list, ignore_list = validate_modeling_regex(device, log)
+
+        rm = self.relMap()
+
         services = results.splitlines()
+        if not services:
+            log.error("%s: no output from services commands", device.id)
+            return rm
+
         init_system = services[0]
         initService = SERVICE_MAP.get(init_system)
-        if initService:
-            services = services[1:]
-            regex = initService.get('regex')
-            functions = initService.get('functions')
-            if functions:
-                services = functions.get('modeling')(results)
-            self.populateRelMap(rm, model_list, ignore_list, init_system,
-                                services, regex, device, log)
-            log.debug("Init service: %s, Relationship: %s", initService,
-                      rm.relname)
-        else:
-            log.info("Cannot parse OS services, init service is unknown!")
+        if not initService:
+            log.error(
+                "%s: no services; %r init system unknown",
+                device.id,
+                init_system)
 
-        return [rm]
+            return rm
+
+        services = services[1:]
+        regex = initService.get('regex')
+        functions = initService.get('functions')
+        if functions:
+            services = functions.get('modeling')(results)
+
+        self.populateRelMap(
+            rm,
+            model_list,
+            ignore_list,
+            init_system,
+            services,
+            regex,
+            device,
+            log)
+
+        return rm
 
 
 def upstart_expected_running(device, groupdict):

@@ -51,6 +51,11 @@ classes:
                 order: 1.3
                 grid_display: False
 
+            modeler_version:
+                label: Modeler Plugin Version
+                type: int
+                grid_display: false
+
         monitoring_templates:
             - OSService-SYSTEMD
             - OSService-UPSTART
@@ -556,6 +561,25 @@ device_classes:
                 - zenoss.cmd.linux.sudo_dmidecode
                 - zenoss.cmd.linux.os_release
                 - zenoss.cmd.linux.os_service
+
+            zLinuxServicesNotModeled:
+                - addhostname
+                - anacron
+                - bluetooth
+                - cpuspeed
+                - ondemand
+                - firstboot
+                - irqbalance
+                - isdn
+                - lvm2-monitor
+                - mcstrans
+                - mdmonitor
+                - portreserve
+                - pppd-dns
+                - rpcgssd
+                - rsync
+                - sudo
+                - sysstat
 
         templates:
             Device:
@@ -1127,8 +1151,23 @@ device_classes:
                 datasources:
                     disk:
                         type: COMMAND
+                        commandTemplate: |-
+                            $$ZENOTHING
+                            export PATH=$$PATH:/bin:/sbin:/usr/bin:/usr/sbin
+                            if command -v timeout >/dev/null 2>&1
+                            then
+                                if ! timeout 30 /usr/bin/env sudo df -kP 2>/dev/null
+                                then
+                                    timeout 30 /usr/bin/env df -kP
+                                fi
+                            else
+                                if ! /usr/bin/env sudo df -kP 2>/dev/null
+                                then
+                                    /usr/bin/env df -kP
+                                fi
+                            fi
+
                         usessh: true
-                        commandTemplate: "/bin/sh -c 'export PATH=$$PATH:/bin:/sbin:/usr/bin:/usr/sbin; if command -v timeout > /dev/null 2>&1; then timeout 30 /usr/bin/env sudo df -kP; else /usr/bin/env sudo df -kP; fi'"
                         parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.df
                         component: "${here/id}"
                         eventClass: /Ignore
@@ -1152,8 +1191,23 @@ device_classes:
 
                     idisk:
                         type: COMMAND
+                        commandTemplate: |-
+                            $$ZENOTHING
+                            export PATH=$$PATH:/bin:/sbin:/usr/bin:/usr/sbin
+                            if command -v timeout >/dev/null 2>&1
+                            then
+                                if ! timeout 30 /usr/bin/env sudo df -ikP 2>/dev/null
+                                then
+                                    timeout 30 /usr/bin/env df -ikP
+                                fi
+                            else
+                                if ! /usr/bin/env sudo df -ikP 2>/dev/null
+                                then
+                                    /usr/bin/env df -ikP
+                                fi
+                            fi
+
                         usessh: true
-                        commandTemplate: "/bin/sh -c 'export PATH=$$PATH:/bin:/sbin:/usr/bin:/usr/sbin; if command -v timeout > /dev/null 2>&1; then timeout 30 /usr/bin/env sudo df -ikP; else /usr/bin/env sudo df -ikP; fi'"
                         parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.dfi
                         component: "${here/id}"
                         eventClass: /Ignore
@@ -1240,8 +1294,23 @@ device_classes:
                 datasources:
                     disk:
                         type: COMMAND
+                        commandTemplate: |-
+                            $$ZENOTHING
+                            export PATH=$$PATH:/bin:/sbin:/usr/bin:/usr/sbin
+                            if command -v timeout >/dev/null 2>&1
+                            then
+                                if ! timeout 30 /usr/bin/env sudo df -kP 2>/dev/null
+                                then
+                                    timeout 30 /usr/bin/env df -kP
+                                fi
+                            else
+                                if ! /usr/bin/env sudo df -kP 2>/dev/null
+                                then
+                                    /usr/bin/env df -kP
+                                fi
+                            fi
+
                         usessh: true
-                        commandTemplate: "/bin/sh -c 'export PATH=$$PATH:/bin:/sbin:/usr/bin:/usr/sbin; if command -v timeout > /dev/null 2>&1; then timeout 30 /usr/bin/env sudo df -kP; else /usr/bin/env sudo df -kP; fi'"
                         parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.df
                         component: "${here/id}"
                         eventClass: /Ignore
@@ -1265,8 +1334,23 @@ device_classes:
 
                     idisk:
                         type: COMMAND
+                        commandTemplate: |-
+                            $$ZENOTHING
+                            export PATH=$$PATH:/bin:/sbin:/usr/bin:/usr/sbin
+                            if command -v timeout >/dev/null 2>&1
+                            then
+                                if ! timeout 30 /usr/bin/env sudo df -ikP 2>/dev/null
+                                then
+                                    timeout 30 /usr/bin/env df -ikP
+                                fi
+                            else
+                                if ! /usr/bin/env sudo df -ikP 2>/dev/null
+                                then
+                                    /usr/bin/env df -ikP
+                                fi
+                            fi
+
                         usessh: true
-                        commandTemplate: "/bin/sh -c 'export PATH=$$PATH:/bin:/sbin:/usr/bin:/usr/sbin; if command -v timeout > /dev/null 2>&1; then timeout 30 /usr/bin/env sudo df -ikP; else /usr/bin/env sudo df -ikP; fi'"
                         parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.dfi
                         component: "${here/id}"
                         eventClass: /Ignore
@@ -1416,17 +1500,18 @@ device_classes:
                 datasources:
                     service:
                         type: COMMAND
+                        commandTemplate: |-
+                            $$ZENOTHING
+                            export PATH=$$PATH:/bin:/sbin:/usr/bin:/usr/sbin
+                            if command -v systemctl > /dev/null 2>&1
+                            then
+                                echo SYSTEMD
+                                systemctl list-units --all --type=service --plain --full --no-page --no-legend
+                            else
+                                echo UNKNOWN
+                                exit 127
+                            fi
                         usessh: true
-                        # Check for systemd for services
-                        commandTemplate: >
-                                           /bin/sh -c 'export PATH=$$PATH:/bin:/sbin:/usr/bin:/usr/sbin;
-                                           if command -v systemctl > /dev/null 2>&1;
-                                           then echo "SYSTEMD";
-                                           sudo systemctl list-units -t service --all --no-page --no-legend |
-                                           sed "/not-found/d ; s/\s.*$$//" | xargs -n 1 sudo systemctl status --no-pager -l -n 0 2>&1 || true;
-                                           else echo "UNKNOWN";
-                                           exit 127;
-                                           fi'
                         parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.service
                         component: "${here/id}"
                         eventClass: /Unknown
@@ -1445,15 +1530,18 @@ device_classes:
                 datasources:
                     service:
                         type: COMMAND
+                        commandTemplate: |
+                            $$ZENOTHING
+                            export PATH=$$PATH:/bin:/sbin:/usr/bin:/usr/sbin
+                            if command -v initctl >/dev/null 2>&1
+                            then
+                                echo UPSTART
+                                initctl list 2>&1 || true
+                            else
+                                echo UNKNOWN
+                                exit 127
+                            fi
                         usessh: true
-                        # Check for upstart for services
-                        commandTemplate: >
-                                           /bin/sh -c 'export PATH=$$PATH:/bin:/sbin:/usr/bin:/usr/sbin;
-                                           if command -v initctl >/dev/null 2>&1;
-                                           then echo "UPSTART"; sudo initctl list 2>&1 || true;
-                                           else echo "UNKNOWN";
-                                           exit 127;
-                                           fi'
                         parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.service
                         component: "${here/id}"
                         eventClass: /Unknown
@@ -1472,15 +1560,19 @@ device_classes:
                 datasources:
                     service:
                         type: COMMAND
+                        commandTemplate: |
+                            $$ZENOTHING
+                            export PATH=$$PATH:/bin:/sbin:/usr/bin:/usr/sbin
+                            if command -v service >/dev/null 2>&1
+                            then
+                                echo SYSTEMV
+                                sudo -S service ${here/title} status <&- >/dev/null 2>&1
+                                echo $$? || true
+                            else
+                                echo UNKNOWN
+                                exit 127
+                            fi
                         usessh: true
-                        # Check for systemv for services
-                        commandTemplate: >
-                                           /bin/sh -c 'export PATH=$$PATH:/bin:/sbin:/usr/bin:/usr/sbin;
-                                           if command -v service >/dev/null 2>&1;
-                                           then echo "SYSTEMV"; sudo /sbin/service ${here/title} status > /dev/null 2>&1; echo $$? || true;
-                                           else echo "UNKNOWN";
-                                           exit 127;
-                                           fi'
                         parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.service
                         component: "${here/id}"
                         eventClass: /Unknown
@@ -1499,8 +1591,11 @@ device_classes:
                 datasources:
                     volume:
                         type: COMMAND
+                        commandTemplate: |-
+                            $$ZENOTHING
+                            export PATH=/bin:/sbin:/usr/bin:/usr/sbin
+                            /usr/bin/env sudo pvs --noheadings --units b --nosuffix -o pv_name,pv_size,pv_free
                         usessh: true
-                        commandTemplate: '/usr/bin/env sudo pvs --noheadings --units b --nosuffix -o pv_name,pv_size,pv_free'
                         parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.pvvgstats
                         component: "${here/id}"
                         eventClass: /Ignore
@@ -1522,8 +1617,12 @@ device_classes:
 
                     status:
                         type: COMMAND
+                        commandTemplate: |-
+                            $$ZENOTHING
+                            export PATH=/bin:/sbin:/usr/bin:/usr/sbin
+                            /usr/bin/env sudo pvs --noheadings -o pv_name,pv_attr \
+                                | awk '{split($$2, chars, ""); printf("%s ", $$1); for (i=1;i<=3;i++) printf("%d ", chars[i]=="-" ? 0 : 1); printf("\n")}'
                         usessh: true
-                        commandTemplate: "/usr/bin/env sudo pvs --noheadings -o pv_name,pv_attr | awk '{split($$2, chars, \"\"); printf(\"%s \", $$1); for (i=1;i<=3;i++) printf(\"%d \", chars[i]==\"-\" ? 0 : 1); printf(\"\\n\")}'"
                         parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.pvsstatus
                         component: "${here/id}"
                         eventClass: /Ignore
@@ -1582,8 +1681,11 @@ device_classes:
                 datasources:
                     group:
                         type: COMMAND
+                        commandTemplate: |-
+                            $$ZENOTHING
+                            export PATH=/bin:/sbin:/usr/bin:/usr/sbin
+                            /usr/bin/env sudo vgs --noheadings --units b --nosuffix -o vg_name,vg_size,vg_free
                         usessh: true
-                        commandTemplate: "/usr/bin/env sudo vgs --noheadings --units b --nosuffix -o vg_name,vg_size,vg_free"
                         parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.pvvgstats
                         component: "${here/id}"
                         eventClass: /Ignore
@@ -1605,8 +1707,12 @@ device_classes:
 
                     status:
                         type: COMMAND
+                        commandTemplate: |-
+                            $$ZENOTHING
+                            export PATH=/bin:/sbin:/usr/bin:/usr/sbin
+                            /usr/bin/env sudo vgs --noheadings -o vg_name,vg_attr \
+                                | awk '{split($$2, chars, ""); printf("%s ", $$1); for (i=1;i<=3;i++) printf("%d ", chars[i]=="-" ? 0 : 1); printf("\n")}'
                         usessh: true
-                        commandTemplate: "/usr/bin/env sudo vgs --noheadings -o vg_name,vg_attr | awk '{split($$2, chars, \"\"); printf(\"%s \", $$1); for (i=1;i<=3;i++) printf(\"%d \", chars[i]==\"-\" ? 0 : 1); printf(\"\\n\")}'"
                         parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.vgsstatus
                         component: "${here/id}"
                         eventClass: /Ignore
@@ -1644,8 +1750,11 @@ device_classes:
                 datasources:
                     status:
                         type: COMMAND
+                        commandTemplate: |-
+                            $$ZENOTHING
+                            export PATH=/bin:/sbin:/usr/bin:/usr/sbin
+                            /usr/bin/env sudo lvs --noheadings -o vg_name,lv_name,lv_attr
                         usessh: true
-                        commandTemplate: "/usr/bin/env sudo lvs --noheadings -o vg_name,lv_name,lv_attr"
                         parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.lvsstatus
                         component: "${here/id}"
                         eventClass: /Status
@@ -1671,8 +1780,11 @@ device_classes:
                 datasources:
                     status:
                         type: COMMAND
+                        commandTemplate: |-
+                            $$ZENOTHING
+                            export PATH=/bin:/sbin:/usr/bin:/usr/sbin
+                            /usr/bin/env sudo lvs --noheadings -o vg_name,lv_name,lv_attr
                         usessh: true
-                        commandTemplate: "/usr/bin/env sudo lvs --noheadings -o vg_name,lv_name,lv_attr"
                         parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.lvsstatus
                         component: "${here/id}"
                         eventClass: /Status
@@ -1869,8 +1981,11 @@ device_classes:
                 datasources:
                     poolstats:
                         type: COMMAND
+                        commandTemplate: |-
+                            $$ZENOTHING
+                            export PATH=/bin:/sbin:/usr/bin:/usr/sbin
+                            /usr/bin/env sudo lvs --noheadings -o vg_name,lv_name,data_percent,metadata_percent
                         usessh: true
-                        commandTemplate: "/usr/bin/env sudo lvs --noheadings -o vg_name,lv_name,data_percent,metadata_percent"
                         parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.poolstats
                         component: "${here/id}"
                         eventClass: /Ignore
@@ -1887,8 +2002,11 @@ device_classes:
                                     lv_pool_metadatapercent: ""
                     status:
                         type: COMMAND
+                        commandTemplate: |-
+                            $$ZENOTHING
+                            export PATH=/bin:/sbin:/usr/bin:/usr/sbin
+                            /usr/bin/env sudo lvs --noheadings -o vg_name,lv_name,lv_attr
                         usessh: true
-                        commandTemplate: "/usr/bin/env sudo lvs --noheadings -o vg_name,lv_name,lv_attr"
                         parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.lvsstatus
                         component: "${here/id}"
                         eventClass: /Status
