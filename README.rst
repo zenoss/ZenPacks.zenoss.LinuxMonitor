@@ -6,18 +6,11 @@ This ZenPack monitors the Linux Operating System.
 Releases
 --------
 
-.. _Version-2.3.1: http://wiki.zenoss.org/download/zenpacks/ZenPacks.zenoss.LinuxMonitor/2.3.1/ZenPacks.zenoss.LinuxMonitor-2.3.1.egg
+.. _Version-2.3.2: http://wiki.zenoss.org/download/zenpacks/ZenPacks.zenoss.LinuxMonitor/2.3.2/ZenPacks.zenoss.LinuxMonitor-2.3.2.egg
 
-Version-2.3.1_
-   | Released on 2018/12/07
-   | Compatible with Zenoss 4.2.5 - 6.1
-   | Requires `ZenPackLib ZenPack </product/zenpacks/zenpacklib>`_
-
-.. _Version-2.3.0: http://wiki.zenoss.org/download/zenpacks/ZenPacks.zenoss.LinuxMonitor/2.3.0/ZenPacks.zenoss.LinuxMonitor-2.3.0.egg
-
-Version-2.3.0_
-   | Released on 2018/20/04
-   | Compatible with Zenoss 4.2.5 - 6.1
+Version-2.3.2_
+   | Released on 2018/10/08
+   | Compatible with Zenoss Cloud, 5.3 - 6.3, 4.2.5
    | Requires `ZenPackLib ZenPack </product/zenpacks/zenpacklib>`_
 
 .. _Version-2.2.7: http://wiki.zenoss.org/download/zenpacks/ZenPacks.zenoss.LinuxMonitor/2.2.7/ZenPacks.zenoss.LinuxMonitor-2.2.7.egg
@@ -204,14 +197,27 @@ allow the **zenmonitor** user to run the commands.
      supported) and add the following lines to the bottom of the file::
 
         Defaults:zenmonitor !requiretty
-        Cmnd_Alias ZENOSS_LVM_CMDS = /sbin/pvs, /sbin/vgs, /sbin/lvs, \
-            /usr/sbin/pvs, /usr/sbin/vgs, /usr/sbin/lvs
-        Cmnd_Alias ZENOSS_SVC_CMDS = /bin/systemctl list-units *, \
-            /bin/systemctl show *, /sbin/initctl list, /sbin/service *, \
-            /sbin/runlevel, /usr/sbin/dmidecode, /bin/ls -l /etc/rc?.d/
-        Cmnd_Alias ZENOSS_NET_CMDS = /bin/dmesg
-        Cmnd_Alias ZENOSS_DF_CMDS = /bin/df
-        zenmonitor ALL=(ALL) NOPASSWD: ZENOSS_LVM_CMDS, ZENOSS_SVC_CMDS, ZENOSS_NET_CMDS, ZENOSS_DF_CMDS
+
+        Cmnd_Alias ZENOSS_CMDS = \
+            /usr/sbin/dmidecode, \
+            /bin/df, \
+            /bin/dmesg
+
+        Cmnd_Alias ZENOSS_LVM_CMDS = \
+            /sbin/pvs, /usr/sbin/pvs, \
+            /sbin/vgs, /usr/sbin/vgs, \
+            /sbin/lvs, /usr/sbin/lvs
+
+        Cmnd_Alias ZENOSS_SVC_CMDS = \
+            /sbin/initctl list, \
+            /sbin/service *, /usr/sbin/service *, \
+            /sbin/runlevel, \
+            /bin/ls -l /etc/rc?.d/
+
+        zenmonitor ALL=(ALL) NOPASSWD: \
+            ZENOSS_CMDS, \
+            ZENOSS_LVM_CMDS, \
+            ZENOSS_SVC_CMDS
 
    - Save, ensuring all paths for these commands are correct
 
@@ -830,6 +836,16 @@ Linux.
 
 Changes
 -------
+
+2.3.2
+
+- Guard against out of date sudoers configuration in service monitoring. (ZPS-4334)
+- Allow filesystem modeling and monitoring to work with or without sudo access. (ZPS-4340)
+- Fix LVM monitoring when */sbin not in user's path. (ZPS-4349)
+- Fix undocumented sudo usage of "systemctl status". (ZPS-4121)
+- Update reduced recommended sudoers configuration. (ZPS-4121)
+- Tested with Zenoss Cloud and Zenoss Resource Manager 6.3.0, 6.2.1, and 5.3.3.
+
 2.3.1
 
 - Fix CPU Busy metric on "CPU Utilization" graph. (ZPS-3531)
