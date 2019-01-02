@@ -511,6 +511,10 @@ HardDisk (in /Devices/Server/SSH/Linux)
    -  ioInProgress
    -  msDoingIO
    -  msDoingIOWeighted
+   -  bandwidthUtilCurrent
+   - bandwidthUtilAvg
+.. Note::
+   The iostat command must be installed on monitored box
 
 -  Thresholds
 

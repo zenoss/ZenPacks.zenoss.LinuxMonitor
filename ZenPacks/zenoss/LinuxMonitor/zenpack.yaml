@@ -1894,8 +1894,30 @@ device_classes:
                                 rrdmin: 0
                                 aliases:
                                     disk_weighted_busy__pct: "10,/"
-
+                    utilizationReport:
+                        type: COMMAND
+                        usessh: true
+                        commandTemplate: "/usr/bin/env iostat -dmx -N -p 10 2"
+                        parser: ZenPacks.zenoss.LinuxMonitor.parsers.linux.iostats
+                        component: "${here/id}"
+                        eventClass: /Ignore
+                        severity: Clear
+                        datapoints:
+                            bandwidthUtilCurrent:
+                                description: "Current percentage of CPU time during which I/O requests were issued to the device"
+                                rrdtype: GAUGE
+                            bandwidthUtilAvg:
+                                description: "Average percentage of CPU time during which I/O requests were issued to the device"
+                                rrdtype: GAUGE
                 graphs:
+                    Bandwidth Utilization:
+                        units: percent
+                        miny: 0
+                        graphpoints:
+                            Current utilization:
+                                dpName: utilizationReport_bandwidthUtilCurrent
+                            Average Utilization:
+                                dpName: utilizationReport_bandwidthUtilAvg
                     Operation Throughput:
                         units: operations/sec
                         miny: 0
