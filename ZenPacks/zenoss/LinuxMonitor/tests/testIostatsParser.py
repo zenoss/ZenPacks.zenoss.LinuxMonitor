@@ -100,8 +100,8 @@ class TestIostatsParser(BaseTestCase):
         utilCurrent, utilCurrentValue = _getDatapoint(results.values, "bandwidthUtilCurrent")
         utilAvg, utilAvgValue = _getDatapoint(results.values, "bandwidthUtilAvg")
 
-        self.assertEqual(utilCurrentValue, 0.02)
-        self.assertEqual(utilAvgValue, 0.0)
+        self.assertEqual(utilCurrentValue, 0.0)
+        self.assertEqual(utilAvgValue, 0.02)
 
     def test_DataPointsParsedComponent2(self):
         """
@@ -126,8 +126,8 @@ class TestIostatsParser(BaseTestCase):
         utilCurrent, utilCurrentValue = _getDatapoint(results.values, "bandwidthUtilCurrent")
         utilAvg, utilAvgValue = _getDatapoint(results.values, "bandwidthUtilAvg")
 
-        self.assertEqual(utilCurrentValue, 0.07)
-        self.assertEqual(utilAvgValue, 0.0)
+        self.assertEqual(utilCurrentValue, 0.0)
+        self.assertEqual(utilAvgValue, 0.07)
 
     def test_WrongComponentName(self):
         """

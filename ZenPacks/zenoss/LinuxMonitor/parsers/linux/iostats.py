@@ -61,7 +61,7 @@ LOG = logging.getLogger('zen.command.parsers.iostat')
 COMPONENT_PARSER = r'^(?P<component>\S+)[\s\t]'
 SCANNER = r"(?P<component>\S+)[\s\t].*\s+(?P<{}>\d+[.,]\d+$|\d+$)"
 COMPONENT_SPLITTER = "\n"
-COMPONENT_ID_PATTERN = r"disk-{0}"
+COMPONENT_ID_PATTERN = r"\bdisk-{0}\b|disk-{0}_\(.*\)"
 
 
 class iostats(CommandParser):
