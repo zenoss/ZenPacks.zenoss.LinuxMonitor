@@ -9,7 +9,7 @@
 
 
 """
-Systemd perf output('systemctl list-units --all --type=service --plain --full --no-page --no-legend')
+Systemd perf output('sudo systemctl list-units --all --type=service --plain --full --no-page --no-legend')
 
     ...
     accounts-daemon.service    loaded    active   running Accounts Service
@@ -27,10 +27,10 @@ Systemd perf output('systemctl list-units --all --type=service --plain --full --
     ...
 
 
-Systemd model output('for i in $(systemctl list-units -t service --all
+Systemd model output('for i in $(sudo systemctl list-units -t service --all
                 --no-page --no-legend | sed /not-found/d | cut -d" " -f1) ;
                 do echo "__SPLIT__" ;
-                systemctl show -p Names,Type,Description,LoadState,
+                sudo systemctl show -p Names,Type,Description,LoadState,
                 ActiveState,UnitFileState,MainPID,ConditionResult $i ; done'):
     ...
     Type=oneshot
@@ -326,11 +326,11 @@ export PATH=$PATH:/bin:/sbin:/usr/bin:/usr/sbin
 if command -v systemctl >/dev/null 2>&1
 then
     echo SYSTEMD
-    for i in $(systemctl list-units --all --type=service --plain --full --no-page --no-legend | sed /not-found/d | cut -d" " -f1)
+    for i in $(sudo systemctl list-units --all --type=service --plain --full --no-page --no-legend | sed /not-found/d | cut -d" " -f1)
     do
         echo __SPLIT__
         echo Title=$i
-        systemctl show -p Type,Description,ActiveState,UnitFileState,ConditionResult "$i"
+        sudo systemctl show -p Type,Description,ActiveState,UnitFileState,ConditionResult "$i"
     done
 elif command -v initctl >/dev/null 2>&1
 then
