@@ -1506,7 +1506,7 @@ device_classes:
                             if command -v systemctl > /dev/null 2>&1
                             then
                                 echo SYSTEMD
-                                systemctl list-units --all --type=service --plain --full --no-page --no-legend
+                                sudo systemctl list-units --all --type=service --plain --full --no-page --no-legend
                             else
                                 echo UNKNOWN
                                 exit 127
