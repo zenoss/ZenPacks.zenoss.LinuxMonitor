@@ -23,21 +23,6 @@ class LinuxDevice(schema.LinuxDevice):
         for hd in self.hw.harddisks():
             yield hd
 
-    def all_processes(self):
-        """Generate all OSProcess components."""
-        for process in self.os.processes():
-            yield process
-
-    def all_ipservices(self):
-        """Generate all IpService components."""
-        for ipservice in self.os.ipservices():
-            yield ipservice
-
-    def all_cpus(self):
-        """Generate all CPU components."""
-        for cpu in self.hw.cpus():
-            yield cpu
-
     def impacted_filesystems(self):
         """Generate filesystems impacted by this device.
 
