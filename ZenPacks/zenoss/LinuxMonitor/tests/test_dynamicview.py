@@ -14,11 +14,9 @@ try:
 except ImportError:
     import unittest
 
+    @unittest.skip("tests require DynamicView >= 1.7.0")
     class DynamicViewTestCase(unittest.TestCase):
         """TestCase stub if DynamicViewTestCase isn't available."""
-
-        def check_impacts(self):
-            pass
 
 
 # These are the expected impact relationships.
