@@ -57,7 +57,7 @@ class HardDisk(schema.HardDisk):
 
         results = itertools.chain.from_iterable(
             self.device().search(name, major_minor=self.major_minor)
-            for name in ('LogicalVolume', 'SnapshotVolume'))
+            for name in ('LogicalVolume', 'SnapshotVolume', 'ThinPool'))
 
         for result in results:
             try:
@@ -73,10 +73,6 @@ class HardDisk(schema.HardDisk):
         will return the proper object, or None.
 
         """
-        fs = self.filesystem()
-        if fs:
-            return fs
-
         pv = self.physicalVolume()
         if pv:
             return pv
@@ -84,6 +80,10 @@ class HardDisk(schema.HardDisk):
         lv = self.logicalVolume()
         if lv:
             return lv
+
+        fs = self.filesystem()
+        if fs:
+            return fs
 
     def storage_disk_lun(self):
         """Return a generator of the storage disks/virtual drives based on disk_ids."""
