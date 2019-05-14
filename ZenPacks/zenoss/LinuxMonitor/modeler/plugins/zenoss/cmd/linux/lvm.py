@@ -239,9 +239,9 @@ class lvm(CommandPlugin):
                         # 'scsi-SATA_INTEL_SSDSC2BB1PHWA616003QY120CGN',
                         # 'ata-INTEL_SSDSC2BB120G6K_PHWA616003QY120CGN'
                         # add the part right of the last '_'
-                        disk_id = id[id.rfind('_') + 1:].upper()
-                        if disk_id not in hd_om.disk_ids:
-                            hd_om.disk_ids.append(disk_id)
+                        serial = id.split('_')[-1]
+                        if len(serial) > 12 and serial not in hd_om.disk_ids:
+                            hd_om.disk_ids.append(parts[-1])
 
         maps = []
         maps.append(RelationshipMap(
