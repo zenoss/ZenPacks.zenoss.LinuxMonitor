@@ -296,6 +296,10 @@ class lvm(CommandPlugin):
                 objmaps=tp_vg_oms))
 
             for lv_om in lv_maps:
+                if lv_om.relname == "thinPools":
+                    # ZPS-5816: Ignoring snapshots of thin pools.
+                    continue
+
                 if lv_om.vgname == vg_om.title:
                     lv_sv_oms = []
                     for sv_om in sv_maps:
