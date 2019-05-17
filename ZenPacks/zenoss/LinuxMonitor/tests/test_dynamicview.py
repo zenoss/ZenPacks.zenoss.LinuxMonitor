@@ -249,14 +249,26 @@ class DynamicViewTests(DynamicViewTestCase):
     # Expected impact relationships.
     expected_impacts = EXPECTED_IMPACTS
 
-    # Devices to create.
-    device_data = {
-        "linux1": {
-            "deviceClass": "/Server/SSH/Linux",
-            "zPythonClass": "ZenPacks.zenoss.LinuxMonitor.LinuxDevice",
-            "dataMaps": DATAMAPS,
+    def get_device_data(self):
+        """Return device_data dict for devices to be created for testing."""
+        self.setup_OpenStackInfrastructure()
+
+        return {
+            "linux1": {
+                "deviceClass": "/Server/SSH/Linux",
+                "zPythonClass": "ZenPacks.zenoss.LinuxMonitor.LinuxDevice",
+                "dataMaps": DATAMAPS,
+            }
         }
-    }
+
+    def setup_OpenStackInfrastructure(self):
+        try:
+            import ZenPacks.zenoss.OpenStackInfrastructure  # noqa
+        except ImportError:
+            pass
+        else:
+            # ZPS-5799: Workaround a bug in the OpenStackInfrastructure ZenPack.
+            self.dmd.Devices.createOrganizer("/OpenStack/Infrastructure")
 
     def test_impacts(self):
         self.check_impacts()

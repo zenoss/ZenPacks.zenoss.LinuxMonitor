@@ -239,9 +239,9 @@ class lvm(CommandPlugin):
                         # 'scsi-SATA_INTEL_SSDSC2BB1PHWA616003QY120CGN',
                         # 'ata-INTEL_SSDSC2BB120G6K_PHWA616003QY120CGN'
                         # add the part right of the last '_'
-                        disk_id = id[id.rfind('_') + 1:].upper()
-                        if disk_id not in hd_om.disk_ids:
-                            hd_om.disk_ids.append(disk_id)
+                        serial = id.split('_')[-1]
+                        if len(serial) > 12 and serial not in hd_om.disk_ids:
+                            hd_om.disk_ids.append(serial)
 
         maps = []
         maps.append(RelationshipMap(
@@ -296,6 +296,10 @@ class lvm(CommandPlugin):
                 objmaps=tp_vg_oms))
 
             for lv_om in lv_maps:
+                if lv_om.relname == "thinPools":
+                    # ZPS-5816: Ignoring snapshots of thin pools.
+                    continue
+
                 if lv_om.vgname == vg_om.title:
                     lv_sv_oms = []
                     for sv_om in sv_maps:
