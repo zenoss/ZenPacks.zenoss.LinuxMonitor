@@ -241,7 +241,7 @@ class lvm(CommandPlugin):
                         # add the part right of the last '_'
                         serial = id.split('_')[-1]
                         if len(serial) > 12 and serial not in hd_om.disk_ids:
-                            hd_om.disk_ids.append(parts[-1])
+                            hd_om.disk_ids.append(serial)
 
         maps = []
         maps.append(RelationshipMap(
