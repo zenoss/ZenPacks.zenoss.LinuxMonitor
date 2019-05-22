@@ -222,7 +222,6 @@ class lvm(CommandPlugin):
                 if match:
                     hd_om.disk_ids = disk_by_id_map[match.group('disk_name')]
 
-
             if hasattr(hd_om, 'disk_ids'):
                 for id in hd_om.disk_ids:
                     if id.startswith('wwn-0x') and len(id) == 38:
@@ -240,7 +239,7 @@ class lvm(CommandPlugin):
                         # 'ata-INTEL_SSDSC2BB120G6K_PHWA616003QY120CGN'
                         # add the part right of the last '_'
                         serial = id.split('_')[-1]
-                        if len(serial) > 12 and serial not in hd_om.disk_ids:
+                        if len(serial) > 7 and serial not in hd_om.disk_ids:
                             hd_om.disk_ids.append(serial)
 
         maps = []
