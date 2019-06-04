@@ -6,11 +6,11 @@ This ZenPack monitors the Linux Operating System.
 Releases
 --------
 
-.. _Version-2.3.2: http://wiki.zenoss.org/download/zenpacks/ZenPacks.zenoss.LinuxMonitor/2.3.2/ZenPacks.zenoss.LinuxMonitor-2.3.2.egg
+.. _Version-2.3.3: http://wiki.zenoss.org/download/zenpacks/ZenPacks.zenoss.LinuxMonitor/2.3.3/ZenPacks.zenoss.LinuxMonitor-2.3.3.egg
 
-Version-2.3.2_
-   | Released on 2018/10/08
-   | Compatible with Zenoss Cloud, 5.3 - 6.3, 4.2.5
+Version-2.3.3_
+   | Released on 2019/06/04
+   | Compatible with Zenoss Cloud, 6.3 - 5.3, 4.2.5
    | Requires `ZenPackLib ZenPack </product/zenpacks/zenpacklib>`_
 
 .. _Version-2.2.7: http://wiki.zenoss.org/download/zenpacks/ZenPacks.zenoss.LinuxMonitor/2.2.7/ZenPacks.zenoss.LinuxMonitor-2.2.7.egg
@@ -837,11 +837,16 @@ Linux.
 Changes
 -------
 
+2.3.3
+
+- Fix and optimize various impact relationship calculations. (ZPS-5664, ZPS-5711, ZPS-5792, ZPS-5806)
+- Fix "NotFound" modeling exception for snapshots of thin pools. (ZPS-5816)
+
 2.3.2
 
 - Guard against out of date sudoers configuration in service monitoring. (ZPS-4334)
 - Allow filesystem modeling and monitoring to work with or without sudo access. (ZPS-4340)
-- Fix LVM monitoring when */sbin not in user's path. (ZPS-4349)
+- Fix LVM monitoring when \*/sbin not in user's path. (ZPS-4349)
 - Fix undocumented sudo usage of "systemctl status". (ZPS-4121)
 - Update reduced recommended sudoers configuration. (ZPS-4121)
 - Tested with Zenoss Cloud and Zenoss Resource Manager 6.3.0, 6.2.1, and 5.3.3.
