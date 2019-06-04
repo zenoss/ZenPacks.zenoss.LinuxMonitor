@@ -1,89 +1,67 @@
 ##############################################################################
 #
-# Copyright (C) Zenoss, Inc. 2016, all rights reserved.
+# Copyright (C) Zenoss, Inc. 2019, all rights reserved.
 #
 # This content is made available according to terms specified in
 # License.zenoss under the directory where your Zenoss product is installed.
 #
 ##############################################################################
 
-import unittest
-
 from Products.DataCollector.plugins.DataMaps import ObjectMap, RelationshipMap
 
-from ZenPacks.zenoss.LinuxMonitor import zenpacklib
-from ZenPacks.zenoss.LinuxMonitor.tests import utils as tu
-
 try:
-    from ZenPacks.zenoss.DynamicView import TAG_IMPACTED_BY, TAG_IMPACTS
-    DYNAMICVIEW_INSTALLED = True
+    from ZenPacks.zenoss.DynamicView.tests import DynamicViewTestCase
 except ImportError:
-    TAG_IMPACTED_BY, TAG_IMPACTS = None, None
-    DYNAMICVIEW_INSTALLED = False
+    import unittest
 
-try:
-    import ZenPacks.zenoss.Impact  # NOQA
-    IMPACT_INSTALLED = True
-except ImportError:
-    IMPACT_INSTALLED = False
+    @unittest.skip("tests require DynamicView >= 1.7.0")
+    class DynamicViewTestCase(unittest.TestCase):
+        """TestCase stub if DynamicViewTestCase isn't available."""
 
 
-# These are the DynamicView/Impact impactful relationships we'll test for.
+# These are the expected impact relationships.
 EXPECTED_IMPACTS = """
 // Device
-[test-linux1]->[docker]
-[test-linux1]->[memcached]
-[test-linux1]->[tcp_00022]
-[test-linux1]->[udp_00123]
-[test-linux1]->[lo]
-[test-linux1]->[eth0]
-[test-linux1]->[0]
-[test-linux1]->[1]
-[test-linux1]->[disk-sda]
-[test-linux1]->[disk-sda1]
-[test-linux1]->[disk-sda2]
-[test-linux1]->[disk-sdb]
-[test-linux1]->[disk-sdc]
-[test-linux1]->[disk-os-root]
-[test-linux1]->[disk-data-data]
-[test-linux1]->[disk-data-_snapshot-f005ba11]
+[linux1]->[linux1/docker]
+[linux1]->[linux1/memcached]
+[linux1]->[linux1/tcp_00022]
+[linux1]->[linux1/udp_00123]
+[linux1]->[linux1/lo]
+[linux1]->[linux1/eth0]
+[linux1]->[linux1/disk-sda]
+[linux1]->[linux1/disk-sda1]
+[linux1]->[linux1/disk-sda2]
+[linux1]->[linux1/disk-sdb]
+[linux1]->[linux1/disk-sdc]
+[linux1]->[linux1/disk-os-root]
+[linux1]->[linux1/disk-data-data]
+[linux1]->[linux1/disk-data-_snapshot-f005ba11]
+
 // HardDisk
-[disk-sda1]->[boot]
-[disk-sda2]->[pv-dev_sda2]
-[disk-sdb]->[pv-dev_sdb]
-[disk-sdc]->[pv-dev_sdc]
-[disk-os-root]->[lv-os_root]
-[disk-data-data]->[lv-data_data]
-[disk-data-_snapshot-f005ba11]->[lv-data_snapshot-deadbeef]
+[linux1/disk-sda1]->[linux1/boot]
+[linux1/disk-sda2]->[linux1/pv-dev_sda2]
+[linux1/disk-sdb]->[linux1/pv-dev_sdb]
+[linux1/disk-sdc]->[linux1/pv-dev_sdc]
+[linux1/disk-os-root]->[linux1/lv-os_root]
+[linux1/disk-data-data]->[linux1/lv-data_data]
+[linux1/disk-data-_snapshot-f005ba11]->[linux1/lv-data_snapshot-deadbeef]
+
 // PhysicalVolume
-[pv-dev_sda2]->[vg-os]
-[pv-dev_sdb]->[vg-data]
-[pv-dev_sdc]->[vg-data]
+[linux1/pv-dev_sda2]->[linux1/vg-os]
+[linux1/pv-dev_sdb]->[linux1/vg-data]
+[linux1/pv-dev_sdc]->[linux1/vg-data]
+
 // VolumeGroup
-[vg-os]->[lv-os_root]
-[vg-data]->[lv-data_data]
+[linux1/vg-os]->[linux1/lv-os_root]
+[linux1/vg-data]->[linux1/lv-data_data]
+
 // LogicalVolume
-[lv-os_root]->[-]
-[lv-data_data]->[data]
-[lv-data_data]->[lv-data_snapshot-deadbeef]
+[linux1/lv-os_root]->[linux1/-]
+[linux1/lv-data_data]->[linux1/data]
+[linux1/lv-data_data]->[linux1/lv-data_snapshot-deadbeef]
+
 // SnapshotVolume
-[lv-data_snapshot-deadbeef]->[snapshots_data_yesterday]
-"""
-
-DYNAMIC_VIEW_EXPECTING_MISSING = """
-//Dynamic View Interface
-[eth0]->[test-linux1]
-[lo]->[test-linux1]
-"""
-
-# It's OK if these are missing from DynamicView, but not from Impact.
-EXPECTED_MISSING_FROM_DV = """
-[test-linux1]->[docker]
-[test-linux1]->[memcached]
-[test-linux1]->[tcp_00022]
-[test-linux1]->[udp_00123]
-[test-linux1]->[0]
-[test-linux1]->[1]
+[linux1/lv-data_snapshot-deadbeef]->[linux1/snapshots_data_yesterday]
 """
 
 # This is the Linux device model that we'll be testing.
@@ -260,69 +238,37 @@ DATAMAPS = [
 ]
 
 
-# Testing must be enabled before zenpacklib.TestCase can be used.
-zenpacklib.enableTesting()
+class DynamicViewTests(DynamicViewTestCase):
+    """DynamicView tests."""
 
+    # ZenPacks to initialize for testing purposes.
+    zenpacks = [
+        "ZenPacks.zenoss.LinuxMonitor",
+    ]
 
-class TestDVI(zenpacklib.TestCase):
+    # Expected impact relationships.
+    expected_impacts = EXPECTED_IMPACTS
 
-    def afterSetUp(self):
-        super(TestDVI, self).afterSetUp()
+    def get_device_data(self):
+        """Return device_data dict for devices to be created for testing."""
+        self.setup_OpenStackInfrastructure()
 
-        # OpenStack integration assumes /OpenStack/Infrastructure device class.
-        self.dmd.Devices.createOrganizer("/OpenStack/Infrastructure")
+        return {
+            "linux1": {
+                "deviceClass": "/Server/SSH/Linux",
+                "zPythonClass": "ZenPacks.zenoss.LinuxMonitor.LinuxDevice",
+                "dataMaps": DATAMAPS,
+            }
+        }
 
-        # Create a fully-modeled device.
-        self.device = tu.create_device(
-            self.dmd,
-            "ZenPacks.zenoss.LinuxMonitor.LinuxDevice",
-            "test-linux1",
-            DATAMAPS)
+    def setup_OpenStackInfrastructure(self):
+        try:
+            import ZenPacks.zenoss.OpenStackInfrastructure  # noqa
+        except ImportError:
+            pass
+        else:
+            # ZPS-5799: Workaround a bug in the OpenStackInfrastructure ZenPack.
+            self.dmd.Devices.createOrganizer("/OpenStack/Infrastructure")
 
-    @unittest.skipUnless(DYNAMICVIEW_INSTALLED, "DynamicView not installed")
-    def test_DynamicView_Impacts(self):
-        expected = tu.triples_from_yuml(EXPECTED_IMPACTS)
-        all_expected = tu.complement_triples(expected)
-
-        expected_missing = tu.triples_from_yuml(EXPECTED_MISSING_FROM_DV)
-        all_expected_missing = tu.complement_triples(expected_missing)
-        dynamic_view = tu.triples_from_yuml(DYNAMIC_VIEW_EXPECTING_MISSING)
-        missing_dynamic_view = tu.complement_triples(dynamic_view)
-
-        found = tu.dynamicview_triples_from_device(
-            self.device, tags=(TAG_IMPACTS, TAG_IMPACTED_BY))
-
-        missing = all_expected - (found | all_expected_missing)
-        extra = (found | all_expected_missing) - (all_expected | missing_dynamic_view)
-
-        self.assertFalse(
-            missing or extra,
-            "DynamicView {}/{} relationship issue(s):\n\n{}".format(
-                TAG_IMPACTED_BY, TAG_IMPACTS,
-                tu.yuml_from_triples(
-                    expected,
-                    missing=missing,
-                    extra=extra,
-                    tag_map={
-                        TAG_IMPACTS: TAG_IMPACTED_BY,
-                        })))
-
-    @unittest.skipUnless(IMPACT_INSTALLED, "Impact not installed")
-    def test_Impact_Edges(self):
-        expected = tu.triples_from_yuml(EXPECTED_IMPACTS)
-        all_expected = tu.complement_triples(expected)
-        found = tu.impact_triples_from_device(self.device)
-
-        missing = all_expected - found
-        extra = found - all_expected
-
-        self.assertFalse(
-            missing or extra,
-            "Impact edges issue(s):\n\n{}".format(
-                tu.yuml_from_triples(
-                    expected,
-                    missing=missing,
-                    extra=extra,
-                    tag_map={
-                        TAG_IMPACTS: TAG_IMPACTED_BY,
-                        })))
+    def test_impacts(self):
+        self.check_impacts()

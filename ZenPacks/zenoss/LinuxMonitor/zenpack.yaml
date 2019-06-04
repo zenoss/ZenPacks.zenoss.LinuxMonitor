@@ -32,9 +32,6 @@ classes:
         dynamicview_relations:
             impacts:
                 - all_harddisks
-                - all_processes
-                - all_ipservices
-                - all_cpus
                 - impacted_filesystems
                 - linuxServices
 
