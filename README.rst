@@ -311,9 +311,11 @@ modeler plugin. The following systems are supported:
 - RHEL 5
 - RHEL 6
 - RHEL 7
+- RHEL 8
 - CentOS 5
 - CentOS 6
 - CentOS 7
+- CentOS 8
 - Debian 8
 - Debian 9
 - Suse 12
