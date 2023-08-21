@@ -6,30 +6,19 @@ This ZenPack monitors the Linux Operating System.
 Releases
 --------
 
-.. _Version-2.3.3: http://wiki.zenoss.org/download/zenpacks/ZenPacks.zenoss.LinuxMonitor/2.3.3/ZenPacks.zenoss.LinuxMonitor-2.3.3.egg
+.. _Version-2.3.4: https://delivery.zenoss.com/
+
+Version-2.3.4_
+   | Released on 2023/08/21
+   | Compatible with Zenoss Cloud and Zenoss Resource Manager 6.7.0
+   | Requires `ZenPackLib ZenPack </product/zenpacks/zenpacklib>`_
+
+.. _Version-2.3.3: https://delivery.zenoss.com/
 
 Version-2.3.3_
    | Released on 2019/06/04
-   | Compatible with Zenoss Cloud, 6.3 - 5.3, 4.2.5
+   | Compatible with Zenoss Cloud and Zenoss Resource Manager 6.7.0
    | Requires `ZenPackLib ZenPack </product/zenpacks/zenpacklib>`_
-
-.. _Version-2.2.7: http://wiki.zenoss.org/download/zenpacks/ZenPacks.zenoss.LinuxMonitor/2.2.7/ZenPacks.zenoss.LinuxMonitor-2.2.7.egg
-
-Version-2.2.7_
-   | Released on 2017/12/01
-   | Compatible with Zenoss 4.2.5 - 6.0
-
-.. _Version-2.1.3: http://wiki.zenoss.org/download/zenpacks/ZenPacks.zenoss.LinuxMonitor/2.1.3/ZenPacks.zenoss.LinuxMonitor-2.1.3.egg
-
-Version-2.1.3_
-   | Released on 2017/03/31
-   | Compatible with Zenoss 4.2 - 5.2
-
-.. _Version-2.0.6: http://wiki.zenoss.org/download/zenpacks/ZenPacks.zenoss.LinuxMonitor/2.0.6/ZenPacks.zenoss.LinuxMonitor-2.0.6.egg
-
-Version-2.0.6_
-  | Released on 2016/11/01
-  | Compatible with Zenoss 4.2 - 5.1
 
 .. contents::
    :depth: 2
@@ -836,6 +825,11 @@ Linux.
 
 Changes
 -------
+
+2.3.4
+
+- Fix LVM components representation on the Smart View. (ZPS-6103)
+- Tested with Zenoss Cloud and Zenoss Resource Manager 6.7.0
 
 2.3.3
 
