@@ -97,7 +97,8 @@ classes:
                 grid_display: False
                 type: lines
 
-            uuid:
+            pv_uuid:
+                label: UUID
                 grid_display: False
 
             harddisk_id:
@@ -154,7 +155,7 @@ classes:
                 grid_display: False
                 type: lines
 
-            uuid:
+            vg_uuid:
                 label: UUID
                 grid_display: False
 
@@ -191,7 +192,7 @@ classes:
                 grid_display: False
                 details_display: False
 
-            uuid:
+            lv_uuid:
                 grid_display: False
                 details_display: False
 
@@ -263,7 +264,7 @@ classes:
                 grid_display: False
                 details_display: False
 
-            uuid:
+            lv_uuid:
                 grid_display: False
                 details_display: False
 
@@ -491,7 +492,7 @@ classes:
                 grid_display: False
                 details_display: False
 
-            uuid:
+            lv_uuid:
                 grid_display: False
                 details_display: False
 
