@@ -114,7 +114,7 @@ class AltScanConfig(object):
     componentSplit = '\n'
     componentScanner = r'^(\d+):(\s)(?P<component>\S+?):?[ \t]+'
     scanners = [
-        r'(.*)RX:(\s+)bytes(\s+)packets(\s+)errors(\s+)dropped(\s+)overrun(\s+)mcast(\s+)\\(\s+)(?P<ifInOctets>\d+)(\s+)(?P<ifInPackets>\d+)(\s+)(?P<ifInErrors>\d+)(\s+)(?P<ifInDropped>\d+)(\s+)(?P<ifInOverruns>\d+)',
+        r'(.*)RX:(\s+)bytes(\s+)packets(\s+)errors(\s+)dropped(\s+)(missed|overrun)(\s+)mcast(\s+)\\(\s+)(?P<ifInOctets>\d+)(\s+)(?P<ifInPackets>\d+)(\s+)(?P<ifInErrors>\d+)(\s+)(?P<ifInDropped>\d+)(\s+)(?P<ifInOverruns>\d+)',
         r'(.*)TX:(\s+)bytes(\s+)packets(\s+)errors(\s+)dropped(\s+)carrier(\s+)collsns(\s+)\\(\s+)(?P<ifOutOctets>\d+)(\s+)(?P<ifOutPackets>\d+)(\s+)(?P<ifOutErrors>\d+)(\s+)(?P<ifOutDropped>\d+)(\s+)(?P<ifOutCarrier>\d+)(\s+)(?P<ifOutCollisions>\d+)',
         ]
     componentScanValue = 'interfaceName'
