@@ -6,6 +6,13 @@ This ZenPack monitors the Linux Operating System.
 Releases
 --------
 
+.. _Version-2.3.5: https://delivery.zenoss.com/
+
+Version-2.3.5_
+   | Released on 2024/12/05
+   | Compatible with Zenoss Cloud and Zenoss Resource Manager 6.7.0
+   | Requires `ZenPackLib ZenPack </product/zenpacks/zenpacklib>`_
+
 .. _Version-2.3.4: https://delivery.zenoss.com/
 
 Version-2.3.4_
@@ -827,6 +834,11 @@ Linux.
 
 Changes
 -------
+
+2.3.5
+
+- Fix Interfaces monitoring for the latest Linux versions. (ZPS-8020)
+- Tested with Zenoss Cloud and Zenoss Resource Manager 6.7.0
 
 2.3.4
 
